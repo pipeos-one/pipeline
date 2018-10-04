@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import './plugins/axios'
+import './plugins/axios';
 import '@babel/polyfill';
 
 import VueFormGenerator from 'vue-form-generator/dist/vfg-core';
@@ -9,12 +9,12 @@ import 'vue-form-generator/dist/vfg-core.css';
 
 import App from './App.vue';
 import './registerServiceWorker';
-import router from './router'
+import router from './router';
 
 Vue.config.productionTip = false;
 
 
 new Vue({
   router,
-  render: h => h(App)
+  render: h => h(App),
 }).$mount('#app');

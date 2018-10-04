@@ -10,20 +10,20 @@
 </template>
 
 <script>
-    import Vue from 'vue';
-    import Pipeos from '../namespace/namespace';
+import Vue from 'vue';
+import Pipeos from '../namespace/namespace';
 
-    let get_api = Pipeos.pipeserver.ip + Pipeos.pipeserver.jsonapi;
+const get_api = Pipeos.pipeserver.ip + Pipeos.pipeserver.jsonapi;
 
-    export default {
-        data () {
-            return {api: '/forms/', items: []}
-        },
-        created() {
-            Vue.axios.get(get_api).then((response) => {
-              console.log('response', response.data);
-              this.items = response.data;
-            });
-        }
-    }
+export default {
+  data() {
+    return { api: '/forms/', items: [] };
+  },
+  created() {
+    Vue.axios.get(get_api).then((response) => {
+      console.log('response', response.data);
+      this.items = response.data;
+    });
+  },
+};
 </script>

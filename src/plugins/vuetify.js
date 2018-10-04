@@ -1,4 +1,4 @@
-import Vue from 'vue'
+import Vue from 'vue';
 import {
   Vuetify,
   VApp,
@@ -9,9 +9,9 @@ import {
   VIcon,
   VGrid,
   VToolbar,
-  transitions
-} from 'vuetify'
-import 'vuetify/src/stylus/app.styl'
+  transitions,
+} from 'vuetify';
+import 'vuetify/src/stylus/app.styl';
 
 Vue.use(Vuetify, {
   components: {
@@ -23,7 +23,7 @@ Vue.use(Vuetify, {
     VIcon,
     VGrid,
     VToolbar,
-    transitions
+    transitions,
   },
   iconfont: 'md',
-})
+});
