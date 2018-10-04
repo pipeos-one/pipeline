@@ -1,4 +1,10 @@
-import {Filter, repository, Where} from '@loopback/repository';
+import {
+  Count,
+  CountSchema,
+  Filter,
+  repository,
+  Where,
+} from '@loopback/repository';
 import {
   post,
   param,
@@ -34,13 +40,13 @@ export class TagController {
     responses: {
       '200': {
         description: 'Tag model count',
-        content: {'application/json': {'x-ts-type': Number}},
+        content: {'application/json': {schema: CountSchema}},
       },
     },
   })
   async count(
     @param.query.object('where', getWhereSchemaFor(Tag)) where?: Where,
-  ): Promise<number> {
+  ): Promise<Count> {
     return await this.tagRepository.count(where);
   }
 
@@ -59,21 +65,21 @@ export class TagController {
   async find(
     @param.query.object('filter', getFilterSchemaFor(Tag)) filter?: Filter,
   ): Promise<Tag[]> {
-    return await this.tagRepository.find(filter, {strictObjectIDCoercion: true});
+    return await this.tagRepository.find(filter);
   }
 
   @patch('/tag', {
     responses: {
       '200': {
         description: 'Tag PATCH success count',
-        content: {'application/json': {'x-ts-type': Number}},
+        content: {'application/json': {schema: CountSchema}},
       },
     },
   })
   async updateAll(
     @requestBody() tag: Tag,
     @param.query.object('where', getWhereSchemaFor(Tag)) where?: Where,
-  ): Promise<number> {
+  ): Promise<Count> {
     return await this.tagRepository.updateAll(tag, where);
   }
 

@@ -1,4 +1,10 @@
-import {Filter, repository, Where} from '@loopback/repository';
+import {
+  Count,
+  CountSchema,
+  Filter,
+  repository,
+  Where,
+} from '@loopback/repository';
 import {
   post,
   param,
@@ -34,13 +40,13 @@ export class PipeContainerController {
     responses: {
       '200': {
         description: 'PipeContainer model count',
-        content: {'application/json': {'x-ts-type': Number}},
+        content: {'application/json': {schema: CountSchema}},
       },
     },
   })
   async count(
     @param.query.object('where', getWhereSchemaFor(PipeContainer)) where?: Where,
-  ): Promise<number> {
+  ): Promise<Count> {
     return await this.pipeContainerRepository.count(where);
   }
 
@@ -66,14 +72,14 @@ export class PipeContainerController {
     responses: {
       '200': {
         description: 'PipeContainer PATCH success count',
-        content: {'application/json': {'x-ts-type': Number}},
+        content: {'application/json': {schema: CountSchema}},
       },
     },
   })
   async updateAll(
     @requestBody() pipeContainer: PipeContainer,
     @param.query.object('where', getWhereSchemaFor(PipeContainer)) where?: Where,
-  ): Promise<number> {
+  ): Promise<Count> {
     return await this.pipeContainerRepository.updateAll(pipeContainer, where);
   }
 

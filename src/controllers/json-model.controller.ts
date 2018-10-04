@@ -1,4 +1,10 @@
-import {Filter, repository, Where} from '@loopback/repository';
+import {
+  Count,
+  CountSchema,
+  Filter,
+  repository,
+  Where,
+} from '@loopback/repository';
 import {
   post,
   param,
@@ -11,7 +17,6 @@ import {
 } from '@loopback/rest';
 import {JsonModel} from '../models';
 import {JsonModelRepository} from '../repositories';
-
 
 export class JsonModelController {
   constructor(
@@ -35,13 +40,13 @@ export class JsonModelController {
     responses: {
       '200': {
         description: 'JsonModel model count',
-        content: {'application/json': {'x-ts-type': Number}},
+        content: {'application/json': {schema: CountSchema}},
       },
     },
   })
   async count(
     @param.query.object('where', getWhereSchemaFor(JsonModel)) where?: Where,
-  ): Promise<number> {
+  ): Promise<Count> {
     return await this.jsonModelRepository.count(where);
   }
 
@@ -67,14 +72,14 @@ export class JsonModelController {
     responses: {
       '200': {
         description: 'JsonModel PATCH success count',
-        content: {'application/json': {'x-ts-type': Number}},
+        content: {'application/json': {schema: CountSchema}},
       },
     },
   })
   async updateAll(
     @requestBody() jsonModel: JsonModel,
     @param.query.object('where', getWhereSchemaFor(JsonModel)) where?: Where,
-  ): Promise<number> {
+  ): Promise<Count> {
     return await this.jsonModelRepository.updateAll(jsonModel, where);
   }
 
