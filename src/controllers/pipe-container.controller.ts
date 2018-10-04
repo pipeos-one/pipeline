@@ -9,16 +9,8 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
-import {PipeContainer, PipeFunction} from '../models';
-import {PipeContainerRepository, PipeFunctionRepository} from '../repositories';
-import {AbiFunctionInput, AbiFunctionOuput, AbiFunction} from '../interfaces/abi';
-import {
-    DocParams,
-    DocMethod,
-    DocMethods,
-    Devdoc,
-    Userdoc,
-} from '../interfaces/soldocs';
+import {PipeContainer} from '../models';
+import {PipeContainerRepository} from '../repositories';
 
 export class PipeContainerController {
   constructor(
@@ -35,41 +27,7 @@ export class PipeContainerController {
     },
   })
   async create(@requestBody() pipeContainer: PipeContainer): Promise<PipeContainer> {
-    // console.log('pipeContainer', pipeContainer);
-
-    // separate abi in functions
-    // separate devdoc & userdoc in functions
-    let abi: AbiFunction[], devdoc: Devdoc, userdoc: Userdoc;
-    let emptydoc = {methods: {}};
-
-    let newContainer = await this.pipeContainerRepository.create(pipeContainer);
-    // console.log('newContainer', newContainer);
-
-    abi = pipeContainer.abi ? JSON.parse(pipeContainer.abi) : [];
-    devdoc = pipeContainer.devdoc ? JSON.parse(pipeContainer.devdoc) : emptydoc;
-    userdoc = pipeContainer.userdoc ? JSON.parse(pipeContainer.userdoc) : emptydoc;
-
-    abi.forEach((funcabi: AbiFunction) => {
-        let signature, functiondoc;
-
-        signature = funcabi.inputs.map((input: AbiFunctionInput) => input.type).join(',');
-        signature = `${funcabi.name}(${signature})`;
-
-        functiondoc = {
-            name: funcabi.name,
-            signature,
-            abi: JSON.stringify(funcabi),
-            devdoc: devdoc.methods[signature],
-            userdoc: userdoc.methods[signature],
-            uri: pipeContainer.uri,
-            tags: pipeContainer.tags,
-            timestamp: pipeContainer.timestamp,
-            containerid: newContainer._id,
-        }
-    });
-
-    // return await this.pipeContainerRepository.create(pipeContainer);
-    return await this.pipeContainerRepository.findById("5bb52a1f55b4fd09de76e1d0");
+    return await this.pipeContainerRepository.create(pipeContainer);
   }
 
   @get('/pipecontainer/count', {
