@@ -1,6 +1,6 @@
 const Pipeos = {
   pipeserver: {
-    ip: 'http://192.168.0.3:3000',
+    ip: `${process.env.VUE_APP_PIPESERVER_IP}:${process.env.VUE_APP_PIPESERVER_PORT}`,
     jsonapi: '/json',
   },
 };
