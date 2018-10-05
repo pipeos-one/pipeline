@@ -13,10 +13,18 @@ interface DocMethods {
 }
 
 interface Devdoc {
+    title?: string;
+    author?: string;
+    notice?: string;
+    dev?: string;
     methods: DocMethods;
 }
 
 interface Userdoc {
+    title?: string;
+    author?: string;
+    notice?: string;
+    dev?: string;
     methods: DocMethods;
 }
 

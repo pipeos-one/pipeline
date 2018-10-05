@@ -1,4 +1,6 @@
 import {Entity, model, property} from '@loopback/repository';
+import {AbiFunction} from '../interfaces/abi';
+import {DocMethod} from '../interfaces/soldocs';
 
 @model()
 export class PipeFunction extends Entity {
@@ -16,31 +18,25 @@ export class PipeFunction extends Entity {
   containerid: string;
 
   @property({
-    type: 'string',
+    type: 'object',
   })
-  graphid: string;
+  graph: object;
 
   @property({
-    type: 'string',
+    type: 'object',
     required: true,
   })
-  abi: string;
+  abiObj: AbiFunction;
 
   @property({
-    type: 'string',
+    type: 'object',
   })
-  devdoc?: string;
+  devdoc?: DocMethod;
 
   @property({
-    type: 'string',
+    type: 'object',
   })
-  userdoc?: string;
-
-  @property({
-    type: 'string',
-    required: true,
-  })
-  name: string;
+  userdoc?: DocMethod;
 
   @property({
     type: 'string',

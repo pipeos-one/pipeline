@@ -1,4 +1,7 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasMany} from '@loopback/repository';
+import {PipeFunction} from './pipe-function.model';
+import {AbiFunction} from '../interfaces/abi';
+import {Devdoc, Userdoc} from '../interfaces/soldocs';
 
 @model()
 export class PipeContainer extends Entity {
@@ -16,19 +19,20 @@ export class PipeContainer extends Entity {
   name: string;
 
   @property({
-    type: 'string',
+    type: 'array',
+    itemType: 'object',
   })
-  abi?: string;
+  abi?: AbiFunction[];
 
   @property({
-    type: 'string',
+    type: 'object',
   })
-  devdoc?: string;
+  devdoc?: Devdoc;
 
   @property({
-    type: 'string',
+    type: 'object',
   })
-  userdoc?: string;
+  userdoc?: Userdoc;
 
   @property({
     type: 'string',
@@ -56,11 +60,8 @@ export class PipeContainer extends Entity {
   })
   uri?: string;
 
-  @property({
-    type: 'array',
-    itemType: 'string',
-  })
-  functions?: string[];
+  @hasMany(() => PipeFunction, {keyTo: 'containerid'})
+  functions?: PipeFunction[];
 
   @property({
     type: 'array',
