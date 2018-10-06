@@ -46,11 +46,6 @@ export default {
       const schema = JSON.parse(response.data.json);
       const schema_orig = JSON.parse(response.data.json);
       const post_api = response.data.uri;
-      schema.groups[0].fields.forEach((item) => {
-        if (item.label == 'tags') {
-          item.values = [{ name: 'aa' }, { name: 'bb' }];
-        }
-      });
       schema.groups[0].fields.push({
         type: 'submit',
         label: '',
@@ -61,6 +56,26 @@ export default {
           if (schema_orig.groups[0].fields.find(item => item.label == 'timestamp')) {
             data.timestamp = new Date();
           }
+
+          schema_orig.groups[0].fields.filter(item => item.type == "vueMultiSelect" && item.selectValues).forEach(item => {
+            if (data[item.label]) {
+                data[item.label] = data[item.label].map(elem => elem[item.selectValues.value]);
+            }
+          });
+
+          schema_orig.groups[0].fields.filter(item => item.inputType == "object").forEach(item => {
+            if (data[item.label]) {
+                try {
+                    data[item.label] = JSON.parse(data[item.label]);
+                }
+                catch(error) {
+                  console.error(error);
+                  alert(`Field ${item.label}: ${error}`);
+                  return;
+                }
+            }
+          });
+
           console.log('data', data);
           Vue.axios({
             method: 'post',
@@ -75,7 +90,15 @@ export default {
           });
         },
       });
-      this.schema = schema;
+      schema.groups[0].fields.forEach((item) => {
+        if (item.type == "vueMultiSelect" && item.selectValues && item.selectValues.uri) {
+            Vue.axios.get(Pipeos.pipeserver.ip + item.selectValues.uri).then((tagresponse) => {
+                // console.log('tagresponse', tagresponse.data);
+                item.values = tagresponse.data;
+                this.schema = schema;
+            });
+        }
+      });
     });
   },
 };
