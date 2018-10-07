@@ -45,31 +45,49 @@ export class PipeContainerFunctionController {
   async createFunctions(
     @requestBody() pipeContainer: PipeContainer,
 ): Promise<PipeContainer> {
-    let abi: AbiFunction[], devdoc: Devdoc, userdoc: Userdoc;
-    let emptydoc = {methods: {}};
     let newContainer = await this.pipeContainerRepository.create(pipeContainer);
-
-    abi = pipeContainer.abi || [];
-    devdoc = pipeContainer.devdoc || emptydoc;
-    userdoc = pipeContainer.userdoc || emptydoc;
-
-    for (let i=0; i < abi.length; i++) {
-        let funcabi: AbiFunction = abi[i];
-        let signature, functiondoc;
-
-        signature = funcabi.inputs.map((input: AbiFunctionInput) => input.type).join(',');
-        signature = `${funcabi.name}(${signature})`;
-        functiondoc = {
-            signature,
-            abiObj: funcabi,
-            devdoc: devdoc.methods[signature],
-            userdoc: userdoc.methods[signature],
-            uri: pipeContainer.uri,
-            tags: pipeContainer.tags,
-            timestamp: pipeContainer.timestamp,
-        }
-        await this.pipeContainerRepository.functions(newContainer._id).create(functiondoc);
-    };
+    this.createFunctionsFromContainer(newContainer).catch(e => {
+        console.log('createFunctionsFromContainer', e);
+        this.pipeContainerRepository.deleteById(newContainer._id);
+    });
     return newContainer;
+  }
+
+  async createFunctionsFromContainer(pipeContainer: PipeContainer) {
+      let abi: AbiFunction[], devdoc: Devdoc, userdoc: Userdoc;
+      let emptydoc = {methods: {}};
+
+      abi = pipeContainer.abi || [];
+      devdoc = pipeContainer.devdoc || emptydoc;
+      userdoc = pipeContainer.userdoc || emptydoc;
+      let functions = [];
+
+      for (let i=0; i < abi.length; i++) {
+          let funcabi: AbiFunction = abi[i];
+          let signature, functiondoc;
+
+          signature = funcabi.inputs.map((input: AbiFunctionInput) => input.type).join(',');
+          signature = `${funcabi.name}(${signature})`;
+          functiondoc = {
+              signature,
+              abiObj: funcabi,
+              devdoc: devdoc.methods[signature],
+              userdoc: userdoc.methods[signature],
+              uri: pipeContainer.uri,
+              tags: pipeContainer.tags,
+              timestamp: pipeContainer.timestamp,
+          }
+          let pipefunction = await this.pipeContainerRepository.functions(pipeContainer._id).create(functiondoc);
+          functions.push(pipefunction);
+
+          // Remove inserted functions if anything goes wrong
+          if (!this.pipeContainerRepository.functions(pipeContainer._id).find({where: {_id: pipefunction._id}})) {
+              functions.forEach(inserted => {
+                this.pipeContainerRepository.functions(pipeContainer._id).delete({where: {_id: inserted._id}});
+              })
+              throw new Error(`Function ${functiondoc.abiObj}was not created.`)
+          };
+      };
+      return;
   }
 }
