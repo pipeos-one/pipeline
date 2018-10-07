@@ -47,19 +47,19 @@
     "src"
   ],
   "dependencies": {
-    "@loopback/boot": "^0.14.4",
-    "@loopback/context": "^0.13.0",
-    "@loopback/core": "^0.11.15",
+    "@loopback/boot": "^0.14.6",
+    "@loopback/context": "^0.13.1",
+    "@loopback/core": "^0.11.16",
     "@loopback/dist-util": "^0.3.7",
-    "@loopback/openapi-v3": "^0.15.3",
-    "@loopback/repository": "^0.20.0",
-    "@loopback/rest": "^0.25.3",
-    "@loopback/service-proxy": "^0.8.9",
+    "@loopback/openapi-v3": "^0.15.5",
+    "@loopback/repository": "^0.21.1",
+    "@loopback/rest": "^0.25.5",
+    "@loopback/service-proxy": "^0.8.10",
     "loopback-connector-mongodb": "^3.8.0"
   },
   "devDependencies": {
-    "@loopback/build": "^0.7.5",
-    "@loopback/testlab": "^0.15.0",
+    "@loopback/build": "^0.7.6",
+    "@loopback/testlab": "^0.15.1",
     "@types/node": "^10.11.2"
   }
 }

@@ -1,4 +1,5 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, belongsTo} from '@loopback/repository';
+import {PipeContainer} from './pipe-container.model';
 import {AbiFunction} from '../interfaces/abi';
 import {DocMethod} from '../interfaces/soldocs';
 
@@ -11,10 +12,11 @@ export class PipeFunction extends Entity {
   })
   _id: string;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
+  // @property({
+  //   type: 'string',
+  //   required: true,
+  // })
+  @belongsTo(() => PipeContainer, {keyTo: '_id'})
   containerid: string;
 
   @property({
