@@ -1,3 +1,4 @@
+var solc = require('solc');
 import {
   Count,
   CountSchema,
@@ -89,5 +90,63 @@ export class PipeContainerFunctionController {
           };
       };
       return;
+  }
+
+  @get('/pipecontainer/{id}/compile', {
+    responses: {
+      '200': {
+        description: 'PipeContainer model instance',
+        content: {'application/json': {'x-ts-type': PipeContainer}},
+      },
+    },
+  })
+  async compileSolidityContainer(@param.path.string('id') id: string): Promise<PipeContainer> {
+    const pipeContainer =  await this.pipeContainerRepository.findById(id);
+
+    // Do not compile and update the container if we already have the abi & docs
+    if (pipeContainer.abi && pipeContainer.devdoc && pipeContainer.userdoc) {
+        return pipeContainer;
+    }
+
+    let compiled = this.compile(pipeContainer.solsource);
+
+    console.log('compiled', compiled);
+
+    if (!compiled.contracts[`:${pipeContainer.name}`]) {
+        throw new Error('Contract name is incorrect, retrieving info from compiled data failed.');
+    }
+
+    compiled = compiled.contracts[`:${pipeContainer.name}`];
+    let metadata = JSON.parse(compiled.metadata);
+
+    let updateData: any = {};
+    updateData.devdoc = metadata.output.devdoc;
+    updateData.userdoc = metadata.output.userdoc;
+
+    if (!pipeContainer.abi) {
+        updateData.abi = JSON.parse(compiled.interface);
+        updateData.bytecode = compiled.bytecode;
+    }
+
+    await this.pipeContainerRepository.updateById(pipeContainer._id, updateData);
+    const updatedContainer = await this.pipeContainerRepository.findById(pipeContainer._id, updateData);
+
+    if (updateData.abi) {
+        console.log('createFunctionsFromContainer');
+        this.createFunctionsFromContainer(updatedContainer).catch(e => {
+            console.log('createFunctionsFromContainer', e);
+            this.pipeContainerRepository.deleteById(updatedContainer._id);
+        });
+    }
+    return updatedContainer;
+  }
+
+  compile(source: string): any {
+    const compiled = solc.compile(source, 0);
+    console.log('compiled', compiled);
+    if (!compiled) {
+        throw new Error('Compilation failed.');
+    }
+    return compiled;
   }
 }

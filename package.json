@@ -55,7 +55,8 @@
     "@loopback/repository": "^0.21.1",
     "@loopback/rest": "^0.25.5",
     "@loopback/service-proxy": "^0.8.10",
-    "loopback-connector-mongodb": "^3.8.0"
+    "loopback-connector-mongodb": "^3.8.0",
+    "solc": "^0.4.25"
   },
   "devDependencies": {
     "@loopback/build": "^0.7.6",
