@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <div id="nav">
+      <router-link to="/pipe">Pipe</router-link>
       <router-link to="/forms">Forms</router-link>
     </div>
     <router-view/>
