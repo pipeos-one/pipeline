@@ -6,20 +6,18 @@
         {{ item.abiObj }}
       </li>
     </ul>
-
-    <Pagination
-        :pages="pages"
-        :currentPage="currentPage"
-        v-on:change-page="changePage"
-        v-on:next-page="nextPage"
-        v-on:prev-page="prevPage"
-    />
+    <div class="text-xs-center">
+        <v-pagination
+          :length="pages"
+          :value="currentPage"
+          v-on:input="changePage"
+        ></v-pagination>
+    </div>
   </div>
 </template>
 <script>
 import Vue from 'vue';
 import Pipeos from '../namespace/namespace';
-import Pagination from './Pagination';
 
 const pipeserverApi = `${Pipeos.pipeserver.ip}/pipefunction`;
 let filterOptions = {
@@ -33,11 +31,8 @@ let filterWhere = {};
 
 export default {
   props: ['tags'],
-  components: {
-    Pagination,
-  },
   data() {
-    return {items: [], pages: [1], currentPage: 1, filterOptions};
+    return {items: [], pages: 1, currentPage: 1, filterOptions};
   },
   created() {
     this.countPipeFunctions();
@@ -56,38 +51,16 @@ export default {
         this.filterOptions.skip = this.filterOptions.limit * (page - 1);
         this.setCurrentPage();
     },
-    nextPage: function() {
-        const skip = this.filterOptions.skip + this.filterOptions.limit;
-        if (this.getCurrentPage(skip)) {
-            this.filterOptions.skip = skip;
-            this.setCurrentPage();
-        }
-    },
-    prevPage: function() {
-        const skip = this.filterOptions.skip - this.filterOptions.limit;
-        if (this.getCurrentPage(skip)) {
-            this.filterOptions.skip = skip;
-            this.setCurrentPage();
-        }
-    },
     setCurrentPage: function() {
-        this.currentPage = this.getCurrentPage() || 1;
-        this.getPipeFunctions();
-    },
-    getCurrentPage: function(skip=null, limit=null) {
-        const newPage = (skip || this.filterOptions.skip) / (limit || this.filterOptions.limit) + 1;
-        if (this.pages.find(page => page == newPage)) {
-            return newPage;
-        }
-        else {
-            return 0;
+        const newPage = this.filterOptions.skip / this.filterOptions.limit + 1;
+        if (0 < newPage <= this.pages) {
+            this.currentPage = newPage;
+            this.getPipeFunctions();
         }
     },
     countPipeFunctions: function() {
         Vue.axios.get(pipeserverApi + '/count').then((response) => {
-          let count = Math.ceil(response.data.count / filterOptions.limit);
-          this.pages = [...Array(count + 1).keys()];
-          this.pages.shift();
+          this.pages = Math.ceil(response.data.count / filterOptions.limit);
         });
     },
     getPipeFunctions: function() {
@@ -139,27 +112,5 @@ li {
   content: '⚬ ';
   font-weight: bold;
   color: slategray;
-}
-
-.paginate-links.items {
-  user-select: none;
-}
-
-.paginate-links.items>li.active a {
-  font-weight: bold;
-}
-.paginate-links.items>li.next:before {
-  content: ' | ';
-  margin-right: 13px;
-  color: #ddd;
-}
-.paginate-links.items>li.disabled a {
-  color: #ccc;
-  cursor: no-drop;
-}
-
-a {
-  color: #42b983;
-  cursor: pointer;
 }
 </style>
