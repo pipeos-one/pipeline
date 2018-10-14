@@ -1,11 +1,26 @@
 <template>
   <div class="pipefunctions">
    </br>
-    <ul class="paginate-list">
-      <li v-for="item in items">
-        {{ item.abiObj }}
-      </li>
-    </ul>
+    <v-list two-line>
+      <template v-for="(item, index) in items">
+        <v-subheader
+          :key="item.abiObj.name"
+        >
+          <v-btn small color="#EEEEEE">abi</v-btn>
+          <v-btn
+            small
+            color="warning"
+            v-on:click="$emit('function-toggle', item)"
+          >pipe</v-btn>
+          ContainerName - {{ item.abiObj.name }}
+        </v-subheader>
+
+        <v-divider
+          :inset="true"
+          :key="index"
+        ></v-divider>
+      </template>
+    </v-list>
     <div class="text-xs-center">
         <v-pagination
           :length="pages"
@@ -26,8 +41,6 @@ let filterOptions = {
     skip: 0,
 };
 let filterWhere = {};
-
-// filter[offset]=0&filter[limit]=10&filter[skip]=0&filter[where][tags][%in]=[%22market%22]
 
 export default {
   props: ['tags'],
@@ -59,7 +72,13 @@ export default {
         }
     },
     countPipeFunctions: function() {
-        Vue.axios.get(pipeserverApi + '/count').then((response) => {
+        console.log('count', this.tags);
+        const query = '?' + this.tags.map(tag => `where[tags][inq]=${tag}`).join('&');
+        if (this.tags.length > 0) {
+            query += '&where[tags][inq]=';
+        }
+        console.log('count', pipeserverApi + '/count' + query)
+        Vue.axios.get(pipeserverApi + '/count' + query).then((response) => {
           this.pages = Math.ceil(response.data.count / filterOptions.limit);
         });
     },
@@ -77,7 +96,7 @@ export default {
         Vue.axios.get(pipeserverApi + query).then((response) => {
           this.items = response.data;
         });
-    }
+    },
   }
 };
 </script>

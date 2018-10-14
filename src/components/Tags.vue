@@ -1,8 +1,12 @@
 <template>
   <div class="tags">
-      <div v-for="tag in tags">
-        <button v-on:click="$emit('tag-toggle', tag.name)">{{ tag.name }}</button>
-      </div>
+      <v-btn
+        small
+        color="#EEEEEE"
+        v-for="tag in tags"
+        v-on:click="$emit('tag-toggle', tag.name)"
+      >{{ tag.name }}
+      </v-btn>
   </div>
 </template>
 
