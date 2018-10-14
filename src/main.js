@@ -7,9 +7,14 @@ import 'roboto-fontface/css/roboto/roboto-fontface.css';
 import 'material-design-icons-iconfont/dist/material-design-icons.css';
 import 'vue-form-generator/dist/vfg-core.css';
 
+import Vuetify from 'vuetify';
+import 'vuetify/dist/vuetify.min.css';
+
 import App from './App.vue';
 import './registerServiceWorker';
 import router from './router';
+
+Vue.use(Vuetify);
 
 Vue.config.productionTip = false;
 
