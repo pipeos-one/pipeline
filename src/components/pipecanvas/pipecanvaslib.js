@@ -1,8 +1,12 @@
 import SVG from 'svg.js';
 import 'svg.draggable.js';
-import './svg.foreignobject.js';
-import R from 'ramda';
-console.log(R)
+import './svg.foreignobject';
+
+//  import R from 'ramda';
+
+const R = require('ramda');
+
+console.log(R);
 
 import {contracts, functions, graphh} from './graphs.js';
 
