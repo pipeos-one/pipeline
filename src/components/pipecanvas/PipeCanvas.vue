@@ -5,34 +5,64 @@
 <script>
 import loadAll from './pipecanvaslib.js';
 
-// const graph = {
-//     "_id": "5bae6999e4a589fae995349",
-//     "n": [
-//         {
-//             "i": 2003,
-//             "id": "5bba0aed32268e682b134b04"
-//         },
-//         {
-//             "i": 2006,
-//             "id": "5bba0aed32268e682b134b04"
-//         },
-//         {
-//             "i": 2008,
-//             "id": "5bba0aa845adbae4ce4c1171"
-//         },
-//         {
-//             "i": 2011,
-//             "id": "5bba0aa845adbae4ce4c116f"
-//         }
-//     ],
-//     "e": [
-//         [ 2006,1,2003,1],
-//         [2006,1,2003,3],
-//         [2011, 1, 2006,1 ]
-//
-//     ]
-//
-// }
+const ports = [
+    {
+      "_id": "5bb70817738d090ce531e760",
+      "containerid": "5bb54c23cbd77bc8f07afce3",
+      "abiObj":
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "PortIn",
+        "outputs":
+        [
+          {
+            "name": "out",
+            "type": "*"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "port"
+      },
+      "signature": "PortIn()",
+      "timestamp":
+      {
+        "$date":
+        {
+          "$numberLong": "1538919105913"
+        }
+      }
+    },
+    {
+      "_id": "5bb70817738d090ce531e761",
+      "containerid": "5bb54c23cbd77bc8f07afce3",
+      "abiObj":
+      {
+        "constant": true,
+        "inputs":
+        [
+          {
+            "name": "in",
+            "type": "*"
+          }
+        ],
+        "name": "PortOut",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "port"
+      },
+      "signature": "PortOut(*)",
+      "timestamp":
+      {
+        "$date":
+        {
+          "$numberLong": "1538919105913"
+        }
+      }
+  }
+]
 const graph = {"n": [], "e": []}
 
 export default {
@@ -59,6 +89,7 @@ export default {
                     id: item._id,
                 }
             });
+            graph.n = graph.n.concat(ports);
             if (this.containers.length > 0 && this.items.length > 0) {
                 loadAll('draw', this.containers, this.items, graph);
             }

@@ -34,7 +34,6 @@ const loadAll = function loadAll(domid, contracts, functions, graph) {
     pipe2.contracts = contracts
     pipe2.functions = functions
     pipe2.graph = graph
-    console.log('dddd', JSON.stringify(graph))
 
     draw = SVG(domid)
     edges = draw.group()
