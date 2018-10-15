@@ -12,9 +12,9 @@
                     </div>
                 </swiper-slide>
 
-                <swiper-slide>
+                <swiper-slide class="canvas-slide">
                     <!-- <PipeTree :items="selectedFunctions"/> -->
-                    <PipeCanvas :items="selectedFunctions"/>
+                    <PipeCanvas :items="selectedFunctions" :containers="selectedContainers"/>
                 </swiper-slide>
 
                 <swiper-slide>I'm Slide 3</swiper-slide>
@@ -48,6 +48,13 @@ Vue.use(VueAwesomeSwiper);
 
 const get_api = Pipeos.pipeserver.ip + Pipeos.pipeserver.jsonapi;
 
+const containerApi = `${Pipeos.pipeserver.ip}/pipecontainer`;
+let filterOptions = {
+    offset: 0,
+    limit: 10,
+    skip: 0,
+};
+
 export default {
   components: {
     Tags,
@@ -60,7 +67,12 @@ export default {
         selectedTags: [],
         selectedFunctions: [],
         swiperOptions: {},
+        selectedContainers: [],
+        filterOptions,
     };
+  },
+  mounted() {
+    this.getPipeContainers();
   },
   methods: {
     onTagToggle: function (tagName) {
@@ -73,6 +85,7 @@ export default {
         this.selectedTags.push(tagName);
       }
       console.log('this.selectedTags', this.selectedTags);
+      this.getPipeContainers();
   },
     onFunctionToggle: function (pipefunction) {
         let index = this.selectedFunctions.findIndex(func => func._id == pipefunction._id);
@@ -83,7 +96,23 @@ export default {
           this.selectedFunctions.push(pipefunction);
         }
         console.log('this.selectedFunctions', this.selectedFunctions);
-    }
+    },
+    getPipeContainers: function() {
+        let query = '?' + Object.keys(this.filterOptions).map(
+            key => `filter[${key}]=${this.filterOptions[key]}`
+        ).concat(
+            this.selectedTags.map(tag => `filter[where][tags][inq]=${tag}`)
+        ).join('&');
+
+        if (this.selectedTags.length > 0) {
+            query += '&filter[where][tags][inq]=';
+        }
+
+        Vue.axios.get(containerApi + query).then((response) => {
+          this.selectedContainers = response.data;
+          console.log('selectedContainers', this.selectedContainers);
+        });
+    },
   }
 };
 </script>

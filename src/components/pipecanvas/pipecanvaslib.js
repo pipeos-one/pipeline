@@ -1,16 +1,12 @@
+const R = require('ramda');
+
 import SVG from 'svg.js';
 import 'svg.draggable.js';
 import './svg.foreignobject';
+import dagre from 'dagre';
+import $ from 'jquery';
 
-//  import R from 'ramda';
-
-const R = require('ramda');
-
-console.log(R);
-
-import {contracts, functions, graphh} from './graphs.js';
-
-const loadAll = function loadAll() {
+// import {contracts, functions, graphh} from './graphs.js';
 
 var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 var ARGUMENT_NAMES = /([^\s,]+)/g;
@@ -27,25 +23,28 @@ var pipe2={};
 var funcs, gra, gre;
 var graph = {nodes:{}, edges:{}}, temp={}, onPort = false, portIn={};
 
-draw = SVG("draw")
-var edges = draw.group()
-var g= new dagre.graphlib.Graph();
-
-g.setGraph({rankdir:"TB", align:"UL"});
-// edgesep: xr, nodesep:xr, ranksep:xr,
-g.setDefaultEdgeLabel(function() { return {}; });
+var draw;
+var edges;
+var g;
 var graphn
 var xr =32
 var startDrop, endDrop
 
+const loadAll = function loadAll(domid, contracts, functions, graph) {
+    pipe2.contracts = contracts
+    pipe2.functions = functions
+    pipe2.graph = graph
+    console.log('dddd', JSON.stringify(graph))
 
-pipe2.contracts = contracts
-pipe2.functions = functions
-pipe2.graph = graphh
-proc1();
+    draw = SVG(domid)
+    edges = draw.group()
+    g = new dagre.graphlib.Graph();
+
+    g.setGraph({rankdir:"TB", align:"UL"});
+    // edgesep: xr, nodesep:xr, ranksep:xr,
+    g.setDefaultEdgeLabel(function() { return {}; });
+    proc1();
 }
-
-export {loadAll};
 
 function find2(idVal, obj3){
     //console.log(obj3)
@@ -109,7 +108,6 @@ function proc1(){
     //let obj1 =  findById("5bb54c23cbd77bc8f07afced",pipe2.contracts)
     gr = R.clone(pipe2.graph.n)
     gre = R.clone(pipe2.graph.e)
-    console.clear()
 
     R.map(function(x){
         x.links = {in:{}, out:{}}
@@ -320,8 +318,8 @@ function proc_d(grf, tabl, row, known){
 function proc_e(gr){
     //graph.nodes = pipe2.graph.n
     graph.nodes = gr
-    console.log(gr)
-    console.log(gre)
+    // console.log(gr)
+    // console.log(gre)
 
 
     R.mapObjIndexed(function(x, key, all){
@@ -372,7 +370,6 @@ function proc4(gr){
     //console.log(gr)
     let inc = 3000
     R.map(function(x){
-        //console.log(x)
         R.mapObjIndexed(function(x1, key, all){
             //console.log(x1)
             //console.log(x.links.in[key], key)
@@ -399,7 +396,7 @@ function proc4(gr){
                 inc++
 
                 //t ={i: inc, func: {abiObj: {inputs:[{ name: "in", type:x2.type}],outputs:[], name:"PortOut"}, container:{name:"PipeOS"}}, links:{in:{0:x.i},out:{}}}
-                t = {i: inc, id: "5bb70817738d090ce531e761", links:{in:{0:x.i},out:{}}}
+                let t = {i: inc, id: "5bb70817738d090ce531e761", links:{in:{0:x.i},out:{}}}
                 gr[inc] = t
                 //console.log(pipe2.graph.e)
                 let int = {}
@@ -674,3 +671,5 @@ class FuncBox{
         }, n.links.in)
     }
 }
+
+export default loadAll;

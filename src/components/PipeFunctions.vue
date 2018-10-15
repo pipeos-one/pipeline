@@ -40,7 +40,6 @@ let filterOptions = {
     limit: 10,
     skip: 0,
 };
-let filterWhere = {};
 
 export default {
   props: ['tags'],
