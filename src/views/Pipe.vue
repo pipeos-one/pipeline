@@ -40,7 +40,7 @@ import Pipeos from '../namespace/namespace';
 import Tags from '../components/Tags';
 import PipeFunctions from '../components/PipeFunctions';
 import PipeTree from '../components/PipeTree';
-import PipeCanvas from '../components/PipeCanvas';
+import PipeCanvas from '../components/pipecanvas/PipeCanvas';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
 

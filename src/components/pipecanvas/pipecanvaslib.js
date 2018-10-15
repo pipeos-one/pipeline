@@ -1,168 +1,12 @@
-<html lang="en">
-<head>
-  <meta charset="utf-8">
+import SVG from 'svg.js';
+import 'svg.draggable.js';
+import './svg.foreignobject.js';
+import R from 'ramda';
+console.log(R)
 
-  <title>Pipeline</title>
-  <meta name="description" content="The HTML5 Herald">
-  <script src="lib/svg.js"></script>
+import {contracts, functions, graphh} from './graphs.js';
 
-  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-
-  
-  
-  <script src="lib/svg.foreignobject.js"></script>
-  <script src="lib/svg.draggable.js"></script>
-  <script src="lib/dagre.js"></script>
-
-
-
-  
-
-
-
-
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-  <script src="lib/ramda.js"></script>
-
-  <style>
-      html,body,#draw,#four, #three, .example-2 {
-          width: 100%;
-          height: 100%;
-          margin: 0px;
-          padding: 0px;
-          font-family: sans-serif;
-      }
-
-      #help, #help2 {
-          display: none;
-          position: absolute;
-          top: 20%;
-          margin: 20%;
-      }
-
-       .split {
-    -webkit-box-sizing: border-box;
-       -moz-box-sizing: border-box;
-            box-sizing: border-box;
-    overflow-y: auto;
-    overflow-x: hidden;
-  }
-  .gutter {
-    background-color: #eee;
-    background-repeat: no-repeat;
-    background-position: 50%;
-  }
-  .gutter.gutter-horizontal {
-    background-image: url('grips/vertical.png');
-    cursor: ew-resize;
-  }
-  .gutter.gutter-vertical {
-    background-image: url('grips/horizontal.png');
-    cursor: ns-resize;
-  }
-  .split.split-horizontal, .gutter.gutter-horizontal {
-    height: 100%;
-    float: left;
-  }
-
-
-  .s_content {
-        color: #111;
-        font-family: "Roboto Condensed", sans-serif;
-        
-
-        font-size: 10px;
-        /*position: relative; */
-
-        display: -webkit-box;
-/*display: -ms-flexbox;
-display: flex;*/
-/* overflow: hidden; */
--webkit-box-align: center;
--ms-flex-align: center;
-align-items: center;
--webkit-box-pack: center;
--ms-flex-pack: center;
-justify-content: center;
-/*margin: 12px 1px;*/
-height: 32;
-/* calc(100% - 24px); */
-        
-    }
-
-    .centred {
-        /* position: absolute; */
-
-
-        display: block;
-
-padding-left: 4px;
-
-font-family: "Roboto Condensed", sans-serif;
-/*color: #a7a7a7;*/
-white-space: pre;
-overflow: hidden;
-text-overflow: ellipsis;
-cursor: default;
-        
-  
-    }
-
-
-html, body, .swiper-container {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        font-family: sans-serif;
-    }
-.swiper-container {
-    width: 100%;
-
-}
-
-.swiper-slide {
-    width: 85%;
-}
-.swiper-slide:nth-child(2n+1) {
-    width: 15%;
-}
-  
-  
-  </style>
-
-</head>
-
-<body onload="">
-
-
-    <!-- init() Slider main container
-     <div class="swiper-slide">
-                <div id="browse"></div>
-
-            </div>
-    
-    -->
-<div >
-
-                    <div id="draw"></div>
-
-        </div>
-
-
-
-
-
-            
-
-
-<script>
-
-
-
-
-
-
+const loadAll = function loadAll() {
 
 var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 var ARGUMENT_NAMES = /([^\s,]+)/g;
@@ -174,29 +18,30 @@ function getParamNames(func) {
   return result;
 }
 
-var pipe2={}
+var pipe2={};
+
+var funcs, gra, gre;
+var graph = {nodes:{}, edges:{}}, temp={}, onPort = false, portIn={};
+
 draw = SVG("draw")
-var edges = draw.group(), funcs, gra, gre
-graph = {nodes:{}, edges:{}}, temp={}, onPort = false, portIn={}
+var edges = draw.group()
 var g= new dagre.graphlib.Graph();
+
 g.setGraph({rankdir:"TB", align:"UL"});
-// edgesep: xr, nodesep:xr, ranksep:xr, 
+// edgesep: xr, nodesep:xr, ranksep:xr,
 g.setDefaultEdgeLabel(function() { return {}; });
 var graphn
 var xr =32
 var startDrop, endDrop
 
-//menu()
 
-
-function load(file, key, cb){
-    $.getJSON(file, {},
-        function (data, textStatus, jqXHR) {
-            pipe2[key] = data
-            if (cb) cb()
-        }
-    );
+pipe2.contracts = contracts
+pipe2.functions = functions
+pipe2.graph = graphh
+proc1();
 }
+
+export {loadAll};
 
 function find2(idVal, obj3){
     //console.log(obj3)
@@ -245,7 +90,7 @@ function getPort(funcObj, io, ndx){
     }
 
 
-    // funcObj.links[io][ndx-1] && 
+    // funcObj.links[io][ndx-1] &&
     if (funcObj.func.abiObj.type != "port"){
         return {x: ((ndx)*xr - 0.5*xr), y: y}
     }
@@ -256,12 +101,12 @@ function getPort(funcObj, io, ndx){
 }
 
 function proc1(){
-    
+
     //let obj1 =  findById("5bb54c23cbd77bc8f07afced",pipe2.contracts)
     gr = R.clone(pipe2.graph.n)
     gre = R.clone(pipe2.graph.e)
     console.clear()
-    
+
     R.map(function(x){
         x.links = {in:{}, out:{}}
     },gr)
@@ -290,28 +135,28 @@ function proc1(){
         //o2.links.in[x[2]][s] = x[1]
     }, gre)
 
-    
 
-    
+
+
 
 
 
 
     // bring container data inside functions
-    funcs = R.map(function(x){ 
+    funcs = R.map(function(x){
         //console.log(x)
         return R.merge(x,{container: findById(x.containerid,pipe2.contracts)})
-        
+
         },pipe2.functions)
 
     // gr is the nodes + function data
     gr = R.mapObjIndexed(function(x, key, all){
         //console.log(x)
         return R.merge(x,{func: findById(x.id,funcs)})
-        
+
         },gr)  // pipe2.graph.n
 
-    
+
     //return true;
 
     proc4(gr)
@@ -322,12 +167,12 @@ function proc1(){
     gr = R.mapObjIndexed(function(x, key, all){
         //console.log(x)
         return R.merge(x,{func: findById(x.id,funcs)})
-        
-    },gr) 
+
+    },gr)
 
     gra = {}
 
-    
+
     // re-index
     R.mapObjIndexed(function(x, key, all){
         gra[x.i] = x
@@ -337,25 +182,25 @@ function proc1(){
 
     proc2(gra)
 
-    
-
-    
-
-    
 
 
 
 
-    
+
+
+
+
+
+
     //console.log(funcs)
 
-    
-    
-    
+
+
+
 
     let cont = filterWithKeys(
   (key, val) => val.containerid == "5bb54c23cbd77bc8f07afced", funcs)
-    
+
     //console.log(cont)
 
 
@@ -365,7 +210,7 @@ var gra
 
 
 function proc2(gr){
-    
+
     draw.clear()
     edges = draw.group()
 
@@ -374,11 +219,11 @@ function proc2(gr){
     //return true;
     gra={}
 
-    
 
-    
 
-    
+
+
+
 
     //console.log("gr",gr)
 
@@ -386,7 +231,7 @@ function proc2(gr){
     R.mapObjIndexed(function(x, key, all){
         //console.log(x)
         //graph.nodes[x.i] ={ render:new FuncBox( x ), links: { in: R.repeat("", x.func.abiObj.inputs.length), out:R.repeat("", "outputs" in x.func.abiObj? x.func.abiObj.outputs.length: [])}}
-        
+
         x.render = new FuncBox( x )
         gra[x.i] = x
         let outl = 0
@@ -399,12 +244,12 @@ function proc2(gr){
 
     }, gr)
 
-    
+
 
     //console.log("gra",gra)
 
-    
-    
+
+
 
     //return true
 
@@ -419,7 +264,7 @@ function proc2(gr){
     //let pg = clone(gra)
 
     //proc_d(pg, [{}], 0, {})
-    
+
 }
 
 function clone(obj){
@@ -449,7 +294,7 @@ function proc_d(grf, tabl, row, known){
         },x.links.in)
         if (x.func.abiObj.inputs.length==0 || knowIn){
             tabl[row][key]= pointer
-            
+
             gra[key].render.redraw(pointer, (row+1)*xr)
             pointer = pointer + (1+Math.max(x.func.abiObj.inputs.length, x.func.abiObj.outputs.length))*xr
             delete all[key]
@@ -501,7 +346,7 @@ function proc_e(gr){
 }
 
 function proc3(){
-    
+
     // redraw from dagre
     let n = g.nodes()
     R.map(function(x){
@@ -535,7 +380,7 @@ function proc4(gr){
                 /*
 
                 graph.nodes[inc] ={ render:new FuncBox( t ), links: { in: R.repeat("", t.func.abiObj.inputs.length), out:R.repeat("", "outputs" in t.func.abiObj? t.func.abiObj.outputs.length: [])}}
-                
+
 */
                 let int = {}
                 int[inc]=0
@@ -560,7 +405,7 @@ function proc4(gr){
                 //alert(key)
             }
         },x.func.abiObj.outputs)
-        
+
     }, gr)
     //console.log(gr)
 
@@ -582,7 +427,7 @@ class Smooth {
         let dff2 = getPort(point2, "in", diff2)
         this.diff2 = {x:dff2.x, y: dff2.y-6}
         this.dir = 1
-        
+
 
         this.draw()
     }
@@ -612,24 +457,24 @@ class Smooth {
             this.mid = this.element.circle(6).cx(middle.x).cy(middle.y)
             this.element.dblclick(function() {
                 self.remove()
-                
+
             })
         }
-        
 
-        
-        
+
+
+
         //console.log(this)
         this.path.plot([
             [ "M", p1.x, p1.y],
             [ "C", p1.x, p1.y+(shapness*this.dir), p1.x, middle.y, middle.x, middle.y],
             [ "C", p2.x, middle.y, p2.x, p2.y-(shapness*this.dir)-arrow_size, p2.x, p2.y]
-        ]).attr({fill:"none","stroke": "#555", 
+        ]).attr({fill:"none","stroke": "#555",
         "stroke-width": 1,"stroke-linecap":"round", "stroke-linejoin":"round"})
 
         this.mid.cx(middle.x).cy(middle.y)
 
-        
+
     }
 
     redraw( point1, point2){
@@ -664,7 +509,7 @@ class FuncBox{
         this.obj = obj
         this.r = 5
         this.id = obj.i
-        
+
         this.links={out:[],in:[]}
         var self = this
         this.el = draw.group()
@@ -677,7 +522,7 @@ class FuncBox{
 
         let h = xr
         let clas = "s_content"
-        let txt= this.obj.func.container.name +"\n" + this.obj.func.abiObj.name  
+        let txt= this.obj.func.container.name +"\n" + this.obj.func.abiObj.name
         this.el.rect(xr*w, xr).attr({rx: this.r, ry: this.r, fill:"#ddd", "stroke-width":1,"opacity":0.4})
         this.text = this.el.foreignObject(w*xr, h*2)
         let id = this.text.attr("id")
@@ -704,7 +549,7 @@ class FuncBox{
             }
 
             //let point = getPort(self.obj, "in", 1+parseInt(key))
-            
+
             let port = self.el.circle(10).center(point.x, point.y)
             self.el.text(x.name).attr({"text-anchor":"middle", "font-size":8, "font-family": "Roboto"}).move(point.x-8, point.y-12).transform({ rotation: -30 })
             port.mouseover(function(e){
@@ -727,7 +572,7 @@ class FuncBox{
             } else {
                 point = getPort(self.obj,"out", 1+parseInt(key))
             }
-            
+
             //console.log(point)
             let port = self.el.circle(10).center(point.x, point.y)
             port.mouseover(function(e){
@@ -798,7 +643,7 @@ class FuncBox{
         R.map(function(l){
             //console.log(l)
             l.redraw({x: parseInt(matrix[4]), y:parseInt(matrix[5])}, {x:l.point2.x  , y: l.point2.y }   )
-            
+
             //l.redraw({x:l.point1.x, y:l.point1.y},{x: parseInt(matrix[4]), y:parseInt(matrix[5])}    )
 
         }, n.render.links.out)
@@ -815,25 +660,7 @@ class FuncBox{
         this.el.attr({transform: "matrix(1,0,0,1,"+(lx)+","+(ly)+")"})
         let n = this
         let matrix = [0,0,0,0,lx,ly]
-/*
-        for (let i in this.links.out){
-            let l = this.links.out[i]
-            //let l = graph.nodes[id].links.in[i]
-            //console.log(de.movementX)  // de.movementX
-            //l.redraw(l.x1, l.y1, l.init[2] + parseInt(matrix[4]), l.init[3] + parseInt(matrix[5]) )
-            l.redraw({x:matrix[4], y:matrix[5]}, {x:l.point2.x,y: l.point2.y }   )
-            // + parseInt(matrix[4])
-        }
 
-        for (let i in this.links.in){
-            let k = this.links.in[i]
-            //let l = graph.nodes[id].links.in[i]
-            //console.log(de.movementX)  // de.movementX
-            //l.redraw(l.x1, l.y1, l.init[2] + parseInt(matrix[4]), l.init[3] + parseInt(matrix[5]) )
-            k.redraw( {x:k.point1.x,y: k.point1.y}, {x:matrix[4], y:matrix[5]}    )
-        }
-*/
-        //console.log("N",n)
         R.map(function(l){
             l.redraw({x: parseInt(matrix[4]), y:parseInt(matrix[5])}, {x:l.point2.x  , y: l.point2.y }   )
         }, n.links.out)
@@ -843,31 +670,3 @@ class FuncBox{
         }, n.links.in)
     }
 }
-
-
-
-
-
-load("json/containers.json", "contracts", function(){
-    load("json/functions.json", "functions", function(){
-        load("json/graph.json", "graph", proc1)
-    })
-})
-//load("json/functions.json", "functions")
-//load("json/graph.json", "graph", proc1)
-
-
-//console.log(d)
-/*
-R.pipe(
-  cssQuery('.tui-tree-text'),
-  R.forEach(setStyle({ color:'red' })),
-)(document)
-*/
-//menu()
-
-//proc()
-</script>
-  
-</body>
-</html>
