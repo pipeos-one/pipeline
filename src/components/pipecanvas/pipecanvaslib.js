@@ -23,6 +23,51 @@ var pipe2={};
 var funcs, gra, gre;
 var graph = {nodes:{}, edges:{}}, temp={}, onPort = false, portIn={};
 
+const ports = [
+    {
+      "_id": "5bc59e192817116e84bdd830",
+      "containerid": "5bc59d5d2817116e84bdd82e",
+      "container": {name: "PipeOS"},
+      "abiObj": {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "in",
+            "type": "*"
+          }
+        ],
+        "name": "PortOut",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "port"
+      },
+      "signature": "PortOut(*)",
+      "timestamp": "2018-10-16T08:10:33.614Z"
+    },
+    {
+      "_id": "5bc59e192817116e84bdd831",
+      "containerid": "5bc59d5d2817116e84bdd82e",
+      "container": {name: "PipeOS"},
+      "abiObj": {
+        "constant": true,
+        "inputs": [],
+        "name": "PortIn",
+        "outputs": [
+          {
+            "name": "out",
+            "type": "*"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "port"
+      },
+      "signature": "PortIn()",
+      "timestamp": "2018-10-16T08:10:33.614Z"
+    }
+]
+
 var draw;
 var edges;
 var g;
@@ -32,11 +77,17 @@ var startDrop, endDrop
 
 const loadAll = function loadAll(domid, contracts, functions, graph) {
     pipe2.contracts = contracts
-    pipe2.functions = functions
+    pipe2.functions = functions.concat(ports)
     pipe2.graph = graph
+    console.log('pipecanvaslib.pipe2.contracts', pipe2.contracts)
+    console.log('pipecanvaslib.pipe2.functions', pipe2.functions)
+    console.log('pipecanvaslib.pipe2.graph', JSON.stringify(pipe2.graph))
 
-    draw = SVG(domid)
-    edges = draw.group()
+    //return true;
+    if (draw == undefined) {
+        draw = SVG(domid)
+        edges = draw.group()
+    }
     g = new dagre.graphlib.Graph();
 
     g.setGraph({rankdir:"TB", align:"UL"});
@@ -105,6 +156,7 @@ function getPort(funcObj, io, ndx){
 function proc1(){
 
     //let obj1 =  findById("5bb54c23cbd77bc8f07afced",pipe2.contracts)
+    console.log(JSON.stringify(pipe2.graph))
     gr = R.clone(pipe2.graph.n)
     gre = R.clone(pipe2.graph.e)
 
@@ -213,6 +265,7 @@ var gra
 function proc2(gr){
 
     draw.clear()
+    alert("clear")
     edges = draw.group()
 
     //proc4(gr)
@@ -375,7 +428,7 @@ function proc4(gr){
             if (x.links.in[parseInt(key)+1] == undefined){
                 inc++
                 //let t = {i: inc, func: {abiObj: {inputs:[],outputs:[{ name: "out", type:x1.type}], name:"PortIn"}, container:{name:"PipeOS"}}, links:{in:{},out:{0:x.i}}}
-                let t = {i: inc, id: "5bb70817738d090ce531e760", links:{in:{},out:{0:x.i}}}
+                let t = {i: inc, id: "5bc59e192817116e84bdd831", links:{in:{},out:{0:x.i}}}
                 gr[inc] =t
                 /*
 
@@ -395,7 +448,7 @@ function proc4(gr){
                 inc++
 
                 //t ={i: inc, func: {abiObj: {inputs:[{ name: "in", type:x2.type}],outputs:[], name:"PortOut"}, container:{name:"PipeOS"}}, links:{in:{0:x.i},out:{}}}
-                let t = {i: inc, id: "5bb70817738d090ce531e761", links:{in:{0:x.i},out:{}}}
+                let t = {i: inc, id: "5bc59e192817116e84bdd830", links:{in:{0:x.i},out:{}}}
                 gr[inc] = t
                 //console.log(pipe2.graph.e)
                 let int = {}
@@ -515,7 +568,7 @@ class FuncBox{
         this.el = draw.group()
         this.el.attr("id", obj.i)
         this.note = this.el.text("")
-        //console.log(this.obj)
+        console.log(this.obj)
         let i = "inputs" in this.obj.func.abiObj? this.obj.func.abiObj.inputs.length: 0
         let o = "outputs" in this.obj.func.abiObj? this.obj.func.abiObj.outputs.length: 0
         let w = Math.max(i , o)

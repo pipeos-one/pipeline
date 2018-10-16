@@ -12,7 +12,7 @@
                     </div>
                 </swiper-slide>
 
-                <swiper-slide class="canvas-slide">
+                <swiper-slide class="canvas-slide  no-swipe">
                     <!-- <PipeTree :items="selectedFunctions"/> -->
                     <PipeCanvas :items="selectedFunctions" :containers="selectedContainers"/>
                 </swiper-slide>
@@ -66,7 +66,8 @@ export default {
     return {
         selectedTags: [],
         selectedFunctions: [],
-        swiperOptions: {},
+        swiperOptions: {noSwiping: true,
+        noSwipingClass: "no-swipe"},
         selectedContainers: [],
         filterOptions,
     };
@@ -88,6 +89,9 @@ export default {
       this.getPipeContainers();
   },
     onFunctionToggle: function (pipefunction) {
+        //console.log(loadAll)
+        //console.log(pipe2)
+        
         let index = this.selectedFunctions.findIndex(func => func._id == pipefunction._id);
         if (index > -1) {
           this.selectedFunctions.splice(index, 1);
@@ -96,6 +100,7 @@ export default {
           this.selectedFunctions.push(pipefunction);
         }
         console.log('this.selectedFunctions', this.selectedFunctions);
+        
     },
     getPipeContainers: function() {
         let query = '?' + Object.keys(this.filterOptions).map(

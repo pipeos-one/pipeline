@@ -7,41 +7,11 @@ import loadAll from './pipecanvaslib.js';
 
 const ports = [
     {
-      "_id": "5bb70817738d090ce531e760",
-      "containerid": "5bb54c23cbd77bc8f07afce3",
-      "abiObj":
-      {
+      "_id": "5bc59e192817116e84bdd830",
+      "containerid": "5bc59e192817116e84bdd82f",
+      "abiObj": {
         "constant": true,
-        "inputs": [],
-        "name": "PortIn",
-        "outputs":
-        [
-          {
-            "name": "out",
-            "type": "*"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "port"
-      },
-      "signature": "PortIn()",
-      "timestamp":
-      {
-        "$date":
-        {
-          "$numberLong": "1538919105913"
-        }
-      }
-    },
-    {
-      "_id": "5bb70817738d090ce531e761",
-      "containerid": "5bb54c23cbd77bc8f07afce3",
-      "abiObj":
-      {
-        "constant": true,
-        "inputs":
-        [
+        "inputs": [
           {
             "name": "in",
             "type": "*"
@@ -54,16 +24,80 @@ const ports = [
         "type": "port"
       },
       "signature": "PortOut(*)",
-      "timestamp":
+      "timestamp": "2018-10-16T08:10:33.614Z"
+    },
+    {
+      "_id": "5bc59e192817116e84bdd831",
+      "containerid": "5bc59e192817116e84bdd82f",
+      "abiObj": {
+        "constant": true,
+        "inputs": [],
+        "name": "PortIn",
+        "outputs": [
+          {
+            "name": "out",
+            "type": "*"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "port"
+      },
+      "signature": "PortIn()",
+      "timestamp": "2018-10-16T08:10:33.614Z"
+    }
+]
+
+const containers = [
+    {
+    "_id": "5bc59e192817116e84bdd82f",
+    "name": "PipeOS",
+    "abi": [
       {
-        "$date":
-        {
-          "$numberLong": "1538919105913"
-        }
+        "constant": true,
+        "inputs": [
+          {
+            "name": "in",
+            "type": "*"
+          }
+        ],
+        "name": "PortOut",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "port"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "PortIn",
+        "outputs": [
+          {
+            "name": "out",
+            "type": "*"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "port"
       }
+    ],
+    "devdoc": {
+      "methods": {},
+      "title": "PipeOS Utils."
+    },
+    "userdoc": {
+      "methods": {}
+    },
+    "bytecode": "",
+    "solsource": " ",
+    "jssource": "",
+    "timestamp": "2018-10-16T08:10:33.614Z"
   }
 ]
 const graph = {"n": [], "e": []}
+
+
 
 export default {
     props: ['items', 'containers'],
@@ -74,11 +108,14 @@ export default {
     },
     mounted: function () {
         if (this.containers.length > 0 && this.items.length > 0) {
+            this.items = this.items.concat(ports)
+            this.containers = this.containers.concat(containers)
             loadAll('draw', this.containers, this.items, graph);
         }
     },
     watch: {
         items: function() {
+            console.log('watch PipeCanvas')
             console.log('containers', this.containers.length, this.containers)
             console.log('items', this.items.length, this.items)
             let ids = []
@@ -89,7 +126,8 @@ export default {
                     id: item._id,
                 }
             });
-            graph.n = graph.n.concat(ports);
+            //graph.n = graph.n.concat(ports);
+            
             if (this.containers.length > 0 && this.items.length > 0) {
                 loadAll('draw', this.containers, this.items, graph);
             }
