@@ -68,6 +68,10 @@ const ports = [
     }
 ]
 
+const containers = [
+    {"_id":"5bc59d5d2817116e84bdd82e","name":"PipeOS","abi":[{"constant":true,"inputs":[{"name":"in","type":"*"}],"name":"PortOut","outputs":[],"payable":false,"stateMutability":"view","type":"port"},{"constant":true,"inputs":[],"name":"PortIn","outputs":[{"name":"out","type":"*"}],"payable":false,"stateMutability":"view","type":"port"}],"devdoc":{"methods":{},"title":"PipeOS Utils."},"userdoc":{"methods":{}},"bytecode":"","solsource":" ","jssource":"","timestamp":"2018-10-16T08:10:33.614Z"}
+]
+
 var draw;
 var edges;
 var g;
@@ -76,7 +80,7 @@ var xr =32
 var startDrop, endDrop
 
 const loadAll = function loadAll(domid, contracts, functions, graph) {
-    pipe2.contracts = contracts
+    pipe2.contracts = contracts.concat(containers)
     pipe2.functions = functions.concat(ports)
     pipe2.graph = graph
     console.log('pipecanvaslib.pipe2.contracts', pipe2.contracts)
@@ -265,7 +269,6 @@ var gra
 function proc2(gr){
 
     draw.clear()
-    alert("clear")
     edges = draw.group()
 
     //proc4(gr)
