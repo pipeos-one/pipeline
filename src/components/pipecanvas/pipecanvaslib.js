@@ -1,20 +1,22 @@
-const R = require('ramda');
-
 import SVG from 'svg.js';
 import 'svg.draggable.js';
 import './svg.foreignobject';
 import dagre from 'dagre';
 import $ from 'jquery';
 
+const R = require('ramda');
+
 // import {contracts, functions, graphh} from './graphs.js';
 
-var STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-var ARGUMENT_NAMES = /([^\s,]+)/g;
+const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
+const ARGUMENT_NAMES = /([^\s,]+)/g;
 function getParamNames(func) {
-  var fnStr = func.toString().replace(STRIP_COMMENTS, '');
-  var result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
-  if(result === null)
-     result = [];
+  const fnStr = func.toString().replace(STRIP_COMMENTS, '');
+  let result = fnStr.slice(fnStr.indexOf('(')+1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
+  if (result === null) {
+    result = [];
+  }
+
   return result;
 }
 
@@ -100,7 +102,7 @@ const loadAll = function loadAll(domid, contracts, functions, graph) {
     proc1();
 }
 
-function find2(idVal, obj3){
+function find2(idVal, obj3) {
     //console.log(obj3)
     if (obj3 && "_id" in obj3 && obj3._id == idVal) return obj3;
     return false
@@ -135,24 +137,32 @@ const filterWithKeys = (pred, obj) => R.pipe(
 
 var gr
 
-function getPort(funcObj, io, ndx){
-    //console.log(funcObj, io, ndx)
+function menu() {
+    let m =draw.group()
+    let c = m.circle(10).center(0,0)
+    m.click(function(e){
+        return proc1()
+    })
+}
+
+function getPort(funcObj, io, ndx) {
+    // console.log(funcObj, io, ndx)
     let y = 0
     if (io == "out") {
-        y = xr
+    y = xr
     }
     if (ndx == 0 && funcObj.func.abiObj.type != "port") {
-        if (io == "out") return {x: -10, y: 15}
-        return {x: -10, y: xr-15}
+    if (io == "out") return {x: -10, y: 15}
+    return {x: -10, y: xr-15}
     }
 
 
     // funcObj.links[io][ndx-1] &&
     if (funcObj.func.abiObj.type != "port"){
-        return {x: ((ndx)*xr - 0.5*xr), y: y}
+    return {x: ((ndx)*xr - 0.5*xr), y: y}
     }
     if ((ndx) in funcObj.links[io]) {
-        return {x: ((ndx)*xr + 0.5*xr), y: y}
+    return {x: ((ndx)*xr + 0.5*xr), y: y}
     }
 
 }
@@ -270,6 +280,7 @@ function proc2(gr){
 
     draw.clear()
     edges = draw.group()
+    menu()
 
     //proc4(gr)
     //console.log(gr)
@@ -316,11 +327,13 @@ function proc2(gr){
 
     dagre.layout(g);
     //return true
-    proc3()
 
-    //let pg = clone(gra)
+    // redraw from dagre
+    //proc3()
 
-    //proc_d(pg, [{}], 0, {})
+    let pg = clone(gra)
+
+    proc_d(pg, [{}], 0, {}, {})
 
 }
 
@@ -332,39 +345,50 @@ function clone(obj){
     return out
 }
 
-function proc_d(grf, tabl, row, known){
-    console.log("proc_d",grf);
+var incre = 1
+
+function proc_d(grf, tabl, row, known, next){
+    console.log("proc_d",grf, Object.keys(grf).length);
     let pointer = xr
-    if (grf.length == 0) return
+    if (Object.keys(grf).length == 0) return
+    let next1 = {}
+    incre ++
 
     R.mapObjIndexed(function(x, key, all){
         console.log(x)
-        known[key] = true
+        known[key] = next[key]? next[key]: true
         let knowIn = true
         R.mapObjIndexed(function(x1, key1, all1){
-            console.log(x1,key1)
-            if (known[x1] == undefined || known[x1] == false) {
+            
+            let n1 = Object.keys(x1)[0]
+            console.log(n1 ,key1, all1)
+            if ((known[n1] == undefined || known[n1] == false) && parseInt(key1) >0 || x.func.abiObj.type == "port") {
                 knowIn = false;
-                known[x1] = false
+                //known[x1] = false
+                known[key] = false
                 //alert(x1,known[key1])
             }
         },x.links.in)
-        if (x.func.abiObj.inputs.length==0 || knowIn){
+        if (x.func.abiObj.inputs.length==0 || ( knowIn && x.func.abiObj.outputs.length!=0) || ( known[key] && x.func.abiObj.outputs.length==0)){
+            R.mapObjIndexed(function(x2, key2, all2){
+                next1[key2] = true
+            }, x.links.out)
             tabl[row][key]= pointer
 
             gra[key].render.redraw(pointer, (row+1)*xr)
             pointer = pointer + (1+Math.max(x.func.abiObj.inputs.length, x.func.abiObj.outputs.length))*xr
+            //all.splice(key,1)
             delete all[key]
 
         }
     }, grf)
 
-    console.log(tabl,known,grf)
+    console.log(tabl,known,grf,next1)
+    console.log("proc_d2",grf);
 
-    //proc_d(grf, tabl, row+1, known)
+    if (incre < 4) proc_d(grf, tabl, row+1, known, next1)
 
 
-    console.log(tabl,known)
 
 
 
@@ -428,7 +452,7 @@ function proc4(gr){
         R.mapObjIndexed(function(x1, key, all){
             //console.log(x1)
             //console.log(x.links.in[key], key)
-            if (x.links.in[parseInt(key)+1] == undefined){
+            if (x.links.in[parseInt(key)+0] == undefined){
                 inc++
                 //let t = {i: inc, func: {abiObj: {inputs:[],outputs:[{ name: "out", type:x1.type}], name:"PortIn"}, container:{name:"PipeOS"}}, links:{in:{},out:{0:x.i}}}
                 let t = {i: inc, id: "5bc59e192817116e84bdd831", links:{in:{},out:{0:x.i}}}
@@ -441,13 +465,13 @@ function proc4(gr){
                 let int = {}
                 int[inc]=0
                 x.links.in[key] =int
-                gre.push([inc,0,x.i,parseInt(key)+1])
+                gre.push([inc,0,x.i,parseInt(key)+0])
                 //alert(key)
             }
         },x.func.abiObj.inputs)
 
         R.mapObjIndexed(function(x2, key, all){
-            if (x.links.out[parseInt(key)+1] == undefined){
+            if (x.links.out[parseInt(key)+0] == undefined){
                 inc++
 
                 //t ={i: inc, func: {abiObj: {inputs:[{ name: "in", type:x2.type}],outputs:[], name:"PortOut"}, container:{name:"PipeOS"}}, links:{in:{0:x.i},out:{}}}
@@ -457,7 +481,7 @@ function proc4(gr){
                 let int = {}
                 int[inc]=0
                 x.links.out[key] =int
-                gre.push([x.i,parseInt(key)+1, inc,0])
+                gre.push([x.i,parseInt(key)+0, inc,0])
                 //alert(key)
             }
         },x.func.abiObj.outputs)
@@ -544,13 +568,20 @@ class Smooth {
         this.element.remove()
         console.log(pipe2.graph.e)
         console.log([this.id1, this.port1, this.id2, this.port2])
-        let ndx =pipe2.graph.e.indexOf([this.id1, this.port1, this.id2, this.port2])
-        console.log(ndx)
-        if (ndx > -1) {
-            pipe2.graph.e.splice(ndx, 1);
-        }
+        let self = this
+        R.mapObjIndexed(function(x, key, all) {
+            console.log(self.id1, self.port1, self.id2, self.port2, key)
+            if (x[0] == self.id1 && x[1] == self.port1 && x[2] == self.id2 && x[3]== self.port2) {
+                //delete pipe2.graph.e[parseInt(key)]
+                alert("he")
+                pipe2.graph.e.splice(parseInt(key), 1);
+
+            }
+            // pipe2.graph.e.splice(ndx, 1);
+        },pipe2.graph.e)
+
         console.log(pipe2.graph.e)
-        proc2()
+        return proc1()
     }
 }
 
@@ -590,6 +621,19 @@ class FuncBox{
 
         this.el.dblclick(function() {
             self.el.remove()
+            R.mapObjIndexed(function(x, key, all) {
+                if (x.i == self.obj.i) delete pipe2.graph.n[key]
+            },pipe2.graph.n)
+
+            R.mapObjIndexed(function(x, key, all) {
+                if (x[0] == self.obj.i || x[2] == self.obj.i) delete pipe2.graph.e[parseInt(key)]
+            },pipe2.graph.e)
+
+            return proc1()
+
+
+
+
         })
 
         this.el.draggable()
@@ -645,7 +689,9 @@ class FuncBox{
                 //e.stopPropagation()
                 // no other events are bound
                 let p = e.detail.event
-                this.obj = draw.circle(12).center(p.layerX,p.layerY).back()
+                console.log(p,p.offsetX,p.offsetY,draw)
+                
+                this.obj = draw.circle(12).center(p.offsetX,p.offsetY).back()
                 // drag was completely prevented
             })
             port.on("dragend", function(e){
@@ -659,7 +705,7 @@ class FuncBox{
                     console.log(edge)
                     pipe2.graph.e.push(edge)
                     console.log(pipe2.graph.e)
-                    proc1()
+                    return proc1()
                 }
             })
 
@@ -667,7 +713,7 @@ class FuncBox{
                 e.preventDefault()
                 e.stopPropagation()
                 let p = e.detail.event
-                this.obj.center(p.layerX,p.layerY)
+                this.obj.center(p.offsetX,p.offsetY)
             })
         }, this.obj.func.abiObj.outputs)
 
