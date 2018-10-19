@@ -46,7 +46,6 @@ export class PipeContainer extends Entity {
 
   @property({
     type: 'string',
-    required: true,
   })
   solsource: string;
 

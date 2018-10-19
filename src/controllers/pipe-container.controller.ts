@@ -95,6 +95,19 @@ export class PipeContainerController {
     return await this.pipeContainerRepository.findById(id);
   }
 
+  @get('/pipecontainer/{id}/js', {
+    responses: {
+      '200': {
+        description: 'PipeContainer JS script',
+        content: {'application/javascript': {'x-ts-type': PipeContainer}},
+      },
+    },
+  })
+  async getJSById(@param.path.string('id') id: string): Promise<string> {
+    const container = await this.pipeContainerRepository.findById(id);
+    return container.jssource || '';
+  }
+
   @patch('/pipecontainer/{id}', {
     responses: {
       '204': {
