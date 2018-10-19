@@ -70,6 +70,7 @@ export default {
         noSwipingClass: "no-swipe"},
         selectedContainers: [],
         filterOptions,
+        pipeJs: {},
     };
   },
   mounted() {
@@ -89,9 +90,6 @@ export default {
       this.getPipeContainers();
   },
     onFunctionToggle: function (pipefunction) {
-        //console.log(loadAll)
-        //console.log(pipe2)
-        
         let index = this.selectedFunctions.findIndex(func => func._id == pipefunction._id);
         if (index > -1) {
           this.selectedFunctions.splice(index, 1);

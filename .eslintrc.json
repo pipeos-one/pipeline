@@ -4,6 +4,8 @@
         "plugin:vue/essential"
     ],
     "rules": {
-        "indent": ["error", 4]
+        "indent": ["error", 4],
+        "object-curly-spacing": ["error", "never"],
+        "object-curly-newline": ["error", { "multiline": true }]
     }
 }
