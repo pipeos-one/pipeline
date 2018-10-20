@@ -4,16 +4,23 @@
                 <swiper-slide>
                     <div class="pipe swiper-margin">
                         <Tags v-on:tag-toggle="onTagToggle"/>
-                        <PipeFunctions
+                        <PaginatedList
+                            :items="taggedFunctions"
+                            :pages="pages"
+                            :currentPage="currentPage"
                             v-bind:tags="selectedTags"
                             v-on:function-toggle="onFunctionToggle"
+                            v-on:change-page="changePage"
                         />
                         </br>
                     </div>
                 </swiper-slide>
 
+                <swiper-slide>
+                    <PipeTree :items="selectedFunctions"/>
+                </swiper-slide>
+
                 <swiper-slide class="canvas-slide  no-swipe">
-                    <!-- <PipeTree :items="selectedFunctions"/> -->
                     <PipeCanvas :items="selectedFunctions" :containers="selectedContainers"/>
                 </swiper-slide>
 
@@ -38,7 +45,7 @@
 import Vue from 'vue';
 import Pipeos from '../namespace/namespace';
 import Tags from '../components/Tags';
-import PipeFunctions from '../components/PipeFunctions';
+import PaginatedList from '../components/PaginatedList';
 import PipeTree from '../components/PipeTree';
 import PipeCanvas from '../components/pipecanvas/PipeCanvas';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
@@ -47,6 +54,7 @@ import 'swiper/dist/css/swiper.css';
 Vue.use(VueAwesomeSwiper);
 
 const get_api = Pipeos.pipeserver.ip + Pipeos.pipeserver.jsonapi;
+const functionsAPI = `${Pipeos.pipeserver.ip}/pipefunction`;
 
 const containerApi = `${Pipeos.pipeserver.ip}/pipecontainer`;
 let filterOptions = {
@@ -58,13 +66,16 @@ let filterOptions = {
 export default {
   components: {
     Tags,
-    PipeFunctions,
-    // PipeTree,
+    PaginatedList,
+    PipeTree,
     PipeCanvas,
   },
   data() {
     return {
         selectedTags: [],
+        pages: 1,
+        currentPage: 1,
+        taggedFunctions: [],
         selectedFunctions: [],
         swiperOptions: {noSwiping: true,
         noSwipingClass: "no-swipe"},
@@ -74,7 +85,9 @@ export default {
     };
   },
   mounted() {
-    this.getPipeContainers();
+    this.setPipeFunctions();
+    this.countPipeFunctions();
+    this.setPipeContainers();
   },
   methods: {
     onTagToggle: function (tagName) {
@@ -87,8 +100,16 @@ export default {
         this.selectedTags.push(tagName);
       }
       console.log('this.selectedTags', this.selectedTags);
-      this.getPipeContainers();
-  },
+      this.setPipeContainers();
+    },
+    changePage: function(page) {
+        this.filterOptions.skip = this.filterOptions.limit * (page - 1);
+        const newPage = this.filterOptions.skip / this.filterOptions.limit + 1;
+        if (0 < newPage <= this.pages) {
+            this.currentPage = newPage;
+        }
+        this.setPipeFunctions();
+    },
     onFunctionToggle: function (pipefunction) {
         let index = this.selectedFunctions.findIndex(func => func._id == pipefunction._id);
         if (index > -1) {
@@ -98,9 +119,46 @@ export default {
           this.selectedFunctions.push(pipefunction);
         }
         console.log('this.selectedFunctions', this.selectedFunctions);
-        
+        this.loadPipeJs(pipefunction);
     },
-    getPipeContainers: function() {
+    loadPipeJs: function(pipefunction) {
+        const containerid = pipefunction.containerid;
+        const script_api = `${containerApi}/${containerid}/js`;
+        let script = document.createElement('script')
+        script.src = script_api;
+        script.async = true
+        script.onload = () => {
+            this.pipeJs[`${containerid}_${pipefunction.name}`] = window[pipefunction.name];
+        }
+        document.head.appendChild(script);
+    },
+    countPipeFunctions: function() {
+        console.log('count', this.selectedTags);
+        const query = '?' + this.selectedTags.map(tag => `where[tags][inq]=${tag}`).join('&');
+        if (this.selectedTags.length > 0) {
+            query += '&where[tags][inq]=';
+        }
+        console.log('count', functionsAPI + '/count' + query)
+        Vue.axios.get(functionsAPI + '/count' + query).then((response) => {
+          this.pages = Math.ceil(response.data.count / filterOptions.limit);
+        });
+    },
+    setPipeFunctions: function() {
+        let query = '?' + Object.keys(this.filterOptions)
+            .map(key => `filter[${key}]=${this.filterOptions[key]}`)
+            .concat(
+                this.selectedTags.map(tag => `filter[where][tags][inq]=${tag}`)
+            )
+            .join('&');
+        if (this.selectedTags.length > 0) {
+            query += '&filter[where][tags][inq]=';
+        }
+
+        Vue.axios.get(functionsAPI + query).then((response) => {
+          this.taggedFunctions = response.data;
+        });
+    },
+    setPipeContainers: function() {
         let query = '?' + Object.keys(this.filterOptions).map(
             key => `filter[${key}]=${this.filterOptions[key]}`
         ).concat(
@@ -113,7 +171,7 @@ export default {
 
         Vue.axios.get(containerApi + query).then((response) => {
           this.selectedContainers = response.data;
-          console.log('selectedContainers', this.selectedContainers);
+          console.log('sselectedContainers', this.selectedContainers);
         });
     },
   }
@@ -123,5 +181,12 @@ export default {
 <style>
 .swiper-margin {
     margin: 40px;
+}
+.swiper-slide {
+    width: 75%;
+}
+.swiper-slide:nth-child(2n), .swiper-slide:nth-child(4n) {
+    width: 25%;
+    overflow-y: scroll;
 }
 </style>
