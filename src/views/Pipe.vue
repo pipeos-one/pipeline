@@ -92,15 +92,22 @@ export default {
   methods: {
     onTagToggle: function (tagName) {
       console.log('onTagToggle', tagName);
-      let index = this.selectedTags.findIndex(tag => tag == tagName);
-      if (index > -1) {
-        this.selectedTags.splice(index, 1);
-      }
-      else {
-        this.selectedTags.push(tagName);
+      // let index = this.selectedTags.findIndex(tag => tag == tagName);
+      // if (index > -1) {
+      //   this.selectedTags.splice(index, 1);
+      // }
+      // else {
+      //   this.selectedTags.push(tagName);
+      // }
+      if (tagName === 'all') {
+        this.selectedTags = [];
+      } else {
+          this.selectedTags = [tagName];
       }
       console.log('this.selectedTags', this.selectedTags);
+      this.countPipeFunctions();
       this.setPipeContainers();
+      this.setPipeFunctions();
     },
     changePage: function(page) {
         this.filterOptions.skip = this.filterOptions.limit * (page - 1);
@@ -134,7 +141,7 @@ export default {
     },
     countPipeFunctions: function() {
         console.log('count', this.selectedTags);
-        const query = '?' + this.selectedTags.map(tag => `where[tags][inq]=${tag}`).join('&');
+        let query = '?' + this.selectedTags.map(tag => `where[tags][inq]=${tag}`).join('&');
         if (this.selectedTags.length > 0) {
             query += '&where[tags][inq]=';
         }

@@ -23,7 +23,7 @@ export default {
     created() {
         Vue.axios.get(pipeserverApi).then((response) => {
           console.log('response', response.data);
-          this.tags = response.data;
+          this.tags = [{name: 'all'}].concat(response.data);
         });
     }
 }
