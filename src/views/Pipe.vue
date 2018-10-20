@@ -85,11 +85,14 @@ export default {
     };
   },
   mounted() {
-    this.setPipeFunctions();
-    this.countPipeFunctions();
-    this.setPipeContainers();
+    this.loadData();
   },
   methods: {
+    loadData: function() {
+        this.setPipeContainers();
+        this.countPipeFunctions();
+        this.setPipeFunctions();
+    },
     onTagToggle: function (tagName) {
       console.log('onTagToggle', tagName);
       // let index = this.selectedTags.findIndex(tag => tag == tagName);
@@ -105,9 +108,7 @@ export default {
           this.selectedTags = [tagName];
       }
       console.log('this.selectedTags', this.selectedTags);
-      this.countPipeFunctions();
-      this.setPipeContainers();
-      this.setPipeFunctions();
+      this.loadData();
     },
     changePage: function(page) {
         this.filterOptions.skip = this.filterOptions.limit * (page - 1);
@@ -163,6 +164,7 @@ export default {
 
         Vue.axios.get(functionsAPI + query).then((response) => {
           this.taggedFunctions = response.data;
+          this.linkContainersFunctions();
         });
     },
     setPipeContainers: function() {
@@ -177,10 +179,24 @@ export default {
         }
 
         Vue.axios.get(containerApi + query).then((response) => {
-          this.selectedContainers = response.data;
-          console.log('sselectedContainers', this.selectedContainers);
+            this.selectedContainers = response.data;
+            this.linkContainersFunctions();
+            console.log('sselectedContainers', this.selectedContainers);
         });
     },
+    linkContainersFunctions: function() {
+        this.taggedFunctions = this.taggedFunctions.map(func => {
+            let index = this.selectedContainers.findIndex(cont => cont._id === func.containerid);
+            if (index >= 0) {
+                func.container = this.selectedContainers[index];
+                if (!this.selectedContainers[index].functions) {
+                    this.selectedContainers[index].functions = [];
+                }
+                this.selectedContainers[index].functions.push(func);
+            }
+            return func;
+        });
+    }
   }
 };
 </script>

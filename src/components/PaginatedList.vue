@@ -12,7 +12,7 @@
             color="warning"
             v-on:click="$emit('function-toggle', item)"
           >pipe</v-btn>
-          ContainerName - {{ item.abiObj.name }}
+          {{ item.container ? item.container.name : '' }} - {{ item.abiObj ? item.abiObj.name : '' }}
         </v-subheader>
 
         <v-divider
