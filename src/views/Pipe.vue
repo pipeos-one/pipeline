@@ -9,7 +9,7 @@
                             :pages="pages"
                             :currentPage="currentPage"
                             v-bind:tags="selectedTags"
-                            v-on:function-toggle="onFunctionToggle"
+                            v-on:function-toggle="onTreeFunctionToggle"
                             v-on:change-page="changePage"
                         />
                         </br>
@@ -17,7 +17,7 @@
                 </swiper-slide>
 
                 <swiper-slide>
-                    <PipeTree :items="selectedFunctions"/>
+                    <PipeTree :items="selectedTreeContainers" v-on:item-toggle="onFunctionToggle"/>
                 </swiper-slide>
 
                 <swiper-slide class="canvas-slide  no-swipe">
@@ -76,6 +76,7 @@ export default {
         pages: 1,
         currentPage: 1,
         taggedFunctions: [],
+        selectedTreeContainers: [],
         selectedFunctions: [],
         swiperOptions: {noSwiping: true,
         noSwipingClass: "no-swipe"},
@@ -127,6 +128,12 @@ export default {
           this.selectedFunctions.push(pipefunction);
         }
         console.log('this.selectedFunctions', this.selectedFunctions);
+    },
+    onTreeFunctionToggle: function (pipefunction) {
+        let index = this.selectedTreeContainers.findIndex(container => container._id == pipefunction.container._id);
+        if (index < 0) {
+          this.selectedTreeContainers.push(this.selectedContainers.find(container => container._id == pipefunction.container._id));
+        }
         this.loadPipeJs(pipefunction);
     },
     loadPipeJs: function(pipefunction) {
