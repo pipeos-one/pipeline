@@ -84,7 +84,7 @@ export class PipeContainerFunctionController {
           // Remove inserted functions if anything goes wrong
           if (!this.pipeContainerRepository.functions(pipeContainer._id).find({where: {_id: pipefunction._id}})) {
               functions.forEach(inserted => {
-                this.pipeContainerRepository.functions(pipeContainer._id).delete({where: {_id: inserted._id}});
+                this.pipeContainerRepository.functions(pipeContainer._id).delete({_id: inserted._id});
               })
               throw new Error(`Function ${functiondoc.abiObj}was not created.`)
           };
