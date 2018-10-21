@@ -21,11 +21,4 @@
   text-align: center;
   color: #2c3e50;
 }
-/* .swiper-slide {
-    width: 75%;
-}
-.swiper-slide:nth-child(2n), .swiper-slide:nth-child(4n) {
-    width: 25%;
-    overflow-y: scroll;
-} */
 </style>

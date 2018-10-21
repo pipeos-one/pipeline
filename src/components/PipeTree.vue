@@ -1,23 +1,36 @@
 <template>
     <v-expansion-panel>
     <v-expansion-panel-content
-      v-for="(item,i) in 5"
+      v-for="(item,i) in items"
       :key="i"
     >
-      <div slot="header">Item</div>
-      <!-- <v-card>
-        <v-card-text>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</v-card-text>
-      </v-card> -->
+      <div slot="header">{{item.name}}</div>
+      <v-list two-line>
+        <template v-for="(item, index) in item.functions">
+          <v-subheader
+            :key="item._id"
+          >
+            <v-btn
+                block
+                flat
+                v-on:click="$emit('item-toggle', item)"
+            >
+                {{ item.abiObj ? item.abiObj.name : '' }}
+            </v-btn>
+          </v-subheader>
+
+          <v-divider
+            :inset="true"
+            :key="index"
+          ></v-divider>
+        </template>
+      </v-list>
     </v-expansion-panel-content>
   </v-expansion-panel>
 </template>
 
 <script>
-// export default {
-//     data: function() {
-//         return {
-//
-//         }
-//     }
-// }
+export default {
+    props: ['items']
+}
 </script>

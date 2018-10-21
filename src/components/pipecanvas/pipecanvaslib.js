@@ -252,7 +252,7 @@ function proc2(gr) {
     // proc4(gr)
     // console.log(gr)
     // return true;
-    
+
 
 
     // console.log("gr",gr)
@@ -377,7 +377,16 @@ function proc_d(grf, tabl, row, known, next) {
                 // alert(x1,known[key1])
             }
         }, grf[parseInt(key)].links.in);
-        if (grf[parseInt(key)].func.abiObj.inputs.length == 0 || (knowIn && grf[parseInt(key)].func.abiObj.outputs.length != 0) || (known[parseInt(key)] && grf[parseInt(key)].func.abiObj.outputs.length == 0)) {
+        if (!grf[parseInt(key)].func.abiObj.outputs) {
+            grf[parseInt(key)].func.abiObj.outputs = [];
+        }
+        if (
+            grf[parseInt(key)].func.abiObj.inputs.length == 0 || (
+                knowIn && grf[parseInt(key)].func.abiObj.outputs.length != 0) || (
+                    known[parseInt(key)] &&
+                    grf[parseInt(key)].func.abiObj.outputs.length == 0
+                )
+            ) {
             R.mapObjIndexed((x2, key2, all2) => {
                 // console.log("next", x2, key2, all2)
                 next1[Object.keys(x2)[0]] = true;
@@ -397,7 +406,7 @@ function proc_d(grf, tabl, row, known, next) {
     }, next);
 
     //console.log(tabl, known, grf, Object.assign(next,next1));
-    // console.log('proc_d2', grf); if (incre < 5) 
+    // console.log('proc_d2', grf); if (incre < 5)
 
     proc_d(grf, tabl, row + 1, known, next1);
 }
@@ -556,7 +565,7 @@ class Smooth {
         }, pipe2.graph.e);
 
         // console.log(pipe2.graph.e);
-        
+
     }
 }
 
@@ -666,7 +675,7 @@ class FuncBox {
             if (self.obj.func.abiObj.type === 'port') {
                 point = getPort(self.obj, 'in', parseInt(key));
             } else {
-                
+
             }
 */
             point = getPort(self.obj, 'in', 1 + parseInt(key));
