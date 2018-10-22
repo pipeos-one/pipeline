@@ -20,9 +20,6 @@ import {PipeContainer, PipeFunction} from '../models';
 import {PipeContainerRepository} from '../repositories';
 import {AbiFunctionInput, AbiFunctionOuput, AbiFunction} from '../interfaces/abi';
 import {
-    DocParams,
-    DocMethod,
-    DocMethods,
     Devdoc,
     Userdoc,
 } from '../interfaces/soldocs';

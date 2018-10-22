@@ -55,6 +55,7 @@
     "@loopback/repository": "^1.0.1",
     "@loopback/rest": "^1.0.1",
     "@loopback/service-proxy": "^1.0.0",
+    "@types/swagger-schema-official": "^2.0.12",
     "loopback-connector-mongodb": "^3.8.0",
     "solc": "^0.4.25"
   },

@@ -1,37 +1,38 @@
-interface DocParams {
+export interface DocParams {
     [key: string]: any;
 }
 
-interface DocMethod {
+export interface DevdocMethod {
     params: DocParams;
     return?: string;
+    details?: string;
+}
+
+export interface UserMethod {
+    params?: DocParams;
     notice?: string;
 }
 
-interface DocMethods {
-    [key: string]: DocMethod;
+export interface DevdocMethods {
+    [key: string]: DevdocMethod;
 }
 
-interface Devdoc {
+export interface UserMethods {
+    [key: string]: UserMethod;
+}
+
+export interface Devdoc {
     title?: string;
     author?: string;
     notice?: string;
     dev?: string;
-    methods: DocMethods;
+    methods: DevdocMethods;
 }
 
-interface Userdoc {
+export interface Userdoc {
     title?: string;
     author?: string;
     notice?: string;
     dev?: string;
-    methods: DocMethods;
-}
-
-export {
-    DocParams,
-    DocMethod,
-    DocMethods,
-    Devdoc,
-    Userdoc,
+    methods: UserMethods;
 }

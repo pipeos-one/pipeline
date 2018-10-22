@@ -1,7 +1,7 @@
 import {Entity, model, property, belongsTo} from '@loopback/repository';
 import {PipeContainer} from './pipe-container.model';
 import {AbiFunction} from '../interfaces/abi';
-import {DocMethod} from '../interfaces/soldocs';
+import {DevdocMethod, UserMethod} from '../interfaces/soldocs';
 
 @model()
 export class PipeFunction extends Entity {
@@ -29,12 +29,12 @@ export class PipeFunction extends Entity {
   @property({
     type: 'object',
   })
-  devdoc?: DocMethod;
+  devdoc?: DevdocMethod;
 
   @property({
     type: 'object',
   })
-  userdoc?: DocMethod;
+  userdoc?: UserMethod;
 
   @property({
     type: 'string',

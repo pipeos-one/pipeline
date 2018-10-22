@@ -1,3 +1,4 @@
+import {OpenApiSpec} from '@loopback/openapi-v3-types';
 import {Entity, model, property} from '@loopback/repository';
 
 @model()
@@ -5,15 +6,15 @@ export class Openapi extends Entity {
   @property({
     type: 'string',
     id: true,
-    required: true,
+    generated: true,
   })
   _id: string;
 
   @property({
-    type: 'string',
+    type: 'object',
     required: true,
   })
-  json: string;
+  json: OpenApiSpec;
 
   @property({
     type: 'string',
