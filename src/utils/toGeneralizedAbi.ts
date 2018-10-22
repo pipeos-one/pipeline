@@ -74,9 +74,28 @@ export class OpenapiToGabi {
         }
 
         Object.keys(content.responses).forEach((code: string) => {
+            let type: string = '';
+            if (content.responses[code].schema) {
+                if (content.responses[code].schema.type) {
+                    type = content.responses[code].schema.type;
+                } else if (content.responses[code].schema['$ref']) {
+                    let path: string[] = content.responses[code].schema['$ref']
+                        .split('/')
+                        .slice(1);
+                    let pointer: any = this.openapi;
+
+                    for (let item of path) {
+                        pointer = pointer[item];
+                    }
+                    type = pointer.type;
+                }
+            }
             outputs.push({
-                name: content.responses[code].description,
-                type: content.responses[code].type,
+                name: content.responses[code].description
+                    .split(' ')
+                    .map((word: string) => word[0].toUpperCase() + word.substring(1))
+                    .join(''),
+                type,
             });
         });
 

@@ -1,5 +1,6 @@
 import {OpenApiSpec} from '@loopback/openapi-v3-types';
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasOne} from '@loopback/repository';
+import {PipeContainer} from './pipe-container.model';
 
 @model()
 export class Openapi extends Entity {
@@ -20,6 +21,9 @@ export class Openapi extends Entity {
     type: 'string',
   })
   name?: string;
+
+  @hasOne()
+  containerid: PipeContainer;
 
   constructor(data?: Partial<Openapi>) {
     super(data);

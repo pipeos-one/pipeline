@@ -15,8 +15,11 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
-import {Openapi} from '../models';
+import {Openapi, PipeContainer} from '../models';
 import {OpenapiRepository} from '../repositories';
+import {PipeContainerFunctionController, PipeDeployedController} from '../controllers';
+import {OpenapiToGabi} from '../utils/toGeneralizedAbi';
+
 
 export class OpenapiController {
   constructor(
@@ -33,7 +36,48 @@ export class OpenapiController {
     },
   })
   async create(@requestBody() openapi: Openapi): Promise<Openapi> {
-    return await this.openapiRepository.create(openapi);
+    let pipeContainer: any;
+    let pipeDeployed: any;
+
+    let containerRepository = await this.openapiRepository.container;
+    let containerController = new PipeContainerFunctionController(containerRepository);
+
+    let deployedRepository = await this.openapiRepository.deployed;
+    let deployedController = new PipeDeployedController(deployedRepository);
+
+    let gabi = new OpenapiToGabi(openapi.json);
+    openapi = await this.openapiRepository.create(openapi);
+
+    pipeContainer = {
+        name: gabi.devdoc.title || 'unknown',
+        abi: gabi.gabi,
+        devdoc: gabi.devdoc,
+        userdoc: gabi.userdoc,
+        openapiid: openapi._id,
+        tags: ['openapi'],
+    }
+    pipeContainer = await containerController.createFunctions(pipeContainer);
+    if (!pipeContainer || !pipeContainer._id) {
+        this.openapiRepository.deleteById(openapi._id);
+        throw new Error('PipeContainer was not created.');
+    }
+
+    pipeDeployed = {
+        containerid: pipeContainer._id,
+        deployed: {
+            host: openapi.json.host,
+            basePath: openapi.json.basePath,
+            openapiid: openapi._id,
+        }
+    }
+    pipeDeployed = await deployedController.create(pipeDeployed);
+    if (!pipeDeployed || !pipeDeployed._id) {
+        containerController.deleteContainerFunctions(pipeContainer._id);
+        this.openapiRepository.deleteById(openapi._id);
+        throw new Error('PipeDeployed was not created.');
+    }
+
+    return openapi;
   }
 
   @get('/openapi/count', {

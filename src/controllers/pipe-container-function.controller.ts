@@ -42,11 +42,11 @@ export class PipeContainerFunctionController {
   @post('/pipecontainerfunctions')
   async createFunctions(
     @requestBody() pipeContainer: PipeContainer,
-): Promise<PipeContainer> {
+): Promise<PipeContainer | void> {
     let newContainer = await this.pipeContainerRepository.create(pipeContainer);
     this.createFunctionsFromContainer(newContainer).catch(e => {
         console.log('createFunctionsFromContainer', e);
-        this.pipeContainerRepository.deleteById(newContainer._id);
+        return this.deleteContainerFunctions(newContainer._id);
     });
     return newContainer;
   }
@@ -58,7 +58,6 @@ export class PipeContainerFunctionController {
       abi = pipeContainer.abi || [];
       devdoc = pipeContainer.devdoc || emptydoc;
       userdoc = pipeContainer.userdoc || emptydoc;
-      let functions = [];
 
       for (let i=0; i < abi.length; i++) {
           let funcabi: AbiFunction = abi[i];
@@ -76,13 +75,8 @@ export class PipeContainerFunctionController {
               timestamp: pipeContainer.timestamp,
           }
           let pipefunction = await this.pipeContainerRepository.functions(pipeContainer._id).create(functiondoc);
-          functions.push(pipefunction);
 
-          // Remove inserted functions if anything goes wrong
           if (!this.pipeContainerRepository.functions(pipeContainer._id).find({where: {_id: pipefunction._id}})) {
-              functions.forEach(inserted => {
-                this.pipeContainerRepository.functions(pipeContainer._id).delete({_id: inserted._id});
-              })
               throw new Error(`Function ${functiondoc.abiObj}was not created.`)
           };
       };
@@ -98,6 +92,9 @@ export class PipeContainerFunctionController {
     },
   })
   async compileSolidityContainer(@param.path.string('id') id: string): Promise<PipeContainer> {
+    let compiled: any;
+    let metadata: any;
+    let updateData: any = {};
     const pipeContainer =  await this.pipeContainerRepository.findById(id);
 
     // Do not compile and update the container if we already have the abi & docs
@@ -105,7 +102,11 @@ export class PipeContainerFunctionController {
         return pipeContainer;
     }
 
-    let compiled = this.compile(pipeContainer.solsource);
+    if (!pipeContainer.solsource) {
+        throw new Error('No Solidity source was found and no ABI, devdoc, userdoc.');
+    }
+
+    compiled = this.compile(pipeContainer.solsource);
 
     console.log('compiled', compiled);
 
@@ -114,9 +115,8 @@ export class PipeContainerFunctionController {
     }
 
     compiled = compiled.contracts[`:${pipeContainer.name}`];
-    let metadata = JSON.parse(compiled.metadata);
+    metadata = JSON.parse(compiled.metadata);
 
-    let updateData: any = {};
     updateData.devdoc = metadata.output.devdoc;
     updateData.userdoc = metadata.output.userdoc;
 
@@ -145,5 +145,17 @@ export class PipeContainerFunctionController {
         throw new Error('Compilation failed.');
     }
     return compiled;
+  }
+
+  @del('/pipecontainerfunctions/{id}', {
+    responses: {
+      '204': {
+        description: 'PipeContainer and PipeFunctions DELETE success',
+      },
+    },
+  })
+  async deleteContainerFunctions(@param.path.string('id') id: string): Promise<void> {
+    this.pipeContainerRepository.functions(id).delete({containerid: id});
+    await this.pipeContainerRepository.deleteById(id);
   }
 }
