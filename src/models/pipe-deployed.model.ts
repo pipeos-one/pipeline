@@ -1,4 +1,44 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, Model, model, property} from '@loopback/repository';
+
+@model()
+class Uri extends Model {
+    @property({
+      type: 'string',
+      required: true,
+    })
+    host: string;
+
+    @property({
+      type: 'string',
+      required: true,
+    })
+    basePath: string;
+
+    @property({
+      type: 'string',
+    })
+    openapiid?: string;
+}
+
+@model()
+class EthUri extends Model {
+    @property({
+      type: 'string',
+      required: true,
+    })
+    ethaddress: string;
+
+    @property({
+      type: 'string',
+      required: true,
+    })
+    chainid: string;
+
+    @property({
+      type: 'string',
+    })
+    bytecode?: string;
+}
 
 @model()
 export class PipeDeployed extends Entity {
@@ -16,21 +56,10 @@ export class PipeDeployed extends Entity {
   containerid: string;
 
   @property({
-    type: 'string',
+    type: 'object',
     required: true,
   })
-  ethaddress: string;
-
-  @property({
-    type: 'string',
-    required: true,
-  })
-  chainid: string;
-
-  @property({
-    type: 'string',
-  })
-  bytecode?: string;
+  deployed: Uri | EthUri;
 
   @property({
     type: 'date',

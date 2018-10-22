@@ -47,7 +47,7 @@ export class PipeContainer extends Entity {
   @property({
     type: 'string',
   })
-  solsource: string;
+  solsource?: string;
 
   @property({
     type: 'string',
@@ -61,6 +61,11 @@ export class PipeContainer extends Entity {
 
   @hasMany(() => PipeFunction, {keyTo: 'containerid'})
   functions?: PipeFunction[];
+
+  @property({
+    type: 'string',
+  })
+  openapiid?: string;
 
   @property({
     type: 'array',
