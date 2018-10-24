@@ -1,7 +1,72 @@
-import {Entity, model, property, hasMany} from '@loopback/repository';
+import {Entity, Model, model, property, hasMany} from '@loopback/repository';
 import {PipeFunction} from './pipe-function.model';
 import {AbiFunction} from '../interfaces/abi';
 import {Devdoc, Userdoc} from '../interfaces/soldocs';
+
+@model()
+export class SmartContractContainer extends Model {
+    @property({
+      type: 'array',
+      itemType: 'object',
+    })
+    abi: AbiFunction[];
+
+    @property({
+      type: 'object',
+    })
+    devdoc: Devdoc;
+
+    @property({
+      type: 'object',
+    })
+    userdoc: Userdoc;
+
+    @property({
+      type: 'object',
+    })
+    bytecode: object;
+
+    @property({
+      type: 'object',
+    })
+    deployedBytecode: object;
+
+    @property({
+      type: 'string',
+    })
+    metadata: string;
+
+    @property({
+      type: 'string',
+    })
+    solsource: string;
+
+    @property({
+      type: 'object',
+    })
+    additional_solsources?: object;
+
+    @property({
+      type: 'string',
+    })
+    jssource?: string;
+}
+
+@model()
+export class OpenApiContainer extends Model {
+    @property({
+      type: 'string',
+    })
+    openapiid: string;
+}
+
+@model()
+export class JavscriptContainer extends Model {
+    @property({
+      type: 'string',
+    })
+    jssource: string;
+}
 
 @model()
 export class PipeContainer extends Entity {
@@ -19,40 +84,9 @@ export class PipeContainer extends Entity {
   name: string;
 
   @property({
-    type: 'array',
-    itemType: 'object',
-  })
-  abi?: AbiFunction[];
-
-  @property({
     type: 'object',
   })
-  devdoc?: Devdoc;
-
-  @property({
-    type: 'object',
-  })
-  userdoc?: Userdoc;
-
-  @property({
-    type: 'string',
-  })
-  bytecode?: string;
-
-  @property({
-    type: 'string',
-  })
-  keccak256?: string;
-
-  @property({
-    type: 'string',
-  })
-  solsource?: string;
-
-  @property({
-    type: 'string',
-  })
-  jssource?: string;
+  container: SmartContractContainer | JavscriptContainer | OpenApiContainer;
 
   @property({
     type: 'string',
@@ -63,11 +97,6 @@ export class PipeContainer extends Entity {
   functions?: PipeFunction[];
 
   @property({
-    type: 'string',
-  })
-  openapiid?: string;
-
-  @property({
     type: 'array',
     itemType: 'string',
   })
@@ -75,10 +104,10 @@ export class PipeContainer extends Entity {
 
   @property({
     type: 'date',
-    required: true,
+    generated: true,
     default: new Date(),
   })
-  timestamp: string;
+  timestamp: Date;
 
   constructor(data?: Partial<PipeContainer>) {
     super(data);

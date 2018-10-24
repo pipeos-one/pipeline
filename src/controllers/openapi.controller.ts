@@ -17,7 +17,7 @@ import {
 } from '@loopback/rest';
 import {Openapi, PipeContainer} from '../models';
 import {OpenapiRepository} from '../repositories';
-import {PipeContainerFunctionController, PipeDeployedController} from '../controllers';
+import {PipeContainerController, PipeDeployedController} from '../controllers';
 import {OpenapiToGabi} from '../utils/toGeneralizedAbi';
 
 
@@ -40,7 +40,7 @@ export class OpenapiController {
     let pipeDeployed: any;
 
     let containerRepository = await this.openapiRepository.container;
-    let containerController = new PipeContainerFunctionController(containerRepository);
+    let containerController = new PipeContainerController(containerRepository);
 
     let deployedRepository = await this.openapiRepository.deployed;
     let deployedController = new PipeDeployedController(deployedRepository);

@@ -22,10 +22,10 @@ export class Tag extends Entity {
 
   @property({
     type: 'date',
-    required: true,
+    generated: true,
     default: new Date(),
   })
-  timestamp: string;
+  timestamp: Date;
 
   constructor(data?: Partial<Tag>) {
     super(data);
