@@ -1,3 +1,5 @@
+import {RemixExtension} from '../plugins/remix';
+
 const pipeserverIp = `${process.env.VUE_APP_PIPESERVER_IP}:${process.env.VUE_APP_PIPESERVER_PORT}`;
 
 const Pipeos = {
@@ -10,6 +12,7 @@ const Pipeos = {
             tag: `${pipeserverIp}/tag`,
         },
     },
+    remix: new RemixExtension(),
 };
 
 export default Pipeos;

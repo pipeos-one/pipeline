@@ -6,7 +6,12 @@
         <v-subheader
           :key="item._id"
         >
-          <v-btn small color="#EEEEEE">abi</v-btn>
+          <v-btn
+            v-if="isRemix"
+            v-on:click="$emit('load-remix', item)"
+            small color="#EEEEEE"
+          >To Remix</v-btn>
+          <!-- <v-btn small color="#EEEEEE">abi</v-btn> -->
           <v-btn
             small
             color="warning"

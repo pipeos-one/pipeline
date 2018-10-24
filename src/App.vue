@@ -2,8 +2,8 @@
   <v-app id="app">
     <!-- <v-navigation-drawer app id="nav"></v-navigation-drawer> -->
     <!-- <v-toolbar app></v-toolbar> -->
-    <router-link to="/pipe">Pipe</router-link>
-    <router-link to="/forms">Forms</router-link>
+    <!-- <router-link to="/">Pipe</router-link>
+    <router-link to="/forms">Forms</router-link> -->
     <v-content>
       <!-- <v-container fluid> -->
         <router-view></router-view>
