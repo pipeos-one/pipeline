@@ -63,10 +63,10 @@ export class PipeDeployed extends Entity {
 
   @property({
     type: 'date',
-    required: true,
+    generated: true,
     default: new Date(),
   })
-  timestamp: string;
+  timestamp: Date;
 
   constructor(data?: Partial<PipeDeployed>) {
     super(data);

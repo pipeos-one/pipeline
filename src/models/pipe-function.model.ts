@@ -64,10 +64,10 @@ export class PipeFunction extends Entity {
 
   @property({
     type: 'date',
-    required: true,
+    generated: true,
     default: new Date(),
   })
-  timestamp: string;
+  timestamp: Date;
 
   constructor(data?: Partial<PipeFunction>) {
     super(data);

@@ -25,6 +25,13 @@ export class Openapi extends Entity {
   @hasOne()
   containerid: PipeContainer;
 
+  @property({
+    type: 'date',
+    generated: true,
+    default: new Date(),
+  })
+  timestamp: Date;
+
   constructor(data?: Partial<Openapi>) {
     super(data);
   }
