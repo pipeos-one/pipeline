@@ -13,14 +13,12 @@
 import Vue from 'vue';
 import Pipeos from '../namespace/namespace';
 
-const get_api = Pipeos.pipeserver.ip + Pipeos.pipeserver.jsonapi;
-
 export default {
   data() {
     return { api: '/forms/', items: [] };
   },
   created() {
-    Vue.axios.get(get_api).then((response) => {
+    Vue.axios.get(Pipeos.pipeserver.api.json).then((response) => {
       console.log('response', response.data);
       this.items = response.data;
     });

@@ -14,14 +14,12 @@
 import Vue from 'vue';
 import Pipeos from '../namespace/namespace';
 
-const pipeserverApi = `${Pipeos.pipeserver.ip}/tag`;
-
 export default {
     data() {
         return {tags: []}
     },
     created() {
-        Vue.axios.get(pipeserverApi).then((response) => {
+        Vue.axios.get(Pipeos.pipeserver.api.tag).then((response) => {
           console.log('response', response.data);
           this.tags = [{name: 'all'}].concat(response.data);
         });

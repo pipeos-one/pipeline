@@ -53,10 +53,10 @@ import 'swiper/dist/css/swiper.css';
 
 Vue.use(VueAwesomeSwiper);
 
-const get_api = Pipeos.pipeserver.ip + Pipeos.pipeserver.jsonapi;
-const functionsAPI = `${Pipeos.pipeserver.ip}/pipefunction`;
-
-const containerApi = `${Pipeos.pipeserver.ip}/pipecontainer`;
+const get_api = Pipeos.pipeserver.api.json;
+const functionsAPI = Pipeos.pipeserver.api.function;
+const containerApi = Pipeos.pipeserver.api.container;
+const containerFunctionsApi = Pipeos.pipeserver.api.container + '/pipefunctions';
 let filterOptions = {
     offset: 0,
     limit: 10,

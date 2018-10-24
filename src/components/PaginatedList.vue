@@ -33,20 +33,19 @@
 <script>
 import Vue from 'vue';
 
-
 export default {
-  props: ['items', 'pages', 'currentPage'],
-  created() {
-    this.pages =  this.pages || 1;
-  },
-  methods: {
-    isActive: function(page) {
-        return page == this.currentPage;
+    props: ['items', 'pages', 'currentPage', 'isRemix'],
+    created() {
+        this.pages =  this.pages || 1;
     },
-    changePage: function(page) {
-        this.$emit('change-page', page);
-    },
-  }
+    methods: {
+        isActive: function(page) {
+            return page == this.currentPage;
+        },
+        changePage: function(page) {
+            this.$emit('change-page', page);
+        },
+    }
 };
 </script>
 

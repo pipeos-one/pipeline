@@ -11,7 +11,7 @@ import Vue from 'vue';
 import PipeIO from '../components/abi/PipeIO.vue';
 import Pipeos from '../namespace/namespace';
 
-const api = `${Pipeos.pipeserver.ip}/pipefunction`;
+const api = Pipeos.pipeserver.api.function;
 
 export default {
     components: {PipeIO},
