@@ -223,12 +223,10 @@ export default {
         });
     },
     loadRemix: function(item) {
-        console.log([`browser/Pipeos_${item.container.name}.sol`, item.container.solsource])
-
         Pipeos.remix.call(
             'editor',
             'setFile',
-            [`browser/Pipeos_${item.container.name}.sol`, item.container.solsource],
+            [`browser/Pipeos_${item.container.name}.sol`, item.container.container.solsource],
             function (error, result) { console.log(error, result) }
         );
     },
@@ -257,11 +255,11 @@ export default {
             console.log('saveFromRemix', result)
             let compiled = result[0];
             const target = compiled.source.target;
-            let additional_solsources;
-            if (Object.keys(compiled.source.sources).length > 1) {
-                additional_solsources = Object.assign({}, compiled.source.sources);
-                delete additional_solsources[target];
-            }
+            // let additional_solsources;
+            // if (Object.keys(compiled.source.sources).length > 1) {
+            //     additional_solsources = Object.assign({}, compiled.source.sources);
+            //     delete additional_solsources[target];
+            // }
             Object.entries(compiled.data.contracts[target]).forEach(entry => {
                 console.log(entry);
                 let name = entry[0];
@@ -273,7 +271,7 @@ export default {
                         devdoc: contract.devdoc,
                         userdoc: contract.userdoc,
                         solsource: compiled.source.sources[target].content,
-                        additional_solsources,
+                        // additional_solsources,
                         bytecode: contract.evm.bytecode,
                         deployedBytecode: contract.evm.deployedBytecode,
                         metadata: contract.metadata,
