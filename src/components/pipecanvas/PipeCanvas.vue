@@ -12,19 +12,16 @@ export default {
     data() {
         return {canvasId: 'draw_' + this.index};
     },
-    watch: {
-        items: function(newItems, oldItems) {
-            console.log(newItems, oldItems);
-        }
-    },
     mounted: function () {
-        if (this.items && this.items.length > 0) {
-            console.log('mounted', this.canvasId, this.items, graph)
-            loadAll(this.canvasId, this.items, graph);
-        }
+        this.loadData();
     },
     watch: {
         items: function() {
+            this.loadData();
+        }
+    },
+    methods: {
+        loadData: function() {
             graph.n = this.items.map((item, index) => {
                 return {
                     i: index,
@@ -32,8 +29,8 @@ export default {
                 }
             });
 
-            if (this.items.length > 0) {
-                console.log('watch', this.canvasId, this.items, graph)
+            if (this.items && this.items.length > 0) {
+                console.log('loadAll', this.canvasId, this.items, graph)
                 loadAll(this.canvasId, this.items, graph);
             }
         }

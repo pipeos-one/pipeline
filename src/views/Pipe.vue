@@ -22,7 +22,6 @@
                             v-on:load-remix="loadRemix"
                         />
                         </v-flex>
-                        </br>
                     </v-container>
                     <!-- </div> -->
                 </swiper-slide class="swiper-margin">
@@ -92,6 +91,7 @@ import PipeCanvas from '../components/pipecanvas/PipeCanvas';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
 import {randomId} from '../utils/utils';
+import {selectedFunctionsData} from '../utils/canvasFixtureData';
 
 Vue.use(VueAwesomeSwiper);
 
@@ -120,7 +120,7 @@ export default {
         currentPage: 1,
         taggedFunctions: [],
         selectedTreeContainers: [],
-        selectedFunctions: [[]],
+        selectedFunctions: selectedFunctionsData, // [[]],
         activeCanvas: 0,
         canvases: 1,
         swiperOptions: {noSwiping: true,
