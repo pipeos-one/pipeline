@@ -67,6 +67,7 @@ import PipeTree from '../components/PipeTree';
 import PipeCanvas from '../components/pipecanvas/PipeCanvas';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
+import {randomId} from '../utils/utils';
 
 Vue.use(VueAwesomeSwiper);
 
@@ -113,14 +114,6 @@ export default {
         this.setPipeFunctions();
     },
     onTagToggle: function (tagName) {
-      console.log('onTagToggle', tagName);
-      // let index = this.selectedTags.findIndex(tag => tag == tagName);
-      // if (index > -1) {
-      //   this.selectedTags.splice(index, 1);
-      // }
-      // else {
-      //   this.selectedTags.push(tagName);
-      // }
       if (tagName === 'all') {
         this.selectedTags = [];
       } else {
@@ -136,6 +129,7 @@ export default {
             this.currentPage = newPage;
         }
         this.setPipeFunctions();
+        // this.setPipeContainers();
     },
     onFunctionToggle: function (pipefunction) {
         let index = this.selectedFunctions.findIndex(func => func._id == pipefunction._id);
@@ -150,9 +144,11 @@ export default {
     onTreeFunctionToggle: function (pipefunction) {
         let index = this.selectedTreeContainers.findIndex(container => container._id == pipefunction.container._id);
         if (index < 0) {
-          this.selectedTreeContainers.push(this.selectedContainers.find(container => container._id == pipefunction.container._id));
+            let container = this.selectedContainers.find(container => container._id == pipefunction.container._id);
+            container.functions = this.taggedFunctions.filter(func => func.containerid == container._id);
+            this.selectedTreeContainers.push(container);
         }
-        this.loadPipeJs(pipefunction);
+        // this.loadPipeJs(pipefunction);
     },
     loadPipeJs: function(pipefunction) {
         const containerid = pipefunction.containerid;
@@ -188,8 +184,7 @@ export default {
         }
 
         Vue.axios.get(functionsAPI + query).then((response) => {
-          this.taggedFunctions = response.data;
-          this.linkContainersFunctions();
+          this.linkContainersFunctions(response.data);
         });
     },
     setPipeContainers: function() {
@@ -205,20 +200,12 @@ export default {
 
         Vue.axios.get(containerApi + query).then((response) => {
             this.selectedContainers = response.data;
-            this.linkContainersFunctions();
-            console.log('sselectedContainers', this.selectedContainers);
+            this.linkContainersFunctions(this.taggedFunctions);
         });
     },
-    linkContainersFunctions: function() {
-        this.taggedFunctions = this.taggedFunctions.map(func => {
-            let index = this.selectedContainers.findIndex(cont => cont._id === func.containerid);
-            if (index >= 0) {
-                func.container = this.selectedContainers[index];
-                if (!this.selectedContainers[index].functions) {
-                    this.selectedContainers[index].functions = [];
-                }
-                this.selectedContainers[index].functions.push(func);
-            }
+    linkContainersFunctions: function(pipeFunctions) {
+        this.taggedFunctions = pipeFunctions.map(func => {
+            func.container = Object.assign({}, this.selectedContainers.find(cont => cont._id === func.containerid));
             return func;
         });
     },
@@ -240,57 +227,85 @@ export default {
                 if (error) {
                     throw new Error(error);
                 }
-                callback(result);
+                let compiled = result[0];
+                const target = compiled.source.target;
+                // let additional_solsources;
+                // if (Object.keys(compiled.source.sources).length > 1) {
+                //     additional_solsources = Object.assign({}, compiled.source.sources);
+                //     delete additional_solsources[target];
+                // }
+                Object.entries(compiled.data.contracts[target]).forEach(entry => {
+                    console.log(entry);
+                    let name = entry[0];
+                    let contract = entry[1];
+                    let data = {
+                        name,
+                        container: {
+                            abi: contract.abi,
+                            devdoc: contract.devdoc,
+                            userdoc: contract.userdoc,
+                            solsource: compiled.source.sources[target].content,
+                            // additional_solsources,
+                            bytecode: contract.evm.bytecode,
+                            deployedBytecode: contract.evm.deployedBytecode,
+                            metadata: contract.metadata,
+                        },
+                        tags: [],
+                    };
+
+                    // Remove duplicate abi, devdoc, userdoc
+                    delete data.container.metadata.output;
+                    console.log('data', data);
+                    callback(data);
+                });
             }
         );
     },
     loadFromRemix: function() {
-        this.getDataFromRemix(result => {
-            console.log('loadFromRemix', result)
+        this.getDataFromRemix(container => {
+            container._id = randomId();
+            this.selectedContainers.push(container);
+            container.functions = this.buildFunctionsFromContainer(container);
+            this.selectedTreeContainers.push(container);
+            console.log('selectedContainers', this.selectedContainers);
+            console.log('selectedTreeContainers', this.selectedTreeContainers);
         });
     },
     saveFromRemix: function() {
-        console.log('saveFromRemix')
-        this.getDataFromRemix(result => {
-            console.log('saveFromRemix', result)
-            let compiled = result[0];
-            const target = compiled.source.target;
-            // let additional_solsources;
-            // if (Object.keys(compiled.source.sources).length > 1) {
-            //     additional_solsources = Object.assign({}, compiled.source.sources);
-            //     delete additional_solsources[target];
-            // }
-            Object.entries(compiled.data.contracts[target]).forEach(entry => {
-                console.log(entry);
-                let name = entry[0];
-                let contract = entry[1];
-                let data = {
-                    name,
-                    container: {
-                        abi: contract.abi,
-                        devdoc: contract.devdoc,
-                        userdoc: contract.userdoc,
-                        solsource: compiled.source.sources[target].content,
-                        // additional_solsources,
-                        bytecode: contract.evm.bytecode,
-                        deployedBytecode: contract.evm.deployedBytecode,
-                        metadata: contract.metadata,
-                    },
-                    tags: [],
-                };
-
-                // Remove duplicate abi, devdoc, userdoc
-                delete data.container.metadata.output;
-                console.log('data', data);
-                Vue.axios.post(containerFunctionsApi, data)
-                .then((response) => {
-                    console.log('post', response);
-                    this.loadData();
-                }).catch(function (error) {
-                    console.log(error);
-                });
+        this.getDataFromRemix(data => {
+            Vue.axios.post(containerFunctionsApi, data)
+            .then((response) => {
+                console.log('post', response);
+                this.loadData();
+            }).catch(function (error) {
+                console.log(error);
             });
         });
+    },
+    buildFunctionsFromContainer: function(container) {
+        let abi = container.container.abi;
+        let devdoc = container.container.devdoc;
+        let userdoc = container.container.userdoc;
+        let functions = [];
+
+        abi.forEach(funcabi => {
+            let signature;
+
+            if (funcabi.name) {
+                signature = `${funcabi.name}(${funcabi.inputs.map(input => input.type).join(',')})`;
+
+                functions.push({
+                    signature,
+                    abiObj: funcabi,
+                    devdoc: devdoc.methods[signature],
+                    userdoc: userdoc.methods[signature],
+                    containerid: container._id,
+                    container: Object.assign({}, container),
+                    _id: randomId(),
+                });
+            }
+        });
+        return functions;
     }
   }
 };

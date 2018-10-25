@@ -21,4 +21,28 @@
   text-align: center;
   color: #2c3e50;
 }
+
+.event {
+    background-color: #C9DEBB;
+    border-color: #C9DEBB;
+}
+
+.payable {
+    background-color: #CDE0F2;
+    border-color: #CDE0F2;
+}
+
+.nonconstant {
+    background-color: #E9DEDE;
+    border-color: #E9DEDE;
+}
+
+.jscomponent {
+    background-color: #FEFAC8;
+    border-color: #FEFAC8;
+}
+
+.normaltxt {
+    text-transform: inherit;
+}
 </style>
