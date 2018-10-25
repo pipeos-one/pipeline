@@ -1,7 +1,7 @@
 <template>
     <swiper ref="mySwiper" :options="swiperOptions">
 
-                <swiper-slide class="swiper-margin">
+                <swiper-slide class="swiper-margin no-swipe">
                     <v-btn
                       v-if="isRemix"
                       v-on:click="loadFromRemixWrap"
@@ -64,7 +64,7 @@
                     </template>
                 </swiper-slide>
 
-                <swiper-slide class="swiper-margin">I'm Slide 4</swiper-slide>
+                <swiper-slide class="swiper-margin no-swipe">I'm Slide 4</swiper-slide>
 
                 <!-- <swiper-slide>I'm Slide 4</swiper-slide>
 
@@ -76,8 +76,32 @@
 
         <!-- Optional controls -->
         <div class="swiper-pagination"  slot="pagination"></div>
-        <div class="swiper-button-prev" slot="button-prev"></div>
-        <div class="swiper-button-next" slot="button-next"></div>
+
+        
+        <div slot="button-prev" class="prev">
+        <v-btn
+                absolute
+                small
+                fab
+                top
+                left
+                color="white"
+              class="nav" >
+                <v-icon>chevron_left</v-icon>
+        </v-btn></div>
+        <div slot="button-next"  class="next">
+        <v-btn
+                nav
+                absolute
+                small
+                fab
+                top
+                right
+                color="white"
+                class="nav"
+              >
+                <v-icon>chevron_right</v-icon>
+        </v-btn></div>
     </swiper>
 </template>
 
@@ -124,6 +148,10 @@ export default {
         activeCanvas: 0,
         canvases: 1,
         swiperOptions: {noSwiping: true,
+        navigation: {
+    nextEl: '.next',
+    prevEl: '.prev',
+  },
         noSwipingClass: "no-swipe"},
         selectedContainers: [],
         filterOptions,
@@ -377,5 +405,10 @@ export default {
 }
 .v-tabs__items {
     height: 100%;
+}
+
+.nav{
+    position:fixed!important;
+    top:5px!important;
 }
 </style>
