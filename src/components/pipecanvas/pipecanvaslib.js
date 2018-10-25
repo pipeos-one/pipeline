@@ -85,7 +85,7 @@ const containers = [
     },
 ];
 
-const pipe2 = {};
+let pipe2 = {};
 
 let funcs; let gra = {}; let gre;
 const graph = { nodes: {}, edges: {} };
@@ -96,11 +96,13 @@ let g;
 const xr = 32;
 let startDrop; let endDrop;
 
-const loadAll = function loadAll(domid, contracts, functions, graph) {
-    pipe2.contracts = contracts.concat(containers);
-    pipe2.functions = functions.concat(ports);
+// Expects functions as an array of pipefunction objects, each with a `container` key for the pipecontainer.
+const loadAll = function loadAll(domid, functions, graph) {
+    pipe2.functions = functions.concat(ports.map(port => {
+        port.container = containers[0];
+        return port;
+    }));
     pipe2.graph = graph;
-    // console.log('pipecanvaslib.pipe2.contracts', pipe2.contracts);
     // console.log('pipecanvaslib.pipe2.functions', pipe2.functions);
     // console.log('pipecanvaslib.pipe2.graph', JSON.stringify(pipe2.graph));
 
@@ -170,7 +172,6 @@ function getPort(funcObj, io, ndx) {
 }
 
 function proc1() {
-    // let obj1 =  findById("5bb54c23cbd77bc8f07afced",pipe2.contracts)
     // console.log(JSON.stringify(pipe2.graph));
     gr = R.clone(pipe2.graph.n);
     gre = R.clone(pipe2.graph.e);
@@ -203,8 +204,7 @@ function proc1() {
     }, gre);
 
 
-    // bring container data inside functions
-    funcs = R.map(x => R.merge(x, { container: findById(x.containerid, pipe2.contracts) }), pipe2.functions);
+    funcs = pipe2.functions;
 
     // gr is the nodes + function data
     gr = R.mapObjIndexed((x, key, all) => R.merge(x, { func: findById(x.id, funcs) }), gr); // pipe2.graph.n

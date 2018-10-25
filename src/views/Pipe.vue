@@ -56,7 +56,7 @@
                                 class="fullheight"
                             >
                                 <PipeCanvas
-                                    :items="selectedFunctions[n - 1]" :containers="selectedContainers"
+                                    :items="selectedFunctions[n - 1]"
                                     :index="n"
                                     :key="n"
                                 />

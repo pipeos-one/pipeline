@@ -1,5 +1,5 @@
 <template>
-    <v-expansion-panel>
+    <v-expansion-panel expand>
     <v-expansion-panel-content
       v-for="(item,i) in items"
       :key="i"

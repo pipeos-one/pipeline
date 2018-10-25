@@ -8,7 +8,7 @@ import loadAll from './pipecanvaslib.js';
 const graph = {"n": [], "e": []}
 
 export default {
-    props: ['items', 'containers', 'index'],
+    props: ['items', 'index'],
     data() {
         return {canvasId: 'draw_' + this.index};
     },
@@ -18,10 +18,9 @@ export default {
         }
     },
     mounted: function () {
-        console.log('mounted', this.canvasId, this.containers, this.items, graph)
-        if (this.containers && this.containers.length > 0 && this.items.length > 0) {
-            console.log('mounted2', this.canvasId, this.containers, this.items, graph)
-            loadAll(this.canvasId, this.containers, this.items, graph);
+        if (this.items && this.items.length > 0) {
+            console.log('mounted', this.canvasId, this.items, graph)
+            loadAll(this.canvasId, this.items, graph);
         }
     },
     watch: {
@@ -33,9 +32,9 @@ export default {
                 }
             });
 
-            if (this.containers.length > 0 && this.items.length > 0) {
-                console.log('watch', this.canvasId, this.containers, this.items, graph)
-                loadAll(this.canvasId, this.containers, this.items, graph);
+            if (this.items.length > 0) {
+                console.log('watch', this.canvasId, this.items, graph)
+                loadAll(this.canvasId, this.items, graph);
             }
         }
     }
