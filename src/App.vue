@@ -4,11 +4,11 @@
     <!-- <v-toolbar app></v-toolbar> -->
     <!-- <router-link to="/">Pipe</router-link>
     <router-link to="/forms">Forms</router-link> -->
-    <v-content>
+    <!-- <v-content> -->
       <!-- <v-container fluid> -->
         <router-view></router-view>
       <!-- </v-container> -->
-    </v-content>
+    <!-- </v-content> -->
     <!-- <v-footer app></v-footer> -->
   </v-app>
 </template>

@@ -1,107 +1,80 @@
 <template>
     <swiper ref="mySwiper" :options="swiperOptions">
+        <swiper-slide class="swiper-margin no-swipe">
+            <v-btn
+              v-if="isRemix"
+              v-on:click="loadFromRemixWrap"
+              flat small
+            >Remix <v-icon>play_for_work</v-icon></v-btn>
+                <!-- <Tags v-on:tag-toggle="onTagToggle"/> -->
+                <v-flex xs11>
+                <PaginatedList
+                    :items="taggedFunctions"
+                    :pages="pages"
+                    :currentPage="currentPage"
+                    :isRemix="isRemix"
+                    v-bind:tags="selectedTags"
+                    v-on:function-toggle="onTreeFunctionToggle"
+                    v-on:change-page="changePage"
+                    v-on:load-remix="loadRemix"
+                />
+                </v-flex>
+        </swiper-slide class="swiper-margin">
 
-                <swiper-slide class="swiper-margin no-swipe">
+        <swiper-slide class="swiper-margin no-swipe">
+            <PipeTree :items="selectedTreeContainers" v-on:item-toggle="onFunctionToggle"/>
+        </swiper-slide>
+
+        <swiper-slide class="swiper-margin-slide no-swipe">
+            <template class="fullheight">
+                <v-tabs
+                    fixed-tab
+                    left
+                    v-on:input="setActiveCanvas"
+                    class="fullheight"
+                >
                     <v-btn
-                      v-if="isRemix"
-                      v-on:click="loadFromRemixWrap"
-                      flat small
-                    >Remix <v-icon>play_for_work</v-icon></v-btn>
-                    <!-- <div class="pipe"> -->
-                    <v-container grid-list-md text-xs-center>
-                        <!-- <Tags v-on:tag-toggle="onTagToggle"/> -->
-                        <v-flex xs10>
-                        <PaginatedList
-                            :items="taggedFunctions"
-                            :pages="pages"
-                            :currentPage="currentPage"
-                            :isRemix="isRemix"
-                            v-bind:tags="selectedTags"
-                            v-on:function-toggle="onTreeFunctionToggle"
-                            v-on:change-page="changePage"
-                            v-on:load-remix="loadRemix"
+                      v-on:click="newCanvasFunction"
+                      flat icon
+                    ><v-icon>add</v-icon></v-btn>
+                    <v-tab
+                        v-for="n in canvases"
+                        :key="n"
+                        ripple
+                    >
+                        Function {{ n }}
+                    </v-tab>
+                    <v-tab-item
+                        v-for="n in canvases"
+                        :key="n"
+                        class="fullheight"
+                    >
+                        <PipeCanvas
+                            :items="selectedFunctions[n - 1]"
+                            :index="n"
+                            :key="n"
                         />
-                        </v-flex>
-                    </v-container>
-                    <!-- </div> -->
-                </swiper-slide class="swiper-margin">
+                    </v-tab-item>
+                </v-tabs>
+            </template>
+        </swiper-slide>
 
-                <swiper-slide class="swiper-margin">
-                    <PipeTree :items="selectedTreeContainers" v-on:item-toggle="onFunctionToggle"/>
-                </swiper-slide>
+        <swiper-slide class="swiper-margin no-swipe">I'm Slide 4</swiper-slide>
 
-                <swiper-slide class="swiper-margin canvas-slide no-swipe">
-                    <template class="fullheight">
-                        <v-tabs
-                            fixed-tab
-                            left
-                            v-on:input="setActiveCanvas"
-                            class="fullheight"
-                        >
-                            <v-btn
-                              v-on:click="newCanvasFunction"
-                              flat icon
-                            ><v-icon>add</v-icon></v-btn>
-                            <v-tab
-                                v-for="n in canvases"
-                                :key="n"
-                                ripple
-                            >
-                                Function {{ n }}
-                            </v-tab>
-                            <v-tab-item
-                                v-for="n in canvases"
-                                :key="n"
-                                class="fullheight"
-                            >
-                                <PipeCanvas
-                                    :items="selectedFunctions[n - 1]"
-                                    :index="n"
-                                    :key="n"
-                                />
-                            </v-tab-item>
-                        </v-tabs>
-                    </template>
-                </swiper-slide>
-
-                <swiper-slide class="swiper-margin no-swipe">I'm Slide 4</swiper-slide>
-
-                <!-- <swiper-slide>I'm Slide 4</swiper-slide>
-
-                <swiper-slide>I'm Slide 5</swiper-slide>
-
-                <swiper-slide>I'm Slide 6</swiper-slide>
-
-                <swiper-slide>I'm Slide 7</swiper-slide> -->
-
-        <!-- Optional controls -->
-        <div class="swiper-pagination"  slot="pagination"></div>
-
-        
-        <div slot="button-prev" class="prev">
-        <v-btn
-                absolute
-                small
-                fab
-                top
-                left
-                color="white"
-              class="nav" >
-                <v-icon>chevron_left</v-icon>
-        </v-btn></div>
-        <div slot="button-next"  class="next">
-        <v-btn
-                nav
-                absolute
-                small
-                fab
-                top
-                right
-                color="white"
-                class="nav"
-              >
-                <v-icon>chevron_right</v-icon>
-        </v-btn></div>
+        <v-btn absolute small top left fab
+            color="white"
+            slot="button-prev"
+            class="nav prev"
+        >
+            <v-icon>chevron_left</v-icon>
+        </v-btn>
+        <v-btn absolute small top right fab
+            color="white"
+            class="nav next"
+            slot="button-next"
+        >
+            <v-icon>chevron_right</v-icon>
+        </v-btn>
     </swiper>
 </template>
 
@@ -115,7 +88,6 @@ import PipeCanvas from '../components/pipecanvas/PipeCanvas';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
 import {randomId} from '../utils/utils';
-import {selectedFunctionsData} from '../utils/canvasFixtureData';
 
 Vue.use(VueAwesomeSwiper);
 
@@ -144,15 +116,19 @@ export default {
         currentPage: 1,
         taggedFunctions: [],
         selectedTreeContainers: [],
-        selectedFunctions: selectedFunctionsData, // [[]],
+        selectedFunctions: [[]],
         activeCanvas: 0,
         canvases: 1,
-        swiperOptions: {noSwiping: true,
-        navigation: {
-    nextEl: '.next',
-    prevEl: '.prev',
-  },
-        noSwipingClass: "no-swipe"},
+        swiperOptions: {
+            noSwiping: true,
+            navigation: {
+                nextEl: '.next',
+                prevEl: '.prev',
+            },
+            noSwipingClass: "no-swipe",
+            loop: false,
+            slidesPerView: "auto",
+        },
         selectedContainers: [],
         filterOptions,
         pipeJs: {},
@@ -393,11 +369,17 @@ export default {
 .swiper-margin {
     margin: 10px;
 }
+.swiper-container {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
 .swiper-slide {
-    width: 70%;
+    width: 66%!important;
 }
 .swiper-slide:nth-child(2n), .swiper-slide:nth-child(4n) {
-    width: 30%;
+    width: 30%!important;
     overflow-y: scroll;
 }
 .fullheight {
