@@ -1,24 +1,16 @@
 <template>
     <swiper ref="mySwiper" :options="swiperOptions">
 
-                <swiper-slide>
+                <swiper-slide class="swiper-margin">
                     <v-btn
                       v-if="isRemix"
-                      v-on:click="saveFromRemix"
-                      small color="warning"
-                    >Save from Remix</v-btn>
-                    <v-btn
-                      v-if="isRemix"
-                      v-on:click="loadFromRemix"
-                      small color="warning"
-                    >Load from Remix</v-btn>
-                    <!-- <v-btn
-                      v-if="isRemix"
-                      v-on:click="loadAllFromRemix"
-                      small color="warning"
-                    >Load all from Remix</v-btn> -->
-                    <div class="pipe swiper-margin">
-                        <Tags v-on:tag-toggle="onTagToggle"/>
+                      v-on:click="loadFromRemixWrap"
+                      flat small
+                    >Remix <v-icon>play_for_work</v-icon></v-btn>
+                    <!-- <div class="pipe"> -->
+                    <v-container grid-list-md text-xs-center>
+                        <!-- <Tags v-on:tag-toggle="onTagToggle"/> -->
+                        <v-flex xs10>
                         <PaginatedList
                             :items="taggedFunctions"
                             :pages="pages"
@@ -29,27 +21,59 @@
                             v-on:change-page="changePage"
                             v-on:load-remix="loadRemix"
                         />
+                        </v-flex>
                         </br>
-                    </div>
-                </swiper-slide>
+                    </v-container>
+                    <!-- </div> -->
+                </swiper-slide class="swiper-margin">
 
-                <swiper-slide>
+                <swiper-slide class="swiper-margin">
                     <PipeTree :items="selectedTreeContainers" v-on:item-toggle="onFunctionToggle"/>
                 </swiper-slide>
 
-                <swiper-slide class="canvas-slide  no-swipe">
-                    <PipeCanvas :items="selectedFunctions" :containers="selectedContainers"/>
+                <swiper-slide class="swiper-margin canvas-slide no-swipe">
+                    <template class="fullheight">
+                        <v-tabs
+                            fixed-tab
+                            left
+                            v-on:input="setActiveCanvas"
+                            class="fullheight"
+                        >
+                            <v-btn
+                              v-on:click="newCanvasFunction"
+                              flat icon
+                            ><v-icon>add</v-icon></v-btn>
+                            <v-tab
+                                v-for="n in canvases"
+                                :key="n"
+                                ripple
+                            >
+                                Function {{ n }}
+                            </v-tab>
+                            <v-tab-item
+                                v-for="n in canvases"
+                                :key="n"
+                                class="fullheight"
+                            >
+                                <PipeCanvas
+                                    :items="selectedFunctions[n - 1]" :containers="selectedContainers"
+                                    :index="n"
+                                    :key="n"
+                                />
+                            </v-tab-item>
+                        </v-tabs>
+                    </template>
                 </swiper-slide>
 
-                <swiper-slide>I'm Slide 3</swiper-slide>
+                <swiper-slide class="swiper-margin">I'm Slide 4</swiper-slide>
 
-                <swiper-slide>I'm Slide 4</swiper-slide>
+                <!-- <swiper-slide>I'm Slide 4</swiper-slide>
 
                 <swiper-slide>I'm Slide 5</swiper-slide>
 
                 <swiper-slide>I'm Slide 6</swiper-slide>
 
-                <swiper-slide>I'm Slide 7</swiper-slide>
+                <swiper-slide>I'm Slide 7</swiper-slide> -->
 
         <!-- Optional controls -->
         <div class="swiper-pagination"  slot="pagination"></div>
@@ -96,7 +120,9 @@ export default {
         currentPage: 1,
         taggedFunctions: [],
         selectedTreeContainers: [],
-        selectedFunctions: [],
+        selectedFunctions: [[]],
+        activeCanvas: 0,
+        canvases: 1,
         swiperOptions: {noSwiping: true,
         noSwipingClass: "no-swipe"},
         selectedContainers: [],
@@ -132,12 +158,16 @@ export default {
         // this.setPipeContainers();
     },
     onFunctionToggle: function (pipefunction) {
-        let index = this.selectedFunctions.findIndex(func => func._id == pipefunction._id);
+        console.log('activeCanvas', this.activeCanvas);
+        console.log('selectedFunctions', this.selectedFunctions);
+        let index = this.selectedFunctions[this.activeCanvas].findIndex(func => {
+            func._id == pipefunction._id
+        });
         if (index > -1) {
-          this.selectedFunctions.splice(index, 1);
+          this.selectedFunctions[this.activeCanvas].splice(index, 1);
         }
         else {
-          this.selectedFunctions.push(pipefunction);
+          this.selectedFunctions[this.activeCanvas].push(pipefunction);
         }
         console.log('this.selectedFunctions', this.selectedFunctions);
     },
@@ -209,13 +239,26 @@ export default {
             return func;
         });
     },
+    setActiveCanvas: function(value) {
+        console.log('setActiveCanvas', value);
+        this.activeCanvas = value;
+    },
+    newCanvasFunction: function() {
+        let functions = this.selectedFunctions;
+        functions.push([]);
+        this.selectedFunctions = functions;
+        console.log('this.selectedFunctions', this.selectedFunctions)
+        this.canvases += 1;
+    },
     loadRemix: function(item) {
-        Pipeos.remix.call(
-            'editor',
-            'setFile',
-            [`browser/Pipeos_${item.container.name}.sol`, item.container.container.solsource],
-            function (error, result) { console.log(error, result) }
-        );
+        if (confirm('Click `OK` if you want to load the contract in Remix.')) {
+            Pipeos.remix.call(
+                'editor',
+                'setFile',
+                [`browser/Pipeos_${item.container.name}.sol`, item.container.container.solsource],
+                function (error, result) { console.log(error, result) }
+            );
+        }
     },
     getDataFromRemix(callback) {
         Pipeos.remix.call(
@@ -306,6 +349,13 @@ export default {
             }
         });
         return functions;
+    },
+    loadFromRemixWrap: function() {
+        if (confirm('Click `OK` if you want to save your contract on the Pipeos server. Click `Cancel` and the contract will only load in the client and will disappear on Refresh.')) {
+            this.saveFromRemix();
+        } else {
+            this.loadFromRemix();
+        }
     }
   }
 };
@@ -313,13 +363,19 @@ export default {
 
 <style>
 .swiper-margin {
-    margin: 40px;
+    margin: 10px;
 }
 .swiper-slide {
-    width: 75%;
+    width: 70%;
 }
 .swiper-slide:nth-child(2n), .swiper-slide:nth-child(4n) {
-    width: 25%;
+    width: 30%;
     overflow-y: scroll;
+}
+.fullheight {
+    height: 100%;
+}
+.v-tabs__items {
+    height: 100%;
 }
 </style>
