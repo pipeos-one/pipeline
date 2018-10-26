@@ -1,40 +1,10 @@
 <template>
-    <div :id="canvasId" class="fullheight"></div>
+    <div :id="id" class="fullheight"></div>
 </template>
 
 <script>
-import loadAll from './pipecanvaslib.js';
-
-const graph = {"n": [], "e": []}
-
 export default {
-    props: ['items', 'index'],
-    data() {
-        return {canvasId: 'draw_' + this.index};
-    },
-    mounted: function () {
-        this.loadData();
-    },
-    watch: {
-        items: function() {
-            this.loadData();
-        }
-    },
-    methods: {
-        loadData: function() {
-            graph.n = this.items.map((item, index) => {
-                return {
-                    i: index,
-                    id: item._id,
-                }
-            });
-
-            if (this.items && this.items.length > 0) {
-                console.log('loadAll', this.canvasId, this.items, graph)
-                loadAll(this.canvasId, this.items, graph);
-            }
-        }
-    }
+    props: ['id'],
 }
 </script>
 
@@ -55,6 +25,8 @@ export default {
     color: #111;
     font-family: "Roboto Condensed", sans-serif;
     font-size: 10px;
+    padding-left: 4px;
+    text-align: left;
     display: -webkit-box;
     -webkit-box-align: center;
     -ms-flex-align: center;
@@ -67,7 +39,6 @@ export default {
 
 .centred {
     display: block;
-    padding-left: 4px;
     font-family: "Roboto Condensed", sans-serif;
     white-space: pre;
     overflow: hidden;

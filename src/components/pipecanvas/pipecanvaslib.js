@@ -98,11 +98,13 @@ let startDrop; let endDrop;
 
 // Expects functions as an array of pipefunction objects, each with a `container` key for the pipecontainer.
 const loadAll = function loadAll(domid, functions, graph) {
-    pipe2.functions = functions.concat(ports.map(port => {
+    console.log('loadAll', domid, functions, graph)
+    domid = domid[0];
+    pipe2.functions = functions[0].concat(ports.map(port => {
         port.container = containers[0];
         return port;
     }));
-    pipe2.graph = graph;
+    pipe2.graph = graph[0];
     // console.log('pipecanvaslib.pipe2.functions', pipe2.functions);
     // console.log('pipecanvaslib.pipe2.graph', JSON.stringify(pipe2.graph));
 

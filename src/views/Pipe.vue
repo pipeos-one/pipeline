@@ -49,11 +49,7 @@
                         :key="n"
                         class="fullheight"
                     >
-                        <PipeCanvas
-                            :items="selectedFunctions[n - 1]"
-                            :index="n"
-                            :key="n"
-                        />
+                        <PipeCanvas :id="'draw_' + n"/>
                     </v-tab-item>
                 </v-tabs>
             </template>
@@ -88,6 +84,7 @@ import PipeCanvas from '../components/pipecanvas/PipeCanvas';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
 import {randomId} from '../utils/utils';
+import loadAll from '../components/pipecanvas/pipecanvaslib.js';
 
 Vue.use(VueAwesomeSwiper);
 
@@ -100,6 +97,8 @@ let filterOptions = {
     limit: 10,
     skip: 0,
 };
+
+const graph = {"n": [], "e": []};
 
 export default {
   components: {
@@ -119,6 +118,7 @@ export default {
         selectedFunctions: [[]],
         activeCanvas: 0,
         canvases: 1,
+        graphs: [Object.assign({}, graph)],
         swiperOptions: {
             noSwiping: true,
             navigation: {
@@ -136,12 +136,36 @@ export default {
   },
   mounted() {
     this.loadData();
+    this.loadCanvas();
   },
   methods: {
     loadData: function() {
         this.setPipeContainers();
         this.countPipeFunctions();
         this.setPipeFunctions();
+    },
+    loadCanvas: function() {
+        this.graphs[this.activeCanvas].n = this.selectedFunctions[
+            this.activeCanvas
+        ].map((item, index) => {
+            return {
+                i: index,
+                id: item._id,
+            }
+        });
+
+        if (this.selectedFunctions[this.activeCanvas].length > 0) {
+            loadAll(
+                Array.apply(null, {length: this.canvases})
+                    .map(Function.call, Number)
+                    .map(canvasIndex => `draw_${canvasIndex + 1}`),
+                this.selectedFunctions,
+                this.graphs,
+            );
+        }
+    },
+    addToCanvas: function(pipefunction, index) {
+        this.loadCanvas();
     },
     onTagToggle: function (tagName) {
       if (tagName === 'all') {
@@ -174,6 +198,7 @@ export default {
           this.selectedFunctions[this.activeCanvas].push(pipefunction);
         }
         console.log('this.selectedFunctions', this.selectedFunctions);
+        this.addToCanvas(pipefunction, this.activeCanvas);
     },
     onTreeFunctionToggle: function (pipefunction) {
         let index = this.selectedTreeContainers.findIndex(container => container._id == pipefunction.container._id);
@@ -382,7 +407,7 @@ export default {
     width: 30%!important;
     overflow-y: scroll;
 }
-.fullheight {
+.fullheight, .v-window, .v-window__container {
     height: 100%;
 }
 .v-tabs__items {
