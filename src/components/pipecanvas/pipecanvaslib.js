@@ -86,9 +86,10 @@ const containers = [
 ];
 
 let pipe2 = {};
+let gndx = 0
 
 let funcs; let gra = {}; let gre;
-const graph = { nodes: {}, edges: {} };
+// const graphs = [{ nodes: {}, edges: {} }];
 
 let draw;
 let edges;
@@ -96,21 +97,33 @@ let g;
 const xr = 32;
 let startDrop; let endDrop;
 
+
+export default class Graphs {
+    constructor(domids, functions, graphs){
+
+    }
+
+    addFunction( funcData, grIndex){
+
+    }
+}
+
+
+
+
 // Expects functions as an array of pipefunction objects, each with a `container` key for the pipecontainer.
-const loadAll = function loadAll(domid, functions, graph) {
-    console.log('loadAll', domid, functions, graph)
-    domid = domid[0];
-    pipe2.functions = functions[0].concat(ports.map(port => {
+const loadAll = function loadAll(domids, functions, graphs) {
+    pipe2.functions = functions.concat(ports.map(port => {
         port.container = containers[0];
         return port;
     }));
-    pipe2.graph = graph[0];
+    pipe2.graphs = graphs;
     // console.log('pipecanvaslib.pipe2.functions', pipe2.functions);
     // console.log('pipecanvaslib.pipe2.graph', JSON.stringify(pipe2.graph));
 
     // return true;
     if (draw == undefined) {
-        draw = SVG(domid);
+        draw = SVG(domids[gndx]);
         edges = draw.group();
     }
     g = new dagre.graphlib.Graph();
@@ -154,7 +167,7 @@ let gr;
 
 function menu() {
     const m = draw.group();
-    const c = m.circle(10).center(0, 0);
+    const c = m.circle(15).center(0, 0);
     m.click(e => proc1());
 }
 
@@ -216,7 +229,7 @@ function proc1() {
 
     // add ports
     proc4(gr);
-    
+
 
     // console.log("grr",gr)
 
@@ -224,7 +237,7 @@ function proc1() {
     gr = R.mapObjIndexed((x, key, all) => R.merge(x, { func: findById(x.id, funcs) }), gr);
 
     console.log(gr, gre)
-    
+
 
     gra = {}
     // re-index
@@ -308,13 +321,15 @@ function proc2(gr) {
         if (x.func.abiObj.name == 'PortIn') n[key] = true;
     }, pg)
 
-    let visitors = [ new GraphVisitor(visOptions.solidity)]
+    let visitors = [ new GraphVisitor(visOptions.graphRender), new GraphVisitor(visOptions.solidity)]
 
     //console.log(n)
     proc_d(pg, [{}], 0, {}, n, visitors);
 
     R.map( (x)=>{
-        console.log(x.getGen())
+        if (x.ops.type == "source") {
+            console.log(x.getGen())
+        }
     },visitors)
 }
 
@@ -374,7 +389,7 @@ function proc_d(grf, tabl, row, known, next, vis) {
     tabl[row] = {}
     //if (incre == 1) console.clear()
     // console.log('proc_d', grf, tabl, row, known, next);
-    let pointer = xr;
+
     if (Object.keys(grf).length == 0) return;
     const next1 = {};
     incre = incre+1;
@@ -408,17 +423,19 @@ function proc_d(grf, tabl, row, known, next, vis) {
                 // console.log("next", x2, key2, all2)
                 next1[Object.keys(x2)[0]] = true;
             }, grf[parseInt(key)].links.out);
-            if (row != 0) {
-                pointer = render[Object.keys(grf[parseInt(key)].links.in[1])].x
-                //alert(pointer)
-            }
-            tabl[row][parseInt(key)] = pointer;
+
+
             R.map( (x)=>{
-                x.renderFunc(grf[parseInt(key)])
+                if (x.ops.type == "source") {
+                    x.genFunc(grf[parseInt(key)])
+                }
+                if (x.ops.type == "visual") {
+                    x.renderFunc(grf[parseInt(key)], row)
+                }
+
             },vis)
 
-            render[parseInt(key)].redraw(pointer, 2*(row + 1) * xr);
-            pointer += (1 + Math.max(grf[parseInt(key)].func.abiObj.inputs.length, grf[parseInt(key)].func.abiObj.outputs.length)) * xr;
+
             // all.splice(key,1)
             delete all[parseInt(key)];
             delete next[parseInt(key)]
@@ -449,29 +466,30 @@ function proc4(gr) {
     // console.log(pipe2.graph.e)
     // return true
     // console.log(gr)
-    let inc = 3000;
+    let incr = 3000;
     R.map((x) => {
+        if (x.func.abiObj.type == "port") return
         R.mapObjIndexed((x1, key, all) => {
             // console.log(x1)
             // console.log(x.links.in[parseInt(key) + 1], key)
             if (x.links.in[parseInt(key) + 1] === undefined) {
-                inc++;
+                incr++;
                 // console.log(key)
                 let o1 = {}
                 o1[x.i] = parseInt(key) + 1
                 // let t = {i: inc, func: {abiObj: {inputs:[],outputs:[{ name: "out", type:x1.type}], name:"PortIn"}, container:{name:"PipeOS"}}, links:{in:{},out:{0:x.i}}}
                 let state = {name: x1.name+"_"+x.i, type: x1.type, value: undefined}
-                const t = { i: inc, id: '5bc59e192817116e84bdd831', links: { in: {}, out: { 1: o1 } } , state: state};
-                gr[inc] = t;
+                const t = { i: incr, id: '5bc59e192817116e84bdd831', links: { in: {}, out: { 1: o1 } } , state: state};
+                gr[incr] = t;
                 /*
 
                 graph.nodes[inc] ={ render:new FuncBox( t ), links: { in: R.repeat("", t.func.abiObj.inputs.length), out:R.repeat("", "outputs" in t.func.abiObj? t.func.abiObj.outputs.length: [])}}
 
 */
                 const int = {};
-                int[inc] = 1;
+                int[incr] = 1;
                 x.links.in[parseInt(key)+1] = int;
-                gre.push([inc, 1, x.i, parseInt(key) + 1]);
+                gre.push([incr, 1, x.i, parseInt(key) + 1]);
                 // alert(key)
             }
         }, x.func.abiObj.inputs);
@@ -479,19 +497,19 @@ function proc4(gr) {
         R.mapObjIndexed((x2, key, all) => {
             // console.log(x.links.out[parseInt(key) + 1], key)
             if (x.links.out[parseInt(key) + 1] === undefined) {
-                inc++;
+                incr++;
                 // console.log(key)
                 // t ={i: inc, func: {abiObj: {inputs:[{ name: "in", type:x2.type}],outputs:[], name:"PortOut"}, container:{name:"PipeOS"}}, links:{in:{0:x.i},out:{}}}
                 let o1 = {}
                 o1[x.i] = parseInt(key) + 1
                 let state = {name: x2.name+"_"+x.i, type: x2.type, value: undefined}
-                const t = { i: inc, id: '5bc59e192817116e84bdd830', links: { in: { 1: o1}, out: {}  }, state: state};
-                gr[inc] = t;
+                const t = { i: incr, id: '5bc59e192817116e84bdd830', links: { in: { 1: o1}, out: {}  }, state: state};
+                gr[incr] = t;
                 // console.log(pipe2.graph.e)
                 const int = {};
-                int[inc] = 1;
+                int[incr] = 1;
                 x.links.out[parseInt(key)+1] = int;
-                gre.push([x.i, parseInt(key) + 1, inc, 1]);
+                gre.push([x.i, parseInt(key) + 1, incr, 1]);
                 // alert(key)
             }
         }, x.func.abiObj.outputs);
@@ -620,7 +638,7 @@ class FuncBox {
         this.text = this.el.foreignObject(w * xr, h * 2);
         const id = this.text.attr('id');
         this.text.appendChild('div', { id: `${id}_div` });
-        $(`#${id}_div`).html(`<div class="centred">${txt}</div>`).addClass(clas);
+        $(`#${id}_div`).html(`<div >${txt}</div>`).addClass(clas);
         this.x = Math.random() * 5 * xr;
         this.y = Math.random() * 5 * xr;
         this.el.move(this.x, this.y);
@@ -642,7 +660,7 @@ class FuncBox {
 
         if (self.obj.func.abiObj.type != 'port') {
             let point = getPort(self.obj, 'in', 0);
-            const port_i = self.el.circle(10).center(point.x, point.y);
+            const port_i = self.el.circle(10).center(point.x, point.y).attr({opacity:0.08});
             port_i.mouseover(() => {
                 endDrop = [self.obj.i, 0];
             });
@@ -651,9 +669,10 @@ class FuncBox {
             });
 
             point = getPort(self.obj, 'out', 0);
-            const port_o = self.el.circle(10).center(point.x, point.y);
+            const port_o = self.el.circle(10).center(point.x, point.y).attr({opacity:0.08});
 
             // drag port out impl
+            /*
             port_o.draggable().on('beforedrag', function (e) {
                 // e.preventDefault()
                 // e.stopPropagation()
@@ -687,6 +706,8 @@ class FuncBox {
                 const p = e.detail.event;
                 this.obj.center(p.offsetX, p.offsetY);
             });
+
+            */
 
 
         }
@@ -849,10 +870,34 @@ class GraphVisitor{
         this.intro2 = options.intro2
         this.outro = options.function_p3
         this.in = []
+        this.pointer = xr;
+        this.row = 0
         this.out = []
     }
 
-    renderFunc(funcObj){
+    renderFunc(funcObj, row){
+        console.log(funcObj)
+
+        if (row != 0) {
+            console.log("o--",funcObj.i,Object.keys(gr[parseInt(funcObj.i)].links.in[1]))
+            //this.pointer = render[Object.keys(gr[parseInt(funcObj.i)].links.in[1][0])]
+            //alert(this.pointer)
+        }
+
+        if (this.row < row){
+            this.row = row
+            this.pointer = xr
+        }
+
+        //tabl[row][parseInt(key)] = this.pointer;
+
+        render[parseInt(funcObj.i)].redraw(this.pointer, 2*(row + 1) * xr);
+        this.pointer += (1 + Math.max(gr[parseInt(funcObj.i)].func.abiObj.inputs.length, gr[parseInt(funcObj.i)].func.abiObj.outputs.length)) * xr;
+
+
+    }
+
+    genFunc(funcObj, row){
         console.log(funcObj)
         if (funcObj.func.abiObj.type == "function") {
             this.gen = this.gen +"\n"+ this.ops.sigFunc1 + funcObj.func.signature + this.ops.sigFunc2 + "\n"
@@ -884,7 +929,7 @@ class GraphVisitor{
         }
 
         // funcObj.func.abiObj.name
-        
+
     }
 
     getGen(){
@@ -899,9 +944,9 @@ class GraphVisitor{
             out = out + this.out.join(",")
             out = out+ ");\n"
         }
-        
+
         out = out + this.outro
-        
+
         return out
     }
 
@@ -910,6 +955,7 @@ class GraphVisitor{
 
 var visOptions={
     solidity: {
+        type: "source",
         "file_p0" : "pragma solidity ^0.4.24;\npragma experimental ABIEncoderV2;\n\n",
         "proxy": "\ncontract SethProxy {\n    function proxyCallInternal(address _to, bytes input_bytes, uint256 output_size) payable public returns (bytes);\n}\n",
         "import_p0": "//import \"",
@@ -942,9 +988,11 @@ var visOptions={
         intro2: ") payable public {\nbytes4 signature42;\nbytes memory input42;\nbytes memory answer42;\nuint wei_value = msg.value;\naddress tx_sender = msg.sender;\n",
 
 
-    
+
         "part1": ""
+    },
+
+    graphRender: {
+        type: "visual"
     }
 }
-
-export default loadAll;
