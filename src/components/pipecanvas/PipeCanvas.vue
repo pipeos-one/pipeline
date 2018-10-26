@@ -1,5 +1,5 @@
 <template>
-    <div id="draw"></div>
+    <div :id="canvasId" class="fullheight"></div>
 </template>
 
 <script>
@@ -8,19 +8,20 @@ import loadAll from './pipecanvaslib.js';
 const graph = {"n": [], "e": []}
 
 export default {
-    props: ['items', 'containers'],
-    watch: {
-        items: function(newItems, oldItems) {
-            console.log(newItems, oldItems);
-        }
+    props: ['items', 'index'],
+    data() {
+        return {canvasId: 'draw_' + this.index};
     },
     mounted: function () {
-        if (this.containers.length > 0 && this.items.length > 0) {
-            loadAll('draw', this.containers, this.items, graph);
-        }
+        this.loadData();
     },
     watch: {
         items: function() {
+            this.loadData();
+        }
+    },
+    methods: {
+        loadData: function() {
             graph.n = this.items.map((item, index) => {
                 return {
                     i: index,
@@ -28,8 +29,9 @@ export default {
                 }
             });
 
-            if (this.containers.length > 0 && this.items.length > 0) {
-                loadAll('draw', this.containers, this.items, graph);
+            if (this.items && this.items.length > 0) {
+                console.log('loadAll', this.canvasId, this.items, graph)
+                loadAll(this.canvasId, this.items, graph);
             }
         }
     }

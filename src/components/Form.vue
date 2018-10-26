@@ -17,7 +17,7 @@ import Pipeos from '../namespace/namespace';
 Vue.use(VueFormGenerator);
 Vue.component('multiselect', Multiselect);
 
-const api = Pipeos.pipeserver.ip + Pipeos.pipeserver.jsonapi;
+const api = Pipeos.pipeserver.api.json;
 
 const form2 = {
   model: {
@@ -43,7 +43,7 @@ export default {
   created() {
     Vue.axios.get(`${api}/${this.$router.currentRoute.params.id}`).then((response) => {
       console.log('response', response.data);
-      const schema = JSON.parse(response.data.json);
+      let schema = JSON.parse(response.data.json);
       const schema_orig = JSON.parse(response.data.json);
       const post_api = response.data.uri;
       schema.groups[0].fields.push({
@@ -79,7 +79,7 @@ export default {
           console.log('data', data);
           Vue.axios({
             method: 'post',
-            url: post_api ? (Pipeos.pipeserver.ip + post_api) : api,
+            url: post_api ? (Pipeos.pipeserver.host + post_api) : api,
             data,
             // contentType: "application/json;charset=utf-8",
             headers: { 'Content-Type': 'application/json' },
@@ -92,7 +92,7 @@ export default {
       });
       schema.groups[0].fields.forEach((item) => {
         if (item.type == "vueMultiSelect" && item.selectValues && item.selectValues.uri) {
-            Vue.axios.get(Pipeos.pipeserver.ip + item.selectValues.uri).then((tagresponse) => {
+            Vue.axios.get(Pipeos.pipeserver.host + item.selectValues.uri).then((tagresponse) => {
                 // console.log('tagresponse', tagresponse.data);
                 item.values = tagresponse.data;
                 this.schema = schema;

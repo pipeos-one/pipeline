@@ -1,8 +1,18 @@
+import {RemixExtension} from '../plugins/remix';
+
+const pipeserverIp = `${process.env.VUE_APP_PIPESERVER_IP}:${process.env.VUE_APP_PIPESERVER_PORT}`;
+
 const Pipeos = {
-  pipeserver: {
-    ip: `${process.env.VUE_APP_PIPESERVER_IP}:${process.env.VUE_APP_PIPESERVER_PORT}`,
-    jsonapi: '/json',
-  },
+    pipeserver: {
+        host: pipeserverIp,
+        api: {
+            json: `${pipeserverIp}/json`,
+            container: `${pipeserverIp}/pipecontainer`,
+            function: `${pipeserverIp}/pipefunction`,
+            tag: `${pipeserverIp}/tag`,
+        },
+    },
+    remix: new RemixExtension(),
 };
 
 export default Pipeos;
