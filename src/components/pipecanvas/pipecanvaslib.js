@@ -214,19 +214,25 @@ function proc1() {
 
     // add ports
     proc4(gr);
+    
 
     // console.log("grr",gr)
 
     // gr is the nodes + function data
     gr = R.mapObjIndexed((x, key, all) => R.merge(x, { func: findById(x.id, funcs) }), gr);
 
+    console.log(gr, gre)
+    
 
+    gra = {}
     // re-index
     R.mapObjIndexed((x, key, all) => {
         gra[x.i] = x;
     }, gr);
 
     //console.log("grrrrra",JSON.stringify(gra))
+    console.log("gra",gra)
+    //if (window.stop) return true;
 
     proc2(gra);
 
@@ -300,8 +306,14 @@ function proc2(gr) {
         if (x.func.abiObj.name == 'PortIn') n[key] = true;
     }, pg)
 
+    let visitors = [ new GraphVisitor(visOptions.solidity)]
+
     //console.log(n)
-    proc_d(pg, [{}], 0, {}, n);
+    proc_d(pg, [{}], 0, {}, n, visitors);
+
+    R.map( (x)=>{
+        console.log(x.getGen())
+    },visitors)
 }
 
 // draw edges
@@ -351,7 +363,10 @@ function clone(obj) {
 
 var incre = 1;
 
-function proc_d(grf, tabl, row, known, next) {
+
+
+
+function proc_d(grf, tabl, row, known, next, vis) {
     // console.log("proc_D grf: ", JSON.stringify(grf))
     if (Object.keys(next).length == 0) return
     tabl[row] = {}
@@ -396,6 +411,9 @@ function proc_d(grf, tabl, row, known, next) {
                 //alert(pointer)
             }
             tabl[row][parseInt(key)] = pointer;
+            R.map( (x)=>{
+                x.renderFunc(grf[parseInt(key)])
+            },vis)
 
             render[parseInt(key)].redraw(pointer, 2*(row + 1) * xr);
             pointer += (1 + Math.max(grf[parseInt(key)].func.abiObj.inputs.length, grf[parseInt(key)].func.abiObj.outputs.length)) * xr;
@@ -408,7 +426,7 @@ function proc_d(grf, tabl, row, known, next) {
     //console.log(tabl, known, grf, Object.assign(next,next1));
     // console.log('proc_d2', grf); if (incre < 5)
 
-    proc_d(grf, tabl, row + 1, known, next1);
+    proc_d(grf, tabl, row + 1, known, next1, vis);
 }
 
 
@@ -440,7 +458,8 @@ function proc4(gr) {
                 let o1 = {}
                 o1[x.i] = parseInt(key) + 1
                 // let t = {i: inc, func: {abiObj: {inputs:[],outputs:[{ name: "out", type:x1.type}], name:"PortIn"}, container:{name:"PipeOS"}}, links:{in:{},out:{0:x.i}}}
-                const t = { i: inc, id: '5bc59e192817116e84bdd831', links: { in: {}, out: { 1: o1 } } };
+                let state = {name: x1.name+"_"+x.i, type: x1.type, value: undefined}
+                const t = { i: inc, id: '5bc59e192817116e84bdd831', links: { in: {}, out: { 1: o1 } } , state: state};
                 gr[inc] = t;
                 /*
 
@@ -463,7 +482,8 @@ function proc4(gr) {
                 // t ={i: inc, func: {abiObj: {inputs:[{ name: "in", type:x2.type}],outputs:[], name:"PortOut"}, container:{name:"PipeOS"}}, links:{in:{0:x.i},out:{}}}
                 let o1 = {}
                 o1[x.i] = parseInt(key) + 1
-                const t = { i: inc, id: '5bc59e192817116e84bdd830', links: { in: { 1: o1}, out: {}  }};
+                let state = {name: x2.name+"_"+x.i, type: x2.type, value: undefined}
+                const t = { i: inc, id: '5bc59e192817116e84bdd830', links: { in: { 1: o1}, out: {}  }, state: state};
                 gr[inc] = t;
                 // console.log(pipe2.graph.e)
                 const int = {};
@@ -476,6 +496,8 @@ function proc4(gr) {
     }, gr);
     //console.log(JSON.stringify(gr))
     //console.log(JSON.stringify(gre))
+
+    //console.log(gr, gre)
 
     // proc_e()
 }
@@ -644,7 +666,8 @@ class FuncBox {
                 // console.log(e);
                 const node = self.obj.i;
                 startDrop = [node, 0];
-                // console.log(startDrop, endDrop);
+                console.log(startDrop, endDrop);
+                alert("dragend")
                 if (endDrop != false) {
                     // console.log(startDrop, endDrop);
                     const edge = startDrop.concat(endDrop);
@@ -658,6 +681,7 @@ class FuncBox {
             port_o.on('dragmove', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
+                console.log("lore")
                 const p = e.detail.event;
                 this.obj.center(p.offsetX, p.offsetY);
             });
@@ -732,11 +756,15 @@ class FuncBox {
                 // console.log(e);
                 const node = self.obj.i;
                 startDrop = [node, parseInt(key)+1];
-                // console.log(startDrop, endDrop);
+                console.log(startDrop, endDrop);
+                console.log(gra)
                 if (endDrop != false) {
                     // console.log(startDrop, endDrop);
                     const edge = startDrop.concat(endDrop);
                     // console.log(edge);
+                    if (startDrop[0] > 2999) {
+                        pipe2.graph.n.push({ i: startDrop[0], id: '5bc59e192817116e84bdd831'})
+                    }
                     pipe2.graph.e.push(edge);
                     // console.log(pipe2.graph.e);
                     return proc1();
@@ -808,6 +836,112 @@ class FuncBox {
                 { x: parseInt(matrix[4]), y: parseInt(matrix[5]) }
             );
         }, n.links.in);
+    }
+}
+
+class GraphVisitor{
+    constructor(options){
+        this.ops = options
+        this.gen = ""
+        this.intro1 = options.intro1
+        this.intro2 = options.intro2
+        this.outro = options.function_p3
+        this.in = []
+        this.out = []
+    }
+
+    renderFunc(funcObj){
+        console.log(funcObj)
+        if (funcObj.func.abiObj.type == "function") {
+            this.gen = this.gen +"\n"+ this.ops.sigFunc1 + funcObj.func.signature + this.ops.sigFunc2 + "\n"
+            let inputset = R.map((x)=> {
+                return x.name+"_"+funcObj.i
+            }, funcObj.func.abiObj.inputs
+            )
+            this.gen = this.gen + this.ops.inputSig1 + inputset.join(",")+this.ops.inputSig2+"\n";
+            this.gen = this.gen + this.ops.ansProxy1 +funcObj.func.abiObj.name + this.ops.ansProxy2+"\n";
+            let outAssem = []
+            let outputset = R.map((x)=>{
+                console.log(x)
+                outAssem.push(x.name + "_" + funcObj.i+this.ops.assem)
+                return x.type+" " + x.name + "_" + funcObj.i+ ";"
+            }, funcObj.func.abiObj.outputs)
+
+            this.gen = this.gen + outputset.join("\n") +this.ops.restFunc1+ outAssem.join("\n")+ this.ops.restFunc2+"\n";
+        }
+
+        if (funcObj.func.abiObj.type == "port") {
+            if (funcObj.func.abiObj.name == "PortIn") {
+                this.in.push(funcObj.state.type+" "+funcObj.state.name)
+            }
+
+            if (funcObj.func.abiObj.name == "PortOut") {
+                this.out.push(funcObj.state.name)
+            }
+
+        }
+
+        // funcObj.func.abiObj.name
+        
+    }
+
+    getGen(){
+        let out = ""
+        out = out + this.intro1
+        console.log(this.in)
+        out = out + this.in.join(",")
+        out = out + this.intro2
+        out = out + this.gen
+        if (this.out.length >0){
+            out = out+ "return ("
+            out = out + this.out.join(",")
+            out = out+ ");\n"
+        }
+        
+        out = out + this.outro
+        
+        return out
+    }
+
+
+}
+
+var visOptions={
+    solidity: {
+        "file_p0" : "pragma solidity ^0.4.24;\npragma experimental ABIEncoderV2;\n\n",
+        "proxy": "\ncontract SethProxy {\n    function proxyCallInternal(address _to, bytes input_bytes, uint256 output_size) payable public returns (bytes);\n}\n",
+        "import_p0": "//import \"",
+        "import_p1": "\";\n",
+        "interface_p0": "\ninterface ",
+        "contract_p0": "\ncontract ",
+        "contract_p1": " {\n    SethProxy public seth_proxy;\n",
+        "contract_p2": "}\n",
+        "member_p0": ";\n",
+        "function_p0": "\n    function ",
+        "function_pp0": "(  ",
+        "function_pp1": ")",
+        "function_p1": " payable public ",
+        "function_ret0": " returns (",
+        "function_ret1": ")",
+        "function_p2": " {\n    bytes4 signature42;\n    bytes memory input42;\n    bytes memory answer42;\n    uint wei_value = msg.value;\n    address tx_sender = msg.sender;\n",
+        "function_p3": "    }\n",
+        "comma": ",",
+        "sigFunc1": "signature42 = bytes4(keccak256(\"",
+        "sigFunc2": "\"));",
+        "inputSig1": "input42 = abi.encodeWithSelector(signature42,",
+        "inputSig2": ");",
+        "ansProxy1": "answer42 = pipe_proxy.proxy(",
+        "ansProxy2": ", input42, 32);",
+        "restFunc1": "\nassembly {\n",
+        "restFunc2": "\n}\n",
+        "assem": " := mload(add(answer42, 32))",
+
+        intro1: "\n\nfunction PipedFunction1(",
+        intro2: ") payable public {\nbytes4 signature42;\nbytes memory input42;\nbytes memory answer42;\nuint wei_value = msg.value;\naddress tx_sender = msg.sender;\n",
+
+
+    
+        "part1": ""
     }
 }
 
