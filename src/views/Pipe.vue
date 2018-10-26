@@ -25,7 +25,7 @@
             <PipeTree :items="selectedTreeContainers" v-on:item-toggle="onFunctionToggle"/>
         </swiper-slide>
 
-        <swiper-slide class="swiper-margin-slide no-swipe">
+        <swiper-slide class="swiper-margin-slide swiper-margin no-swipe">
             <template class="fullheight">
                 <v-tabs
                     fixed-tab
@@ -47,7 +47,7 @@
                     <v-tab-item
                         v-for="n in canvases"
                         :key="n"
-                        class="fullheight"
+                        class="fullheight swiper-margin"
                     >
                         <PipeCanvas :id="'draw_' + n"/>
                     </v-tab-item>
@@ -55,7 +55,12 @@
             </template>
         </swiper-slide>
 
-        <swiper-slide class="swiper-margin no-swipe">I'm Slide 4</swiper-slide>
+        <swiper-slide class="swiper-margin no-swipe">
+            <PipeApp
+                :contractSource="contractSource"
+                v-on:contract-deploy="deployPipeContract"
+            />
+        </swiper-slide>
 
         <v-btn absolute small top left fab
             color="white"
@@ -81,6 +86,7 @@ import Tags from '../components/Tags';
 import PaginatedList from '../components/PaginatedList';
 import PipeTree from '../components/PipeTree';
 import PipeCanvas from '../components/pipecanvas/PipeCanvas';
+import PipeApp from '../components/pipeapp/PipeApp';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
 import {randomId} from '../utils/utils';
@@ -106,6 +112,7 @@ export default {
     PaginatedList,
     PipeTree,
     PipeCanvas,
+    PipeApp,
   },
   data() {
     return {
@@ -132,6 +139,7 @@ export default {
         selectedContainers: [],
         filterOptions,
         pipeJs: {},
+        contractSource: 'contract Test {}',
     };
   },
   mounted() {
@@ -280,11 +288,15 @@ export default {
         this.canvases += 1;
     },
     loadRemix: function(item) {
-        if (confirm('Click `OK` if you want to load the contract in Remix.')) {
+        this.loadRemixCall(item.container.name, item.container.container.solsource);
+    },
+    loadRemixCall: function(name, source) {
+        let fileName = `browser/Pipeos_${name}.sol`;
+        if (confirm(`Click "OK" if you want to load the "${fileName}" contract in Remix.`)) {
             Pipeos.remix.call(
                 'editor',
                 'setFile',
-                [`browser/Pipeos_${item.container.name}.sol`, item.container.container.solsource],
+                [fileName, source],
                 function (error, result) { console.log(error, result) }
             );
         }
@@ -385,6 +397,12 @@ export default {
         } else {
             this.loadFromRemix();
         }
+    },
+    deployPipeContract: function() {
+        console.log('Deploy source code');
+        if (this.isRemix) {
+            this.loadRemixCall('PipelineContract', 'somesoource');
+        }
     }
   }
 };
@@ -392,7 +410,7 @@ export default {
 
 <style>
 .swiper-margin {
-    margin: 10px;
+    margin: 2px;
 }
 .swiper-container {
     height: 100%;
@@ -416,6 +434,12 @@ export default {
 
 .nav{
     position:fixed!important;
-    top:5px!important;
+    top:3px!important;
+}
+.nav.prev {
+    left: 3px!important;
+}
+.nav.next {
+    right: 3px!important;
 }
 </style>
