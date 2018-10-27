@@ -95,6 +95,8 @@ const get_api = Pipeos.pipeserver.api.json;
 const functionsAPI = Pipeos.pipeserver.api.function;
 const containerApi = Pipeos.pipeserver.api.container;
 const containerFunctionsApi = Pipeos.pipeserver.api.container + '/pipefunctions';
+const deployedApi = Pipeos.pipeserver.api.deployed;
+
 let filterOptions = {
     offset: 0,
     limit: 10,
@@ -311,12 +313,15 @@ export default {
     saveFromRemix: function(container, deployment) {
         Vue.axios.post(containerFunctionsApi, container)
         .then((response) => {
-            console.log('post', response);
+            console.log('post container', response);
+            deployment.containerid = response.data._id;
+            return Vue.axios.post(deployedApi, deployment);
+        }).then((response) => {
+            console.log('post deployment', response);
             this.loadData();
         }).catch(function (error) {
             console.log(error);
         });
-        // TODO post deployment
     },
     buildFunctionsFromContainer: function(container) {
         let abi = container.container.abi;

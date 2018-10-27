@@ -9,6 +9,7 @@ const Pipeos = {
             json: `${pipeserverIp}/json`,
             container: `${pipeserverIp}/pipecontainer`,
             function: `${pipeserverIp}/pipefunction`,
+            deployed: `${pipeserverIp}/pipedeployed`,
             tag: `${pipeserverIp}/tag`,
         },
     },
