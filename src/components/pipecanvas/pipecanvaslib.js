@@ -418,7 +418,10 @@ function proc2(gr) {
 
         R.map( (x)=>{
             if (x.ops.type == "source") {
-                langs[x.ops.lang] = x.genGraph(pg)
+                x.genGraph(pg)
+            }
+            if (x.ops.type == "visual") {
+                x.setGraph(pg)
             }
         },visitors)
 
@@ -756,7 +759,7 @@ class FuncBox {
         const self = this;
         this.el = pipe2.draws[grIndex].group();
         this.el.attr('id', obj.i);
-        this.note = this.el.text('');
+        
         // console.log(this.obj);
         const i = 'inputs' in this.obj.func.abiObj ? this.obj.func.abiObj.inputs.length : 0;
         const o = 'outputs' in this.obj.func.abiObj ? this.obj.func.abiObj.outputs.length : 0;
@@ -778,6 +781,7 @@ class FuncBox {
         $(`#${id}_div`).html(`<div >${txt}</div>`).addClass(clas);
         this.x = Math.random() * 5 * xr;
         this.y = Math.random() * 5 * xr;
+        this.note = this.el.text('');
         this.el.move(this.x, this.y);
 
         this.el.dblclick(() => {
@@ -806,7 +810,7 @@ class FuncBox {
             });
 
             point = getPort(self.obj, 'out', 0);
-            const port_o = self.el.circle(10).center(point.x, point.y).attr({opacity:0.08});
+            const port_o = self.el.circle(10).center(point.x, point.y).attr({"opacity":0.08});
 
             // drag port out impl
             /*
@@ -866,7 +870,7 @@ class FuncBox {
 
             // let point = getPort(self.obj, "in", 1+parseInt(key))
 
-            const port = self.el.circle(10).center(point.x, point.y);
+            const port = self.el.circle(10).center(point.x, point.y).attr({"fill-opacity":0.5});
             self.el.text(x.name).attr({ 'text-anchor': 'middle', 'font-size': 8, 'font-family': 'Roboto' }).move(point.x - 8, point.y - 12).transform({ rotation: -30 });
             port.mouseover(() => {
                 self.note.text(x.type);
@@ -892,7 +896,7 @@ class FuncBox {
             point = getPort(self.obj, 'out', 1 + parseInt(key));
 
             // console.log(point)
-            const port = self.el.circle(10).center(point.x, point.y);
+            const port = self.el.circle(10).center(point.x, point.y).attr({"fill-opacity":0.9});
             port.mouseover((e) => {
                 self.note.text(x.type);
                 const node = self.obj.i;
@@ -1046,6 +1050,11 @@ class GraphVisitor{
         this.genC = this.genC + this.ops.contract_p0
         this.genC = this.genC + this.ops.contract_p1
 
+    }
+
+    setGraph(g){
+        this.row = 0
+        this.pointer = xr
     }
 
     genGraph(g){
