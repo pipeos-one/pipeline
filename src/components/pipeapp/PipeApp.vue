@@ -1,48 +1,64 @@
 <template>
     <div class='fit'>
-        <v-toolbar flat color="#fff" height="47">
-            <v-tooltip bottom>
-                <v-btn
-                    small flat fab
-                    slot="activator"
-                    v-on:click="clipboardCopy"
-                >
-                    <v-icon>save</v-icon>
-                </v-btn>
-                <span>Copy to clipboard</span>
-            </v-tooltip>
-            <v-tooltip bottom>
-                <v-btn
-                    small flat fab
-                    slot="activator"
-                    v-on:click="$emit('contract-deploy')"
-                >
-                    <v-icon>call_made</v-icon>
-                </v-btn>
-                <span>Deploy contract</span>
-            </v-tooltip>
-        </v-toolbar>
-        <textarea ref='contractSource' class='source-txtar'>{{contractSource}}</textarea>
-        <div class='fit'>
-        <!-- <v-textarea
-          box
-          ref='contractSource'
-          name='contractSource'
-          label='Pipeline Contract'
-          class='source-txtar'
-          height='100%'
-          :value='contractSource'
-        ></v-textarea> -->
-        </div>
+        <v-tabs fixed-tab left class="fullheight">
+            <v-tab ripple key="solidity">Solidity</v-tab>
+            <v-tab ripple key="graph">Graph</v-tab>
+            <v-tab-item
+                key="solidity"
+                class="fullheight swiper-margin"
+            >
+                <v-toolbar flat color="#fff" height="47">
+                    <v-tooltip bottom>
+                        <v-btn
+                            small flat fab
+                            slot="activator"
+                            v-on:click="clipboardCopy('contractSource')"
+                        >
+                            <v-icon>save</v-icon>
+                        </v-btn>
+                        <span>Copy to clipboard</span>
+                    </v-tooltip>
+                    <v-tooltip bottom>
+                        <v-btn
+                            small flat fab
+                            slot="activator"
+                            v-on:click="$emit('contract-deploy')"
+                        >
+                            <v-icon>call_made</v-icon>
+                        </v-btn>
+                        <span>Deploy contract</span>
+                    </v-tooltip>
+                </v-toolbar>
+                <textarea ref='contractSource' class='source-txtar'>{{contractSource}}</textarea>
+            </v-tab-item>
+            <v-tab-item
+                key="graph"
+                class="fullheight swiper-margin"
+            >
+                <v-toolbar flat color="#fff" height="47">
+                    <v-tooltip bottom>
+                        <v-btn
+                            small flat fab
+                            slot="activator"
+                            v-on:click="clipboardCopy('graphSource')"
+                        >
+                            <v-icon>save</v-icon>
+                        </v-btn>
+                        <span>Copy to clipboard</span>
+                    </v-tooltip>
+                </v-toolbar>
+                <textarea ref='graphSource' class='source-txtar'>{{graphSource}}</textarea>
+            </v-tab-item>
+        </v-tabs>
     </div>
 </template>
 
 <script>
 export default {
-    props: ['contractSource'],
+    props: ['contractSource', 'graphSource'],
     methods: {
-        clipboardCopy: function(event) {
-            this.$refs.contractSource.select();
+        clipboardCopy: function(reference) {
+            this.$refs[reference].select();
             document.execCommand("copy");
         }
     }
