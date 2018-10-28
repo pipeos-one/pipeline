@@ -609,7 +609,8 @@ function proc4(gr) {
                 let o1 = {}
                 o1[x.i] = parseInt(key) + 1
                 // let t = {i: inc, func: {abiObj: {inputs:[],outputs:[{ name: "out", type:x1.type}], name:"PortIn"}, container:{name:"PipeOS"}}, links:{in:{},out:{0:x.i}}}
-                let state = {name: x1.name+"_"+x.i, type: x1.type, value: undefined}
+                let name = (x1.name !== undefined)? x1.name : ""
+                let state = {name: "i_"+name+"_"+x.i, type: x1.type, value: undefined}
                 const t = { i: incr, id: '5bc59e192817116e84bdd831', links: { in: {}, out: { 1: o1 } } , state: state};
                 gr[incr] = t;
                 /*
@@ -633,7 +634,8 @@ function proc4(gr) {
                 // t ={i: inc, func: {abiObj: {inputs:[{ name: "in", type:x2.type}],outputs:[], name:"PortOut"}, container:{name:"PipeOS"}}, links:{in:{0:x.i},out:{}}}
                 let o1 = {}
                 o1[x.i] = parseInt(key) + 1
-                let state = {name: x2.name+"_"+x.i, type: x2.type, value: undefined}
+                let name = (x2.name !== undefined)? x2.name : ""
+                let state = {name: "o_"+name+"_"+x.i, type: x2.type, value: undefined}
                 const t = { i: incr, id: '5bc59e192817116e84bdd830', links: { in: { 1: o1}, out: {}  }, state: state};
                 gr[incr] = t;
                 // console.log(pipe2.graph.e)
@@ -1066,7 +1068,7 @@ class GraphVisitor{
         this.genF[grIndex] = this.genF[grIndex] + this.ops.function_p2 + ini
         // this.genF1[grIndex] = 
 
-
+        this.genF2[grIndex] = ""
         if (this.out.length >0){
             this.genF2[grIndex] = "return ("
             this.genF2[grIndex] = this.genF2[grIndex] + this.out.join(",")
@@ -1091,7 +1093,7 @@ class GraphVisitor{
             let f = this.genF[grIndex]? this.genF[grIndex]: ""
             this.genF[grIndex] = f+ "\n"+ this.ops.sigFunc1 + funcObj.func.signature + this.ops.sigFunc2 + "\n"
             let inputset = R.map((x)=> {
-                return x.name+"_"+funcObj.i
+                return "i_"+x.name+ "_"+funcObj.i
             }, funcObj.func.abiObj.inputs
             )
             this.genF[grIndex] = this.genF[grIndex] + this.ops.inputSig1 + inputset.join(",")+this.ops.inputSig2+"\n";
@@ -1099,11 +1101,16 @@ class GraphVisitor{
             let outAssem = []
             let outputset = R.map((x)=>{
                 console.log(x)
-                outAssem.push(x.name + "_" + funcObj.i+this.ops.assem)
-                return x.type+" " + x.name + "_" + funcObj.i+ ";"
+                let name = (x.name !== undefined)? x.name: ""
+                outAssem.push("o_" + name + "_"+ funcObj.i+this.ops.assem)
+                return x.type+" o_" +   name + "_"+funcObj.i+ ";"
             }, funcObj.func.abiObj.outputs)
+            let o = ""
+            if (funcObj.func.abiObj.outputs.length >0){
+                o = outputset.join("\n") +this.ops.restFunc1+ outAssem.join("\n")+ this.ops.restFunc2
+            }
 
-            this.genF[grIndex] = this.genF[grIndex] + outputset.join("\n") +this.ops.restFunc1+ outAssem.join("\n")+ this.ops.restFunc2+"\n";
+            this.genF[grIndex] = this.genF[grIndex] + o + "\n";
         }
 
         if (funcObj.func.abiObj.type == "port") {
@@ -1116,7 +1123,7 @@ class GraphVisitor{
             }
 
             if (funcObj.func.abiObj.name == "PortOut") {
-                this.outtype.push(funcObj.state.type+" "+funcObj.state.name)
+                this.outtype.push(funcObj.state.type+" "+ funcObj.state.name)
             }
 
         }
