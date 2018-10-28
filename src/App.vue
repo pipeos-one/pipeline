@@ -25,21 +25,25 @@
 .event {
     background-color: #C9DEBB;
     border-color: #C9DEBB;
+    fill: #C9DEBB;
 }
 
 .payable {
     background-color: #CDE0F2;
     border-color: #CDE0F2;
+    fill: #CDE0F2;
 }
 
 .nonconstant {
     background-color: #E9DEDE;
     border-color: #E9DEDE;
+    fill: #E9DEDE;
 }
 
 .jscomponent {
     background-color: #FEFAC8;
     border-color: #FEFAC8;
+    fill: #FEFAC8;
 }
 
 .normaltxt {

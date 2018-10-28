@@ -759,8 +759,12 @@ class FuncBox {
         const clas = 's_content';
         const txt = `${this.obj.func.container.name}\n${this.obj.func.abiObj.name}`;
         this.el.rect(xr * w, xr).attr({
-            rx: this.r, ry: this.r, fill: '#ddd', 'stroke-width': 1, opacity: 0.4,
-        });
+            rx: this.r,
+            ry: this.r,
+            fill: '#ddd',
+            'stroke-width': 1,
+            opacity: 0.9,
+        }).addClass(this.obj.func.styleClasses);
         this.text = this.el.foreignObject(w * xr, h * 2);
         const id = this.text.attr('id');
         this.text.appendChild('div', { id: `${id}_div` });
