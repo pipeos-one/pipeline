@@ -520,7 +520,7 @@ var incre = 1;
 
 
 function proc_d(grf, tabl, row, known, next, vis) {
-    // console.log("proc_D grf: ", JSON.stringify(grf))
+    console.log("proc_D grf: ", grf, next)
     if (Object.keys(next).length == 0) return
     tabl[row] = {}
     //if (incre == 1) console.clear()
@@ -537,7 +537,7 @@ function proc_d(grf, tabl, row, known, next, vis) {
         R.mapObjIndexed((x1, key1, all1) => {
             //console.log(x1, key1, all1);
             const n1 = Object.keys(x1)[0];
-            // console.log(x1, n1, key1, all1);
+            console.log(x1, n1, key1, all1, known);
             if ((known[n1] === undefined || known[n1] === false) && parseInt(key1) > 0 || grf[parseInt(key)].func.abiObj.type == 'port') {
                 knowIn = false;
                 // known[x1] = false
@@ -1015,6 +1015,7 @@ class GraphVisitor{
         this.genConstr1 = []
         this.genConstr2 = []
         this.genConstr3 = []
+        this.genConstr4 = []
         this.genG = []
         this.genF = []
         this.genF1 = []
@@ -1104,6 +1105,7 @@ class GraphVisitor{
             this.genConstr1.push("address public "+ funcObj.func.abiObj.name+"_"+funcObj.i+ " ;")
             this.genConstr2.push("address _"+funcObj.func.abiObj.name+"_"+funcObj.i)
             this.genConstr3.push(funcObj.func.abiObj.name+"_"+funcObj.i+ " = _" + funcObj.func.abiObj.name+"_"+funcObj.i+ ";")
+            this.genConstr4.push(funcObj.func._id)
             let f = this.genF[grIndex]? this.genF[grIndex]: ""
             this.genF[grIndex] = f+ "\n"+ this.ops.sigFunc1 + funcObj.func.signature + this.ops.sigFunc2 + "\n"
             let inputset = R.mapObjIndexed((x, key, all) => {
@@ -1163,6 +1165,8 @@ class GraphVisitor{
         //out = out + this.intro2
         out =  out + this.genF.join("\n")
 
+        langs["constructor"] = this.genConstr4
+
 
         
 
@@ -1179,8 +1183,11 @@ var visOptions={
     solidity: {
         type: "source",
         lang: "solidity",
-        "file_p0" : "pragma solidity ^0.4.24;\npragma experimental ABIEncoderV2;\n\n",
-        "proxy": `
+        "file_p0" : `pragma solidity ^0.4.24;
+pragma experimental ABIEncoderV2;
+
+`,
+"proxy": `
 interface PipeProxy {
     function proxy(
         address _to,
@@ -1192,7 +1199,6 @@ interface PipeProxy {
         returns (bytes);
 }
 `,
-        "import_p0": "//import \"",
         "import_p1": "\";\n",
         "interface_p0": "\ninterface ",
         "contract_p0": "\ncontract PipedContract",
@@ -1221,9 +1227,18 @@ interface PipeProxy {
 
         intro1: "\n\nfunction PipedFunction",
         intro11: "(",
-        intro2: ") payable public {\nbytes4 signature42;\nbytes memory input42;\nbytes memory answer42;\nuint wei_value = msg.value;\naddress tx_sender = msg.sender;\n",
+        intro2: `) payable public {
+        bytes4 signature42;
+        bytes memory input42;
+        bytes memory answer42;
+        uint wei_value = msg.value;
+        address tx_sender = msg.sender;
+        `,
         "const1": "constructor(address _pipe_proxy, ",
-        "const2": ") public {\npipe_proxy = PipeProxy(_pipe_proxy);\n",
+        "const2": `
+        ) public {
+            pipe_proxy = PipeProxy(_pipe_proxy);
+        `,
         "const3": "}\n",
 
         "part1": ""
