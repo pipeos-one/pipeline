@@ -7,13 +7,7 @@
           :key="item._id"
           v-if="item.abiObj.name"
           slot="activator"
-          v-bind:class="[
-            item.abiObj.type === 'event' ? 'event' : (
-                item.abiObj.payable ? 'payable' : (
-                    !item.abiObj.constant ? 'nonconstant' : ''
-                )
-            )
-          ]"
+          v-bind:class="[item.styleClasses]"
         >
           <v-btn
             v-if="isRemix"
@@ -32,14 +26,7 @@
               block
               flat
               v-on:click="$emit('function-toggle', item)"
-              v-bind:class="[
-                  item.abiObj.type === 'event' ? 'event' : (
-                      item.abiObj.payable ? 'payable' : (
-                          !item.abiObj.constant ? 'nonconstant' : ''
-                      )
-                  ),
-                  'normaltxt'
-              ]"
+              v-bind:class="[item.styleClasses, 'normaltxt']"
             >
               {{ item.container ? item.container.name : '' }} - {{item.abiObj.name}}
             </v-btn>

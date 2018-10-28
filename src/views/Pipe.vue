@@ -86,7 +86,7 @@ import PipeApp from '../components/pipeapp/PipeApp';
 import RemixLoadContract from '../components/remix/RemixLoadContract';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
-import {randomId} from '../utils/utils';
+import {randomId, pipeFunctionColorClass} from '../utils/utils';
 import Graphs from '../components/pipecanvas/pipecanvaslib.js';
 
 Vue.use(VueAwesomeSwiper);
@@ -260,6 +260,7 @@ export default {
     linkContainersFunctions: function(pipeFunctions) {
         this.taggedFunctions = pipeFunctions.map(func => {
             func.container = Object.assign({}, this.selectedContainers.find(cont => cont._id === func.containerid));
+            func.styleClasses = pipeFunctionColorClass(func.abiObj);
             return func;
         });
     },

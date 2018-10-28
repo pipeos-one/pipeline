@@ -9,26 +9,13 @@
         <template v-for="(item, index) in item.functions" v-if="item.abiObj.name">
           <v-subheader
             :key="item._id"
-            v-bind:class="[
-                item.abiObj.type === 'event' ? 'event' : (
-                    item.abiObj.payable ? 'payable' : (
-                        !item.abiObj.constant ? 'nonconstant' : ''
-                    )
-                )
-            ]"
+            v-bind:class="[item.styleClasses]"
           >
             <v-btn
                 block
                 flat
                 v-on:click="$emit('item-toggle', item)"
-                v-bind:class="[
-                    item.abiObj.type === 'event' ? 'event' : (
-                        item.abiObj.payable ? 'payable' : (
-                            !item.abiObj.constant ? 'nonconstant' : ''
-                        )
-                    ),
-                    'normaltxt'
-                ]"
+                v-bind:class="[item.styleClasses, 'normaltxt']"
             >
                 {{ item.abiObj.name }}
             </v-btn>
