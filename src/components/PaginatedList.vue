@@ -1,5 +1,12 @@
 <template>
   <div class="paginatedlist">
+      <div class="text-xs-center">
+          <v-pagination
+            :length="pages"
+            :value="currentPage"
+            v-on:input="changePage"
+          ></v-pagination>
+      </div>
     <v-list two-line>
       <template v-for="(item, index) in items">
         <v-tooltip right>
@@ -44,13 +51,6 @@
       </v-tooltip>
       </template>
     </v-list>
-    <div class="text-xs-center">
-        <v-pagination
-          :length="pages"
-          :value="currentPage"
-          v-on:input="changePage"
-        ></v-pagination>
-    </div>
   </div>
 </template>
 <script>
