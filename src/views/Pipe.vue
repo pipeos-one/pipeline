@@ -1,11 +1,7 @@
 <template>
     <swiper ref="mySwiper" :options="swiperOptions">
         <swiper-slide class="swiper-margin no-swipe">
-            <v-btn
-              v-if="isRemix"
-              v-on:click="loadFromRemixWrap"
-              flat small
-            >Remix <v-icon>play_for_work</v-icon></v-btn>
+            <RemixLoadContract v-on:load-from-remix="loadFromRemixWrap"/>
                 <!-- <Tags v-on:tag-toggle="onTagToggle"/> -->
                 <v-flex xs11>
                 <PaginatedList
@@ -87,6 +83,7 @@ import PaginatedList from '../components/PaginatedList';
 import PipeTree from '../components/PipeTree';
 import PipeCanvas from '../components/pipecanvas/PipeCanvas';
 import PipeApp from '../components/pipeapp/PipeApp';
+import RemixLoadContract from '../components/remix/RemixLoadContract';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
 import {randomId} from '../utils/utils';
@@ -98,6 +95,8 @@ const get_api = Pipeos.pipeserver.api.json;
 const functionsAPI = Pipeos.pipeserver.api.function;
 const containerApi = Pipeos.pipeserver.api.container;
 const containerFunctionsApi = Pipeos.pipeserver.api.container + '/pipefunctions';
+const deployedApi = Pipeos.pipeserver.api.deployed;
+
 let filterOptions = {
     offset: 0,
     limit: 10,
@@ -113,6 +112,7 @@ export default {
     PipeTree,
     PipeCanvas,
     PipeApp,
+    RemixLoadContract,
   },
   data() {
     return {
@@ -244,7 +244,7 @@ export default {
             .map(key => `filter[${key}]=${this.filterOptions[key]}`)
             .concat(
                 this.selectedTags.map(tag => `filter[where][tags][inq]=${tag}`)
-            )
+            ).concat([`filter[order]=timestamp%20DESC`])
             .join('&');
         if (this.selectedTags.length > 0) {
             query += '&filter[where][tags][inq]=';
@@ -301,69 +301,26 @@ export default {
             );
         }
     },
-    getDataFromRemix(callback) {
-        Pipeos.remix.call(
-            'compiler',
-            'getCompilationResult',
-            [],
-            function(error, result) {
-                console.log(error, result);
-                if (error) {
-                    throw new Error(error);
-                }
-                let compiled = result[0];
-                const target = compiled.source.target;
-                // let additional_solsources;
-                // if (Object.keys(compiled.source.sources).length > 1) {
-                //     additional_solsources = Object.assign({}, compiled.source.sources);
-                //     delete additional_solsources[target];
-                // }
-                Object.entries(compiled.data.contracts[target]).forEach(entry => {
-                    console.log(entry);
-                    let name = entry[0];
-                    let contract = entry[1];
-                    let data = {
-                        name,
-                        container: {
-                            abi: contract.abi,
-                            devdoc: contract.devdoc,
-                            userdoc: contract.userdoc,
-                            solsource: compiled.source.sources[target].content,
-                            // additional_solsources,
-                            bytecode: contract.evm.bytecode,
-                            deployedBytecode: contract.evm.deployedBytecode,
-                            metadata: contract.metadata,
-                        },
-                        tags: [],
-                    };
-
-                    // Remove duplicate abi, devdoc, userdoc
-                    delete data.container.metadata.output;
-                    console.log('data', data);
-                    callback(data);
-                });
-            }
-        );
+    loadFromRemix: function(container, deployment) {
+        container._id = randomId();
+        container.deployment = deployment;
+        this.selectedContainers.push(container);
+        container.functions = this.buildFunctionsFromContainer(container);
+        this.selectedTreeContainers.push(container);
+        console.log('selectedContainers', this.selectedContainers);
+        console.log('selectedTreeContainers', this.selectedTreeContainers);
     },
-    loadFromRemix: function() {
-        this.getDataFromRemix(container => {
-            container._id = randomId();
-            this.selectedContainers.push(container);
-            container.functions = this.buildFunctionsFromContainer(container);
-            this.selectedTreeContainers.push(container);
-            console.log('selectedContainers', this.selectedContainers);
-            console.log('selectedTreeContainers', this.selectedTreeContainers);
-        });
-    },
-    saveFromRemix: function() {
-        this.getDataFromRemix(data => {
-            Vue.axios.post(containerFunctionsApi, data)
-            .then((response) => {
-                console.log('post', response);
-                this.loadData();
-            }).catch(function (error) {
-                console.log(error);
-            });
+    saveFromRemix: function(container, deployment) {
+        Vue.axios.post(containerFunctionsApi, container)
+        .then((response) => {
+            console.log('post container', response);
+            deployment.containerid = response.data._id;
+            return Vue.axios.post(deployedApi, deployment);
+        }).then((response) => {
+            console.log('post deployment', response);
+            this.loadData();
+        }).catch(function (error) {
+            console.log(error);
         });
     },
     buildFunctionsFromContainer: function(container) {
@@ -391,11 +348,21 @@ export default {
         });
         return functions;
     },
-    loadFromRemixWrap: function() {
-        if (confirm('Click `OK` if you want to save your contract on the Pipeos server. Click `Cancel` and the contract will only load in the client and will disappear on Refresh.')) {
-            this.saveFromRemix();
+    loadFromRemixWrap: function(compiled_contract, deployment_info) {
+        let message = `
+            Loading ${compiled_contract.name} (deployed at ${deployment_info.deployed.ethaddress} on chain ${deployment_info.deployed.chainid}) to Pipeline.
+        `;
+        if (deployment_info.deployed.chainid === 'JavaScriptVM') {
+            alert(`${message} The contract will only load in the plugin client and will disappear on Refresh.`);
+            this.loadFromRemix(compiled_contract, deployment_info);
+        } else if (confirm(`
+            ${message}
+            Click "OK" if you want to save it on the Pipeos server.
+            Click "Cancel" and the contract will only load in the plugin client and will disappear on Refresh.`)
+        ) {
+            this.saveFromRemix(compiled_contract, deployment_info);
         } else {
-            this.loadFromRemix();
+            this.loadFromRemix(compiled_contract, deployment_info);
         }
     },
     deployPipeContract: function() {
@@ -409,6 +376,9 @@ export default {
 </script>
 
 <style>
+body {
+    text-transform: none;
+}
 .swiper-margin {
     margin: 2px;
 }
