@@ -1079,7 +1079,7 @@ class GraphVisitor{
 
         
 
-        this.genF[grIndex] = this.genF[grIndex] + this.ops.function_p2 + ini
+        this.genF[grIndex] = this.genF[grIndex] + " public "+ this.ops.function_p2 + ini
         // this.genF1[grIndex] = 
 
         this.genF2[grIndex] = ""
@@ -1115,7 +1115,7 @@ class GraphVisitor{
             }, funcObj.func.abiObj.inputs
             )
             this.genF[grIndex] = this.genF[grIndex] + this.ops.inputSig1 + Object.values(inputset).join(",")+this.ops.inputSig2+"\n";
-            this.genF[grIndex] = this.genF[grIndex] + this.ops.ansProxy1 +funcObj.func.abiObj.name + this.ops.ansProxy2+"\n";
+            this.genF[grIndex] = this.genF[grIndex] + this.ops.ansProxy1 +funcObj.func.abiObj.name +"_"+ funcObj.i+ this.ops.ansProxy2+"\n";
             let outAssem = []
             let outputset = R.map((x)=>{
                 console.log(x)
@@ -1180,7 +1180,18 @@ var visOptions={
         type: "source",
         lang: "solidity",
         "file_p0" : "pragma solidity ^0.4.24;\npragma experimental ABIEncoderV2;\n\n",
-        "proxy": "\nimport 'pipeos/PipeProxy.sol';\n",
+        "proxy": `
+interface PipeProxy {
+    function proxy(
+        address _to,
+        bytes input_bytes,
+        uint256 gas_value
+    )
+        payable
+        external
+        returns (bytes);
+}
+`,
         "import_p0": "//import \"",
         "import_p1": "\";\n",
         "interface_p0": "\ninterface ",
@@ -1203,7 +1214,7 @@ var visOptions={
         "inputSig1": "input42 = abi.encodeWithSelector(signature42,",
         "inputSig2": ");",
         "ansProxy1": "answer42 = pipe_proxy.proxy(",
-        "ansProxy2": ", input42, 32);",
+        "ansProxy2": ", input42, 400000);",
         "restFunc1": "\nassembly {\n",
         "restFunc2": "\n}\n",
         "assem": " := mload(add(answer42, 32))",
