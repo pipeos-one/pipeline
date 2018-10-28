@@ -167,7 +167,7 @@ export default class Graphs {
     }
 
     getSource(lang) {
-        console.log('getSource', langs[lang])
+        //console.log('getSource', langs[lang])
         return langs[lang]
     }
 }
@@ -532,7 +532,7 @@ function proc_d(grf, tabl, row, known, next, vis) {
 
     R.mapObjIndexed((x, key, all) => {
         // console.log(x, parseInt(key));
-        known[parseInt(key)] = next[parseInt(key)] ? next[parseInt(key)] : true;
+        known[parseInt(key)] = next[parseInt(key)] //? next[parseInt(key)] : true;
         let knowIn = true;
         R.mapObjIndexed((x1, key1, all1) => {
             //console.log(x1, key1, all1);
@@ -560,16 +560,18 @@ function proc_d(grf, tabl, row, known, next, vis) {
                 next1[Object.keys(x2)[0]] = true;
             }, grf[parseInt(key)].links.out);
 
-
-            R.map( (x)=>{
-                if (x.ops.type == "source") {
-                    x.genFunc(grf[parseInt(key)])
-                }
-                if (x.ops.type == "visual") {
-                    x.renderFunc(grf[parseInt(key)], row)
-                }
-
-            },vis)
+            if (next1[parseInt(key)] !== true) {
+                R.map( (x)=>{
+                    if (x.ops.type == "source") {
+                        x.genFunc(grf[parseInt(key)])
+                    }
+                    if (x.ops.type == "visual") {
+                        x.renderFunc(grf[parseInt(key)], row)
+                    }
+    
+                },vis)
+            }
+            
 
 
             // all.splice(key,1)
