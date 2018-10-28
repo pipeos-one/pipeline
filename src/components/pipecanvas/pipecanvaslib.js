@@ -167,6 +167,7 @@ export default class Graphs {
     }
 
     getSource(lang) {
+        console.log('getSource', langs[lang])
         return langs[lang]
     }
 }
@@ -258,6 +259,7 @@ function proc1() {
 
     R.map((x) => {
         x.links = { in: {}, out: {} };
+        x.state ={}
     }, pipe2.cgraphs[grIndex].n);
 
     console.log(pipe2.graphs[grIndex]);
@@ -354,7 +356,7 @@ function proc2(gr) {
     R.mapObjIndexed((x, key, all) => {
     //console.log("grrrrra",JSON.stringify(x))
     // graph.nodes[x.i] ={ render:new FuncBox( x ), links: { in: R.repeat("", x.func.abiObj.inputs.length), out:R.repeat("", "outputs" in x.func.abiObj? x.func.abiObj.outputs.length: [])}}
-
+        //x.state = {}
         pipe2.rgraphs[grIndex][x.i] = new FuncBox(x);
         //gra[x.i] = x;
         let outl = 0;
@@ -667,6 +669,9 @@ class Smooth {
         this.id2 = point2.i;
         this.port1 = diff1;
         this.port2 = diff2;
+        console.log(point1, point2)
+        let state = {name: "o_"+point1.obj.func.abiObj.outputs[diff1-1].name+"_"+point1.obj.i, type: point1.obj.func.abiObj.outputs[diff1-1].type, value: undefined}
+        point2.obj.state[diff2] = state
         this.diff1 = getPort(point1, 'out', diff1);
         const dff2 = getPort(point2, 'in', diff2);
         this.diff2 = { x: dff2.x, y: dff2.y - 6 };
@@ -1101,11 +1106,15 @@ class GraphVisitor{
             this.genConstr3.push(funcObj.func.abiObj.name+"_"+funcObj.i+ " = _" + funcObj.func.abiObj.name+"_"+funcObj.i+ ";")
             let f = this.genF[grIndex]? this.genF[grIndex]: ""
             this.genF[grIndex] = f+ "\n"+ this.ops.sigFunc1 + funcObj.func.signature + this.ops.sigFunc2 + "\n"
-            let inputset = R.map((x)=> {
-                return "i_"+x.name+ "_"+funcObj.i
+            let inputset = R.mapObjIndexed((x, key, all) => {
+                let o = "i_"+x.name+ "_"+funcObj.i
+                if (funcObj.state[parseInt(key)+1]){
+                    o = funcObj.state[parseInt(key)+1].name
+                }
+                return o
             }, funcObj.func.abiObj.inputs
             )
-            this.genF[grIndex] = this.genF[grIndex] + this.ops.inputSig1 + inputset.join(",")+this.ops.inputSig2+"\n";
+            this.genF[grIndex] = this.genF[grIndex] + this.ops.inputSig1 + Object.values(inputset).join(",")+this.ops.inputSig2+"\n";
             this.genF[grIndex] = this.genF[grIndex] + this.ops.ansProxy1 +funcObj.func.abiObj.name + this.ops.ansProxy2+"\n";
             let outAssem = []
             let outputset = R.map((x)=>{
