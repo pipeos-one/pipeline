@@ -54,6 +54,7 @@
         <swiper-slide class="swiper-margin no-swipe">
             <PipeApp
                 :contractSource="contractSource"
+                :graphSource="graphSource"
                 v-on:contract-deploy="deployPipeContract"
             />
         </swiper-slide>
@@ -137,6 +138,7 @@ export default {
         filterOptions,
         pipeJs: {},
         contractSource: '',
+        graphSource: '',
         graphInstance: null,
     };
   },
@@ -154,7 +156,10 @@ export default {
         this.graphInstance = new Graphs(
             this.selectedFunctions,
             {
-                onGraphChange: () => this.contractSource = this.graphInstance.getSource('solidity')
+                onGraphChange: () => {
+                    this.contractSource = this.graphInstance.getSource('solidity');
+                    this.graphSource = JSON.stringify(this.graphInstance.getSource('graphs'));
+                }
             }
         );
         this.graphInstance.addGraph(`draw_${this.activeCanvas + 1}`);
