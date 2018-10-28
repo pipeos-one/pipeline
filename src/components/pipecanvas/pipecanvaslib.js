@@ -1065,7 +1065,7 @@ class GraphVisitor{
     genGraph(g){
         let ini = this.genF[grIndex] 
         
-        this.genF[grIndex] = this.ops.intro1 + grIndex+ this.ops.intro11 + this.in.join(",") + this.ops.function_pp1 
+        this.genF[grIndex] = this.ops.intro1 + grIndex+ this.ops.intro11 + this.in.join(",") + this.ops.function_pp1 + " public "
         
         
 
@@ -1079,7 +1079,7 @@ class GraphVisitor{
 
         
 
-        this.genF[grIndex] = this.genF[grIndex] + " public "+ this.ops.function_p2 + ini
+        this.genF[grIndex] = this.genF[grIndex] +  this.ops.function_p2 + ini
         // this.genF1[grIndex] = 
 
         this.genF2[grIndex] = ""
