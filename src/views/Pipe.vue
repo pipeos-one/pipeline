@@ -244,7 +244,7 @@ export default {
             .map(key => `filter[${key}]=${this.filterOptions[key]}`)
             .concat(
                 this.selectedTags.map(tag => `filter[where][tags][inq]=${tag}`)
-            )
+            ).concat([`filter[order]=timestamp%20DESC`])
             .join('&');
         if (this.selectedTags.length > 0) {
             query += '&filter[where][tags][inq]=';
