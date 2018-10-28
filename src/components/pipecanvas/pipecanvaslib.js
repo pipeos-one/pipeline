@@ -102,7 +102,7 @@ const graph = {"n": [], "e": []};
 
 export default class Graphs {
 
-    constructor(functions){
+    constructor(functions, callback){
         console.log("constr", functions)
         pipe2.functions = functions.concat(ports.map(port => {
             port.container = containers[0];
@@ -115,6 +115,7 @@ export default class Graphs {
         pipe2.rgraphs = []
         pipe2.cgraphs = []
         this.idGen = 0
+        pipe2.callback = callback;
     }
 
     getGraphs() {
@@ -452,6 +453,8 @@ function proc2(gr) {
             langs[x.ops.lang] = x.getGen()
         }
     },visitors)
+
+    pipe2.callback()
 }
 
 // draw edges
