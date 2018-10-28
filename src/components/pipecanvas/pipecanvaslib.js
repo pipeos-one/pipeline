@@ -453,7 +453,12 @@ function proc2(gr) {
         if (x.ops.type == "source") {
             console.log(x.getGen())
             langs[x.ops.lang] = x.getGen()
+        } 
+        if (x.ops.type == "visual") {
+            langs["graphs"] = pipe2.graphs
         }
+
+
     },visitors)
 
     pipe2.callbacks.onGraphChange()
