@@ -153,12 +153,14 @@ export default {
     loadCanvas: function() {
         this.graphInstance = new Graphs(
             this.selectedFunctions,
+            {
+                onGraphChange: () => this.contractSource = this.graphInstance.getSource('solidity')
+            }
         );
         this.graphInstance.addGraph(`draw_${this.activeCanvas + 1}`);
     },
     addToCanvas: function(pipefunction, index) {
         this.graphInstance.addFunction(pipefunction, index);
-        this.contractSource = this.graphInstance.getSource('solidity');
     },
     onTagToggle: function (tagName) {
       if (tagName === 'all') {
