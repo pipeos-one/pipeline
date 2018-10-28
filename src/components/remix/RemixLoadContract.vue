@@ -6,7 +6,7 @@
                     :ref="'addr_input_' + contractName"
                     :label="contractName + ' - deployed on ' + chainName"
                     placeholder="0x0000000000000000000000000000000000000000"
-                    append-icon="play_for_work"
+                    append-icon="fa-download"
                     @click:append="loadFromRemix(contractName)"
                     slot="activator"
                     key="contractName"

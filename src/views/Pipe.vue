@@ -1,6 +1,12 @@
 <template>
     <swiper ref="mySwiper" :options="swiperOptions">
         <swiper-slide class="swiper-margin no-swipe">
+            <PipeAbout/>
+        </swiper-slide>
+        <swiper-slide class="swiper-margin no-swipe">
+            <PipeAboutLinks/>
+        </swiper-slide>
+        <swiper-slide class="swiper-margin no-swipe">
             <RemixLoadContract
                 v-on:load-from-remix="loadFromRemixWrap"
                 v-on:provider-changed="setNetworkInfo"
@@ -35,7 +41,7 @@
                     <v-btn
                       v-on:click="newCanvasFunction"
                       flat icon
-                    ><v-icon>add</v-icon></v-btn>
+                    ><v-icon>fa-plus</v-icon></v-btn>
                     <v-tab
                         v-for="n in canvases"
                         :key="n"
@@ -68,14 +74,14 @@
             slot="button-prev"
             class="nav prev"
         >
-            <v-icon>chevron_left</v-icon>
+            <v-icon>fa-chevron-left</v-icon>
         </v-btn>
         <v-btn absolute small top right fab
             color="white"
             class="nav next"
             slot="button-next"
         >
-            <v-icon>chevron_right</v-icon>
+            <v-icon>fa-chevron-right</v-icon>
         </v-btn>
     </swiper>
 </template>
@@ -88,6 +94,8 @@ import PaginatedList from '../components/PaginatedList';
 import PipeTree from '../components/PipeTree';
 import PipeCanvas from '../components/pipecanvas/PipeCanvas';
 import PipeApp from '../components/pipeapp/PipeApp';
+import PipeAbout from '../components/about/PipeAbout';
+import PipeAboutLinks from '../components/about/PipeAboutLinks';
 import RemixLoadContract from '../components/remix/RemixLoadContract';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
@@ -114,12 +122,14 @@ let filterOptions = {
 
 export default {
   components: {
+    PipeAbout,
     Tags,
     PaginatedList,
     PipeTree,
     PipeCanvas,
     PipeApp,
     RemixLoadContract,
+    PipeAboutLinks,
   },
   data() {
     return {
@@ -450,9 +460,12 @@ body {
     font-family: sans-serif;
 }
 .swiper-slide {
-    width: 66%!important;
+    width: 100%!important;
 }
 .swiper-slide:nth-child(2n), .swiper-slide:nth-child(4n) {
+    width: 66%!important;
+}
+.swiper-slide:nth-child(3n), .swiper-slide:nth-child(5n) {
     width: 30%!important;
     overflow-y: scroll;
 }

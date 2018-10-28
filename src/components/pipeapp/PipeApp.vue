@@ -15,7 +15,7 @@
                             slot="activator"
                             v-on:click="clipboardCopy('contractSource')"
                         >
-                            <v-icon>save</v-icon>
+                            <v-icon>fa-copy</v-icon>
                         </v-btn>
                         <span>Copy to clipboard</span>
                     </v-tooltip>
@@ -25,7 +25,7 @@
                             slot="activator"
                             v-on:click="$emit('load-remix')"
                         >
-                            <v-icon>open_in_new</v-icon>
+                            <v-icon>fa-upload</v-icon>
                         </v-btn>
                         <p>Load in Remix.</p>
                         <p>Compile and deploy it now in Remix.</p>
@@ -45,7 +45,7 @@
                             slot="activator"
                             v-on:click="clipboardCopy('deploymentInfo')"
                         >
-                            <v-icon>save</v-icon>
+                            <v-icon>fa-copy</v-icon>
                         </v-btn>
                         <span>Copy constructor arguments to clipboard</span>
                     </v-tooltip>
@@ -63,7 +63,7 @@
                             slot="activator"
                             v-on:click="clipboardCopy('graphSource')"
                         >
-                            <v-icon>save</v-icon>
+                            <v-icon>fa-copy</v-icon>
                         </v-btn>
                         <span>Copy to clipboard</span>
                     </v-tooltip>
