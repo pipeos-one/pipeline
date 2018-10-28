@@ -1,14 +1,5 @@
 <template>
     <div class="load-remix">
-        <!-- <v-tooltip right>
-            <v-btn
-              small
-              slot="activator"
-              v-on:click="loadFromRemix"
-            ><v-icon>play_for_work</v-icon>Remix Smart Contract
-        </v-btn>
-        <span>dvdfd</span>
-        </v-tooltip> -->
         <template v-for="contractName in contracts">
             <v-tooltip bottom>
                 <v-text-field
@@ -29,6 +20,7 @@
 
 <script>
 import Pipeos from '../../namespace/namespace';
+import {compiledContractProcess} from '../../utils/utils';
 
 export default {
     data() {
@@ -53,10 +45,6 @@ export default {
             this.setNetworkInfo();
             this.setContractsFromRemix();
         });
-
-        Pipeos.remix.listen('txlistener', 'newTransaction', function(data) {
-            console.log('txlistener newTransaction', data);
-        });
     },
     watch: {
         chain: function(newValue) {
@@ -80,7 +68,6 @@ export default {
                     console.log('getExecutionContextProvider', error, provider);
                     // provider = injected | web3 | vm
                     if (provider === 'vm') {
-                        this.provider = 'JavaScriptVM';
                         this.chain = 'JavaScriptVM';
                     } else if (provider === 'injected') {
                         this.web3 = window.web3;
@@ -96,6 +83,7 @@ export default {
                         //     }
                         // );
                     }
+                    this.$emit('provider-changed', this.chain, this.web3);
                 }
             );
         },
@@ -138,41 +126,7 @@ export default {
                     if (error) {
                         throw new Error(error);
                     }
-                    let compiled = result[0];
-                    const target = compiled.source.target;
-                    // let additional_solsources;
-                    // if (Object.keys(compiled.source.sources).length > 1) {
-                    //     additional_solsources = Object.assign({}, compiled.source.sources);
-                    //     delete additional_solsources[target];
-                    // }
-                    Object.entries(compiled.data.contracts).forEach(entryArray => {
-                        let target = entryArray[0];
-                        let targetObj = entryArray[1];
-                        Object.entries(targetObj).forEach(entry => {
-                            console.log(entry);
-                            let name = entry[0];
-                            let contract = entry[1];
-                            let data = {
-                                name,
-                                container: {
-                                    abi: contract.abi,
-                                    devdoc: contract.devdoc,
-                                    userdoc: contract.userdoc,
-                                    solsource: compiled.source.sources[target].content,
-                                    // additional_solsources,
-                                    bytecode: contract.evm.bytecode,
-                                    deployedBytecode: contract.evm.deployedBytecode,
-                                    metadata: contract.metadata,
-                                },
-                                tags: [],
-                            };
-
-                            // Remove duplicate abi, devdoc, userdoc
-                            delete data.container.metadata.output;
-                            console.log('data', data);
-                            callback(data);
-                        });
-                    });
+                    compiledContractProcess(result[0], callback);
                 }
             );
         },
