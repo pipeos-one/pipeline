@@ -87,7 +87,7 @@ import RemixLoadContract from '../components/remix/RemixLoadContract';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
 import {randomId} from '../utils/utils';
-import loadAll from '../components/pipecanvas/pipecanvaslib.js';
+import Graphs from '../components/pipecanvas/pipecanvaslib.js';
 
 Vue.use(VueAwesomeSwiper);
 
@@ -102,8 +102,6 @@ let filterOptions = {
     limit: 10,
     skip: 0,
 };
-
-const graph = {"n": [], "e": []};
 
 export default {
   components: {
@@ -125,7 +123,6 @@ export default {
         selectedFunctions: [[]],
         activeCanvas: 0,
         canvases: 1,
-        graphs: [Object.assign({}, graph)],
         swiperOptions: {
             noSwiping: true,
             navigation: {
@@ -139,7 +136,8 @@ export default {
         selectedContainers: [],
         filterOptions,
         pipeJs: {},
-        contractSource: 'contract Test {}',
+        contractSource: '',
+        graphInstance: null,
     };
   },
   mounted() {
@@ -153,27 +151,14 @@ export default {
         this.setPipeFunctions();
     },
     loadCanvas: function() {
-        this.graphs[this.activeCanvas].n = this.selectedFunctions[
-            this.activeCanvas
-        ].map((item, index) => {
-            return {
-                i: index,
-                id: item._id,
-            }
-        });
-
-        if (this.selectedFunctions[this.activeCanvas].length > 0) {
-            loadAll(
-                Array.apply(null, {length: this.canvases})
-                    .map(Function.call, Number)
-                    .map(canvasIndex => `draw_${canvasIndex + 1}`),
-                this.selectedFunctions,
-                this.graphs,
-            );
-        }
+        this.graphInstance = new Graphs(
+            this.selectedFunctions,
+        );
+        this.graphInstance.addGraph(`draw_${this.activeCanvas + 1}`);
     },
     addToCanvas: function(pipefunction, index) {
-        this.loadCanvas();
+        this.graphInstance.addFunction(pipefunction, index);
+        this.contractSource = this.graphInstance.getSource('solidity');
     },
     onTagToggle: function (tagName) {
       if (tagName === 'all') {
@@ -278,7 +263,12 @@ export default {
     },
     setActiveCanvas: function(value) {
         console.log('setActiveCanvas', value);
+        if (this.graphInstance.getGraphs().length <= value) {
+            this.graphInstance.addGraph(`draw_${value + 1}`);
+        }
         this.activeCanvas = value;
+        this.graphInstance.activeTab(value)
+        console.log(this.graphInstance.getPipe())
     },
     newCanvasFunction: function() {
         let functions = this.selectedFunctions;
