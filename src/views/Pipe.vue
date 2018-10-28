@@ -136,7 +136,7 @@ export default {
         selectedContainers: [],
         filterOptions,
         pipeJs: {},
-        contractSource: 'contract Test {}',
+        contractSource: '',
         graphInstance: null,
     };
   },
@@ -155,10 +155,10 @@ export default {
             this.selectedFunctions,
         );
         this.graphInstance.addGraph(`draw_${this.activeCanvas + 1}`);
-        //this.graphInstance.loadAll();
     },
     addToCanvas: function(pipefunction, index) {
         this.graphInstance.addFunction(pipefunction, index);
+        this.contractSource = this.graphInstance.getSource('solidity');
     },
     onTagToggle: function (tagName) {
       if (tagName === 'all') {
