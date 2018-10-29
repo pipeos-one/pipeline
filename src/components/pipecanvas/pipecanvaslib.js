@@ -360,7 +360,7 @@ function proc2(gr) {
         pipe2.rgraphs[grIndex][x.i] = new FuncBox(x);
         //gra[x.i] = x;
         let outl = 0;
-        if (x.func.abiObj.outputs != undefined) {
+        if (x.func.abiObj.outputs !== undefined) {
             outl = x.func.abiObj.outputs.length;
         }
         //const w = Math.max(x.func.abiObj.inputs.length, outl);
@@ -411,6 +411,7 @@ function proc2(gr) {
 
         R.mapObjIndexed((x1, key1, all1) => {
             if (x1.func.abiObj.name == 'PortIn') n[key1] = true;
+            if (x1.func.abiObj.inputs.length === 0) n[key1] = true;
         }, pg)
         console.log("pg",pg)
         grIndex = parseInt(key)
