@@ -1,6 +1,6 @@
 import {RemixExtension} from '../plugins/remix';
 
-const pipeserverIp = `${process.env.VUE_APP_PIPESERVER_IP}:${process.env.VUE_APP_PIPESERVER_PORT}`;
+const pipeserverIp = process.env.VUE_APP_PIPESERVER_IP;
 
 const Pipeos = {
     pipeserver: {
