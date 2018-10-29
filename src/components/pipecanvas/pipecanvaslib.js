@@ -632,6 +632,7 @@ function proc4(gr) {
                 const t = addPortFunc(incr, o1, state1)
                 //const t = { i: incr, id: '5bc59e192817116e84bdd831', links: { in: {}, out: { 1: o1 } } , state: state};
                 gr[incr] = t;
+                x.state[incr-3000] = state1;
                 /*
 
                 graph.nodes[inc] ={ render:new FuncBox( t ), links: { in: R.repeat("", t.func.abiObj.inputs.length), out:R.repeat("", "outputs" in t.func.abiObj? t.func.abiObj.outputs.length: [])}}
@@ -684,8 +685,17 @@ class Smooth {
         this.port1 = diff1;
         this.port2 = diff2;
         console.log(point1, point2)
-        let state = {name: "o_"+point1.obj.func.abiObj.outputs[diff1-1].name+"_"+point1.obj.i, type: point1.obj.func.abiObj.outputs[diff1-1].type, value: undefined}
-        point2.obj.state[diff2] = state
+        let state1 = {name: "o_"+point1.obj.func.abiObj.outputs[diff1-1].name+"_"+point1.obj.i, type: point1.obj.func.abiObj.outputs[diff1-1].type, value: undefined}
+        console.log(point1.obj.state, diff1, JSON.stringify(point1.obj.state[diff1]))
+        let state = point1.obj.state[diff1] ? point1.obj.state[diff1] : point1.obj.state;
+        console.log('smooth state', JSON.stringify(state))
+        console.log('smooth state1', JSON.stringify(state1))
+        if (point1.obj.func.abiObj.type === 'port') {
+            point2.obj.state[diff2] = state
+        } else {
+            point2.obj.state[diff2] = state1
+        }
+        console.log('smooth final state', JSON.stringify(point2.obj.state[diff2]))
         this.diff1 = getPort(point1, 'out', diff1);
         const dff2 = getPort(point2, 'in', diff2);
         this.diff2 = { x: dff2.x, y: dff2.y - 6 };
