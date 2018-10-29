@@ -175,7 +175,7 @@ export default {
                 onGraphChange: () => {
                     this.contractSource = this.graphInstance.getSource('solidity');
                     this.graphSource = JSON.stringify(this.graphInstance.getSource('graphs'));
-                    this.deploymentInfo = [Pipeos.contracts.PipeProxy[this.chain]]
+                    this.deploymentInfo = [Pipeos.contracts.PipeProxy.addresses[this.chain]]
                         .concat(this.graphInstance.getSource('constructor').map(function_id => {
                             let contract_address;
                             this.selectedFunctions.forEach(pipedFunction => {

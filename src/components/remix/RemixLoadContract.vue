@@ -69,6 +69,7 @@ export default {
                     // provider = injected | web3 | vm
                     if (provider === 'vm') {
                         this.chain = 'JavaScriptVM';
+                        this.deployPipeProxy();
                     } else if (provider === 'injected') {
                         this.web3 = window.web3;
                         this.chain = this.web3.version.network;
@@ -129,6 +130,47 @@ export default {
                     compiledContractProcess(result[0], callback);
                 }
             );
+        },
+        deployPipeProxy() {
+            if (this.chain === 'JavaScriptVM') {
+                Pipeos.remix.call(
+                    'udapp',
+                    'getAccounts',
+                    [],
+                    function(error, [accounts]) {
+                        console.log(error, accounts);
+                        if (error) {
+                            throw new Error(error);
+                        }
+                        console.log('accounts', accounts)
+
+                        let transaction = {
+                            from: accounts[0],
+                            data: Pipeos.contracts.PipeProxy.compiled.bytecode,
+                            gasLimit: '0xf4240',
+                            // gasPrice: 20,
+                            value: '0x00',
+                            useCall: false,
+                        }
+                        console.log('transaction', transaction)
+                        Pipeos.remix.call(
+                            'udapp',
+                            'runTx',
+                            [transaction],
+                            function(error, result) {
+                                console.log(error, result);
+                                if (error) {
+                                    throw new Error(error);
+                                }
+                                if (!result[0] || !result[0].createdAddress) {
+                                    throw new Error('PipeProxy contract not created');
+                                }
+                                Pipeos.contracts.PipeProxy.addresses[this.chain] = result[0].createdAddress;
+                            }
+                        );
+                    }
+                );
+            }
         },
     }
 }
