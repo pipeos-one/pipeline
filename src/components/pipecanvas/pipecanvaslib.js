@@ -600,6 +600,16 @@ function proc3() {
     }, n);
 }
 
+function addPortFunc(i, o1, state1){
+    let out = { i: i, id: '5bc59e192817116e84bdd831', links: { in: {}, out: { 1: o1 } } , state: state1};
+
+    out = R.merge(out, {func: findById(out.id, pipe2.functions)})
+    //out.func.abiObj.outputs[0] = {name: state1.name, type: state1.type}
+    console.log('addPortFunc', out.state)
+    return out
+
+}
+
 // add new nodes for ports
 function proc4(gr) {
     // console.log(pipe2.graph.e)
@@ -618,8 +628,9 @@ function proc4(gr) {
                 o1[x.i] = parseInt(key) + 1
                 // let t = {i: inc, func: {abiObj: {inputs:[],outputs:[{ name: "out", type:x1.type}], name:"PortIn"}, container:{name:"PipeOS"}}, links:{in:{},out:{0:x.i}}}
                 let name = (x1.name !== undefined)? x1.name : ""
-                let state = {name: "i_"+name+"_"+x.i, type: x1.type, value: undefined}
-                const t = { i: incr, id: '5bc59e192817116e84bdd831', links: { in: {}, out: { 1: o1 } } , state: state};
+                let state1 = {name: "i_"+name+"_"+x.i, type: x1.type, value: undefined}
+                const t = addPortFunc(incr, o1, state1)
+                //const t = { i: incr, id: '5bc59e192817116e84bdd831', links: { in: {}, out: { 1: o1 } } , state: state};
                 gr[incr] = t;
                 /*
 
@@ -1113,6 +1124,7 @@ class GraphVisitor{
             this.genF[grIndex] = f+ "\n"+ this.ops.sigFunc1 + funcObj.func.signature + this.ops.sigFunc2 + "\n"
             let inputset = R.mapObjIndexed((x, key, all) => {
                 let o = "i_"+x.name+ "_"+funcObj.i
+                console.log('*********', funcObj.state[parseInt(key)+1])
                 if (funcObj.state[parseInt(key)+1]){
                     o = funcObj.state[parseInt(key)+1].name
                 }
