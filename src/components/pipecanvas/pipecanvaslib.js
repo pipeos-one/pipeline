@@ -103,7 +103,7 @@ const graph = {"n": [], "e": []};
 export default class Graphs {
 
     constructor(functions, callbacks){
-        console.log("constr", functions)
+        // console.log("constr", functions)
         pipe2.functions = functions.concat(ports.map(port => {
             port.container = containers[0];
             return port;
@@ -128,7 +128,7 @@ export default class Graphs {
     }
 
     addGraph(domid) {
-        console.log("addGr", domid)
+        // console.log("addGr", domid)
         pipe2.domids.push(domid)
         pipe2.draws.push(SVG(domid))
         pipe2.incNodes.push(0)
@@ -139,8 +139,8 @@ export default class Graphs {
     }
 
     addFunction( funcData, grIndex1){
-        console.log("add", funcData, grIndex1)
-        console.log("gr", pipe2)
+        // console.log("add", funcData, grIndex1)
+        // console.log("gr", pipe2)
         grIndex = grIndex1
         pipe2.functions.push(funcData)
         pipe2.graphs[grIndex].n[this.idGen] = {
@@ -158,7 +158,7 @@ export default class Graphs {
 
     activeTab(ndx){
         grIndex = ndx
-        console.log(ndx)
+        // console.log(ndx)
     }
 
     deleteGraph(index) {
@@ -253,7 +253,7 @@ function getPort(funcObj, io, ndx) {
 }
 
 function proc1() {
-    console.log(pipe2.graphs[grIndex]);
+    // console.log(pipe2.graphs[grIndex]);
     pipe2.cgraphs[grIndex]= R.clone(pipe2.graphs[grIndex]);
     //gre = R.clone(pipe2.graphs[grIndex].e);
 
@@ -262,16 +262,16 @@ function proc1() {
         x.state ={}
     }, pipe2.cgraphs[grIndex].n);
 
-    console.log(pipe2.graphs[grIndex]);
+    // console.log(pipe2.graphs[grIndex]);
     // console.log(gre);
 
 
     // bring edges data inside nodes
     R.map((x) => {
-        console.log(JSON.stringify(pipe2.cgraphs[grIndex].n));
+        // console.log(JSON.stringify(pipe2.cgraphs[grIndex].n), x);
         //const o = findByI(x[0], pipe2.graphs[grIndex].n);
         let o = pipe2.cgraphs[grIndex].n[x[0]]
-        console.log(o,x);
+        // console.log(o,x);
         let s = x[2];
         let s2 = {};
         s2[s] = x[3];
@@ -294,19 +294,30 @@ function proc1() {
     // gr is the nodes + function data
     pipe2.cgraphs[grIndex].n = R.mapObjIndexed((x, key, all) => R.merge(x, { func: findById(x.id, funcs) }), pipe2.cgraphs[grIndex].n); // pipe2.graph.n
 
+    //console.log(Object.assign({},pipe2.cgraphs[grIndex].n))
 
-    // return true;
+    //console.log(JSON.stringify(pipe2.cgraphs[grIndex].n))
+
+    
+
+
+
+  //return true;
 
     // add ports
     proc4(pipe2.cgraphs[grIndex].n);
 
 
+
+
+
+
     // console.log("grr",gr)
 
     // gr is the nodes + function data
-    pipe2.cgraphs[grIndex].n = R.mapObjIndexed((x, key, all) => R.merge(x, { func: findById(x.id, funcs) }), pipe2.cgraphs[grIndex].n);
+    
 
-    console.log(pipe2.cgraphs[grIndex])
+    // console.log(pipe2.cgraphs[grIndex])
 
 
     gra = {}
@@ -317,19 +328,24 @@ function proc1() {
 
     pipe2.cgraphs[grIndex].n = gra
 
+
+    pipe2.cgraphs[grIndex].n = R.mapObjIndexed((x, key, all) => R.merge(x, { func: findById(x.id, funcs) }), pipe2.cgraphs[grIndex].n);
+
+
+
+
+
+
     //console.log("grrrrra",JSON.stringify(gra))
-    console.log("gra",gra)
+    // console.log("gra",gra)
     //if (window.stop) return true;
 
     proc2(pipe2.cgraphs[grIndex].n);
 
+    
+
 
     // console.log(funcs)
-
-
-    const cont = filterWithKeys(
-        (key, val) => val.containerid == '5bb54c23cbd77bc8f07afced', funcs,
-    );
 
     // console.log(cont)
 }
@@ -338,7 +354,7 @@ let render = {};
 
 function proc2(gr) {
     //render = {};
-    console.log(grIndex, pipe2.draws[grIndex])
+    // console.log(grIndex, pipe2.draws[grIndex])
     pipe2.draws[grIndex].clear();
     edges = pipe2.draws[grIndex].group();
     menu();
@@ -368,6 +384,8 @@ function proc2(gr) {
     // gra[x.i] = {links: x.links, func: x.func}
     }, gr);
 
+    
+
     //console.log("grrrrr",JSON.stringify(gr))
 
     //console.log("grrrrra",JSON.stringify(gra))
@@ -377,6 +395,8 @@ function proc2(gr) {
     // return true
 
     proc_e(gr);
+
+    
 
     pipe2.cgraphs[grIndex].n = gr
 
@@ -413,7 +433,7 @@ function proc2(gr) {
             if (x1.func.abiObj.name == 'PortIn') n[key1] = true;
             if (x1.func.abiObj.inputs.length === 0) n[key1] = true;
         }, pg)
-        console.log("pg",pg)
+        // console.log("pg",pg)
         grIndex = parseInt(key)
 
 
@@ -457,7 +477,7 @@ function proc2(gr) {
 */
     R.map( (x)=>{
         if (x.ops.type == "source") {
-            console.log(x.getGen())
+            // console.log(x.getGen())
             langs[x.ops.lang] = x.getGen()
         } 
         if (x.ops.type == "visual") {
@@ -493,6 +513,7 @@ function proc_e(gr) {
         pipe2.rgraphs[grIndex][x[0]].links.out.push(link);
         pipe2.rgraphs[grIndex][x[2]].links.in.push(link);
 
+        /*
         let o1 = {}
         o1[x[2]] = x[3]
         let o2 = {}
@@ -500,10 +521,14 @@ function proc_e(gr) {
 
         gr[x[0]].links.out[x[1]] = o1;
         gr[x[0]].links.in[x[3]] = o2;
-
+        */
         // console.log(n1.obj.i,   n2.obj.i)
         //g.setEdge(n1.i, n2.i);
     }, pipe2.cgraphs[grIndex].e);
+
+    R.map((x) => {
+        console.log(JSON.stringify(x.links), x)
+    }, pipe2.cgraphs[grIndex].n);
 }
 
 
@@ -521,70 +546,54 @@ var incre = 1;
 
 
 function proc_d(grf, tabl, row, known, next, vis) {
-    console.log("proc_D grf: ", grf, next)
+    console.log("proc_D grf: ", grf, "row",row,"known", known, "next",next)
     if (Object.keys(next).length == 0) return
     tabl[row] = {}
-    //if (incre == 1) console.clear()
-    // console.log('proc_d', grf, tabl, row, known, next);
+    let next1={}, known1 = {}
 
-    if (Object.keys(grf).length == 0) return;
-    const next1 = {};
     incre = incre+1;
 
     R.mapObjIndexed((x, key, all) => {
-        // console.log(x, parseInt(key));
-        known[parseInt(key)] = next[parseInt(key)] //? next[parseInt(key)] : true;
-        let knowIn = true;
+        let runnable = true
         R.mapObjIndexed((x1, key1, all1) => {
-            //console.log(x1, key1, all1);
             const n1 = Object.keys(x1)[0];
-            console.log(x1, n1, key1, all1, known);
-            if ((known[n1] === undefined || known[n1] === false) && parseInt(key1) > 0 || grf[parseInt(key)].func.abiObj.type == 'port') {
-                knowIn = false;
-                // known[x1] = false
-                //known[key] = false;
-                // alert(x1,known[key1])
+            if ((known[n1] === undefined || known[n1] === false) && parseInt(key1) > 0){
+                runnable = false;
             }
         }, grf[parseInt(key)].links.in);
-        if (!grf[parseInt(key)].func.abiObj.outputs) {
-            grf[parseInt(key)].func.abiObj.outputs = [];
-        }
-        if (
-            grf[parseInt(key)].func.abiObj.inputs.length == 0 || (
-                knowIn && grf[parseInt(key)].func.abiObj.outputs.length != 0) || (
-                    known[parseInt(key)] &&
-                    grf[parseInt(key)].func.abiObj.outputs.length == 0
-                )
-            ) {
+        if (runnable) {
+            R.map( (x)=>{
+                if (x.ops.type == "source") {
+                    x.genFunc(grf[parseInt(key)])
+                }
+                if (x.ops.type == "visual") {
+                    x.renderFunc(grf[parseInt(key)], row)
+                }
+  
+            },vis)
+            known1[key] = true
+
             R.mapObjIndexed((x2, key2, all2) => {
                 // console.log("next", x2, key2, all2)
                 next1[Object.keys(x2)[0]] = true;
             }, grf[parseInt(key)].links.out);
 
-            if (next1[parseInt(key)] !== true) {
-                R.map( (x)=>{
-                    if (x.ops.type == "source") {
-                        x.genFunc(grf[parseInt(key)])
-                    }
-                    if (x.ops.type == "visual") {
-                        x.renderFunc(grf[parseInt(key)], row)
-                    }
-    
-                },vis)
-            }
-            
-
-
-            // all.splice(key,1)
-            delete all[parseInt(key)];
-            delete next[parseInt(key)]
         }
+        delete next[parseInt(key)]
+
+        
     }, next);
+
+    next1 = Object.assign(next,next1)
+    known1 = Object.assign(known,known1)
+
+
+
 
     //console.log(tabl, known, grf, Object.assign(next,next1));
     // console.log('proc_d2', grf); if (incre < 5)
 
-    proc_d(grf, tabl, row + 1, known, next1, vis);
+    proc_d(grf, tabl, row + 1, known1, next1, vis);
 }
 
 
@@ -605,7 +614,7 @@ function addPortFunc(i, o1, state1){
 
     out = R.merge(out, {func: findById(out.id, pipe2.functions)})
     //out.func.abiObj.outputs[0] = {name: state1.name, type: state1.type}
-    console.log('addPortFunc', out.state)
+    // console.log('addPortFunc', out.state)
     return out
 
 }
@@ -685,18 +694,18 @@ class Smooth {
         this.id2 = point2.i;
         this.port1 = diff1;
         this.port2 = diff2;
-        console.log(point1, point2)
+        // console.log(point1, point2)
         let state1 = {name: "o_"+point1.obj.func.abiObj.outputs[diff1-1].name+"_"+point1.obj.i, type: point1.obj.func.abiObj.outputs[diff1-1].type, value: undefined}
-        console.log(point1.obj.state, diff1, JSON.stringify(point1.obj.state[diff1]))
+        // console.log(point1.obj.state, diff1, JSON.stringify(point1.obj.state[diff1]))
         let state = point1.obj.state[diff1] ? point1.obj.state[diff1] : point1.obj.state;
-        console.log('smooth state', JSON.stringify(state))
-        console.log('smooth state1', JSON.stringify(state1))
+        // console.log('smooth state', JSON.stringify(state))
+        // console.log('smooth state1', JSON.stringify(state1))
         if (point1.obj.func.abiObj.type === 'port') {
             point2.obj.state[diff2] = state
         } else {
             point2.obj.state[diff2] = state1
         }
-        console.log('smooth final state', JSON.stringify(point2.obj.state[diff2]))
+        // console.log('smooth final state', JSON.stringify(point2.obj.state[diff2]))
         this.diff1 = getPort(point1, 'out', diff1);
         const dff2 = getPort(point2, 'in', diff2);
         this.diff2 = { x: dff2.x, y: dff2.y - 6 };
@@ -950,8 +959,8 @@ class FuncBox {
                 // console.log(e);
                 const node = self.obj.i;
                 startDrop = [node, parseInt(key)+1];
-                console.log(startDrop, endDrop);
-                console.log(gra)
+                // console.log(startDrop, endDrop);
+                // console.log(gra)
                 if (endDrop != false) {
                     // console.log(startDrop, endDrop);
                     const edge = startDrop.concat(endDrop);
@@ -1054,7 +1063,7 @@ class GraphVisitor{
     }
 
     renderFunc(funcObj, row){
-        console.log(funcObj)
+        // console.log(funcObj)
 
         if (row != 0) {
             //console.log("o--",funcObj.i,Object.keys(pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].links.in[1]))
@@ -1068,9 +1077,9 @@ class GraphVisitor{
         }
 
         //tabl[row][parseInt(key)] = this.pointer;
-        console.log(grIndex, funcObj.i, pipe2.rgraphs[grIndex][parseInt(funcObj.i)])
+        // console.log(grIndex, funcObj.i, pipe2.rgraphs[grIndex][parseInt(funcObj.i)])
         pipe2.rgraphs[grIndex][parseInt(funcObj.i)].redraw(this.pointer, 2*(row + 1) * xr);
-        console.log(pipe2.cgraphs[grIndex])
+        // console.log(pipe2.cgraphs[grIndex])
         this.pointer += (1 + Math.max(pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.inputs.length, pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.outputs.length)) * xr;
 
 
@@ -1126,7 +1135,7 @@ class GraphVisitor{
     }
 
     genFunc(funcObj, row){
-        console.log(funcObj)
+        // console.log(funcObj)
         if (funcObj.func.abiObj.type == "function") {
             this.genConstr1.push("address public "+ funcObj.func.abiObj.name+"_"+funcObj.i+ " ;")
             this.genConstr2.push("address _"+funcObj.func.abiObj.name+"_"+funcObj.i)
@@ -1136,7 +1145,7 @@ class GraphVisitor{
             this.genF[grIndex] = f+ "\n"+ this.ops.sigFunc1 + funcObj.func.signature + this.ops.sigFunc2 + "\n"
             let inputset = R.mapObjIndexed((x, key, all) => {
                 let o = "i_"+x.name+ "_"+funcObj.i
-                console.log('*********', funcObj.state[parseInt(key)+1])
+                // console.log('*********', funcObj.state[parseInt(key)+1])
                 if (funcObj.state[parseInt(key)+1]){
                     o = funcObj.state[parseInt(key)+1].name
                 }
@@ -1147,7 +1156,7 @@ class GraphVisitor{
             this.genF[grIndex] = this.genF[grIndex] + this.ops.ansProxy1 +funcObj.func.abiObj.name +"_"+ funcObj.i+ this.ops.ansProxy2+"\n";
             let outAssem = []
             let outputset = R.map((x)=>{
-                console.log(x)
+                // console.log(x)
                 let name = (x.name !== undefined)? x.name: ""
                 outAssem.push("o_" + name + "_"+ funcObj.i+this.ops.assem)
                 return x.type+" o_" +   name + "_"+funcObj.i+ ";"
