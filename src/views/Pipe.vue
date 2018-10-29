@@ -185,7 +185,6 @@ export default {
                                     contract_address = functionObj.container.deployment.deployed.ethaddress;
                                 }
                             });
-                            console.log('contract_address', contract_address);
                             return contract_address;
                         })).map(address => `"${address}"`).join(',');
                     console.log('this.deploymentInfo', this.deploymentInfo);
@@ -397,27 +396,41 @@ export default {
     pipedLoadRemix: function() {
         let name = `PipedContract_${randomId()}`;
         this.loadRemixCall(name, this.contractSource);
+        this.pipedContracts[name] = null;
 
-        Pipeos.remix.listen('txlistener', 'newTransaction', function(data) {
+        if (this.chain === 'JavaScriptVM') return;
+
+        Pipeos.remix.listen('txlistener', 'newTransaction', (data) => {
             console.log('txlistener newTransaction', data);
-
             Pipeos.remix.call(
                 'compiler',
                 'getCompilationResult',
                 [],
-                function(error, result) {
+                (error, result) => {
                     console.log(error, result);
                     if (error) {
                         throw new Error(error);
                     }
+                    if (result[0].source.target)
                     compiledContractProcess(result[0], function(contract) {
-                        console.log('contract');
+                        console.log('contract', contract);
+                        if (this.pipedContracts[contract.name]) {
+                            if (confirm(`
+                                You have deployed ${contract.name}.
+                                Click "OK" if you want to save it on the Pipeos server.`)
+                            ) {
+                                this.saveFromRemix(contract, {
+                                    deployed: {
+                                        ethaddress: data[0].contractAddress,
+                                        chainid: this.chain,
+                                    }
+                                });
+                            }
+                        }
                     });
                 }
             );
         });
-
-        this.pipedContracts[name]
     },
   }
 };

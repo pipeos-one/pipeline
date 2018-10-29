@@ -142,14 +142,11 @@ export default {
                         if (error) {
                             throw new Error(error);
                         }
-                        console.log('accounts', accounts)
-
                         let transaction = {
                             from: accounts[0],
                             data: Pipeos.contracts.PipeProxy.compiled.bytecode,
-                            gasLimit: '0xf4240',
-                            // gasPrice: 20,
-                            value: '0x00',
+                            gasLimit: '300000',
+                            value: '0',
                             useCall: false,
                         }
                         console.log('transaction', transaction)
@@ -162,10 +159,13 @@ export default {
                                 if (error) {
                                     throw new Error(error);
                                 }
+                                if (result[0].error) {
+                                    throw new Error(JSON.stringify(result[0].error));
+                                }
                                 if (!result[0] || !result[0].createdAddress) {
                                     throw new Error('PipeProxy contract not created');
                                 }
-                                Pipeos.contracts.PipeProxy.addresses[this.chain] = result[0].createdAddress;
+                                Pipeos.contracts.PipeProxy.addresses['JavaScriptVM'] = result[0].createdAddress;
                             }
                         );
                     }
