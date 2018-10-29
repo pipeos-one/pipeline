@@ -617,6 +617,7 @@ function proc4(gr) {
     // console.log(gr)
     let incr = 3000;
     R.map((x) => {
+        let x_incr = incr;
         if (x.func.abiObj.type == "port") return
         R.mapObjIndexed((x1, key, all) => {
             // console.log(x1)
@@ -632,7 +633,7 @@ function proc4(gr) {
                 const t = addPortFunc(incr, o1, state1)
                 //const t = { i: incr, id: '5bc59e192817116e84bdd831', links: { in: {}, out: { 1: o1 } } , state: state};
                 gr[incr] = t;
-                x.state[incr-3000] = state1;
+                x.state[incr-x_incr] = state1;
                 /*
 
                 graph.nodes[inc] ={ render:new FuncBox( t ), links: { in: R.repeat("", t.func.abiObj.inputs.length), out:R.repeat("", "outputs" in t.func.abiObj? t.func.abiObj.outputs.length: [])}}
@@ -1049,6 +1050,7 @@ class GraphVisitor{
         this.row = 0
         this.out = []
         this.outtype = []
+        this.returns = []
     }
 
     renderFunc(funcObj, row){
@@ -1097,7 +1099,7 @@ class GraphVisitor{
 
         if (this.outtype.length >0){
             this.genF[grIndex] = this.genF[grIndex] + this.ops.function_ret0
-            this.genF[grIndex] = this.genF[grIndex] + this.outtype.join(",")
+            this.genF[grIndex] = this.genF[grIndex] + this.returns.join(",")
             this.genF[grIndex] = this.genF[grIndex] +  this.ops.function_ret1
         }
 
@@ -1169,6 +1171,7 @@ class GraphVisitor{
 
             if (funcObj.func.abiObj.name == "PortOut") {
                 this.outtype.push(funcObj.state.type+" "+ funcObj.state.name)
+                this.returns.push(funcObj.state.type+" r_"+ funcObj.state.name)
             }
 
         }
