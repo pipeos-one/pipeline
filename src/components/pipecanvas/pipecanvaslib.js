@@ -253,7 +253,7 @@ function getPort(funcObj, io, ndx) {
 }
 
 function proc1() {
-    // console.log(pipe2.graphs[grIndex]);
+    console.log(pipe2.graphs[grIndex]);
     pipe2.cgraphs[grIndex]= R.clone(pipe2.graphs[grIndex]);
     //gre = R.clone(pipe2.graphs[grIndex].e);
 
@@ -270,6 +270,7 @@ function proc1() {
     R.map((x) => {
         // console.log(JSON.stringify(pipe2.cgraphs[grIndex].n), x);
         //const o = findByI(x[0], pipe2.graphs[grIndex].n);
+        if (x === undefined) return
         let o = pipe2.cgraphs[grIndex].n[x[0]]
         // console.log(o,x);
         let s = x[2];
@@ -525,10 +526,11 @@ function proc_e(gr) {
         // console.log(n1.obj.i,   n2.obj.i)
         //g.setEdge(n1.i, n2.i);
     }, pipe2.cgraphs[grIndex].e);
-
+/*
     R.map((x) => {
         console.log(JSON.stringify(x.links), x)
     }, pipe2.cgraphs[grIndex].n);
+*/
 }
 
 
@@ -546,7 +548,7 @@ var incre = 1;
 
 
 function proc_d(grf, tabl, row, known, next, vis) {
-    console.log("proc_D grf: ", grf, "row",row,"known", known, "next",next)
+    //console.log("proc_D grf: ", grf, "row",row,"known", known, "next",next)
     if (Object.keys(next).length == 0) return
     tabl[row] = {}
     let next1={}, known1 = {}
@@ -690,8 +692,8 @@ class Smooth {
     constructor(point1, point2, diff1, diff2) {
         this.point1 = point1;
         this.point2 = point2;
-        this.id1 = point1.i;
-        this.id2 = point2.i;
+        this.id1 = point1.obj.i;
+        this.id2 = point2.obj.i;
         this.port1 = diff1;
         this.port2 = diff2;
         // console.log(point1, point2)
@@ -772,14 +774,23 @@ class Smooth {
         // console.log(pipe2.graph.e);
         // console.log([this.id1, this.port1, this.id2, this.port2]);
         const self = this;
+        let key1 = undefined
         R.mapObjIndexed((x, key, all) => {
-            // console.log(self.id1, self.port1, self.id2, self.port2, key);
+            console.log(self.id1, self.port1, self.id2, self.port2, key, x);
             if (x[0] == self.id1 && x[1] == self.port1 && x[2] == self.id2 && x[3] == self.port2) {
                 // delete pipe2.graph.e[parseInt(key)]
                 pipe2.graphs[grIndex].e.splice(parseInt(key), 1);
+                key1 = key
             }
             // pipe2.graph.e.splice(ndx, 1);
         }, pipe2.graphs[grIndex].e);
+
+        if (key1 !== undefined) {
+            delete pipe2.graphs[grIndex].e[key1]
+        }
+
+
+
 
         // console.log(pipe2.graph.e);
 
@@ -825,13 +836,25 @@ class FuncBox {
 
         this.el.dblclick(() => {
             self.el.remove();
-            R.mapObjIndexed((x, key, all) => {
-                if (x.i == self.obj.i) delete pipe2.graphs[grIndex].n[key];
+
+            let keys1 = R.mapObjIndexed((x, key, all) => {
+                if (x.i == self.obj.i) return key
             }, pipe2.graphs[grIndex].n);
 
-            R.mapObjIndexed((x, key, all) => {
-                if (x[0] == self.obj.i || x[2] == self.obj.i) delete pipe2.graphs[grIndex].e[parseInt(key)];
+            R.map((x)=>{
+                delete pipe2.graphs[grIndex].n[parseInt(x)];
+            }, keys1)
+
+            //
+
+            let keys2 = R.mapObjIndexed((x, key, all) => {
+                if (x[0] == self.obj.i || x[2] == self.obj.i) return key
             }, pipe2.graphs[grIndex].e);
+
+            R.map((x)=>{
+                delete pipe2.graphs[grIndex].e[parseInt(x)];
+            }, keys2)
+            
 
             return proc1();
         });
