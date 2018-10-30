@@ -4,9 +4,6 @@
             <PipeAbout/>
         </swiper-slide>
         <swiper-slide class="swiper-margin no-swipe">
-            <PipeAboutLinks/>
-        </swiper-slide>
-        <swiper-slide class="swiper-margin no-swipe">
             <RemixLoadContract
                 v-on:load-from-remix="loadFromRemixWrap"
                 v-on:provider-changed="setNetworkInfo"
@@ -95,7 +92,6 @@ import PipeTree from '../components/PipeTree';
 import PipeCanvas from '../components/pipecanvas/PipeCanvas';
 import PipeApp from '../components/pipeapp/PipeApp';
 import PipeAbout from '../components/about/PipeAbout';
-import PipeAboutLinks from '../components/about/PipeAboutLinks';
 import RemixLoadContract from '../components/remix/RemixLoadContract';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
@@ -129,7 +125,6 @@ export default {
     PipeCanvas,
     PipeApp,
     RemixLoadContract,
-    PipeAboutLinks,
   },
   data() {
     return {
