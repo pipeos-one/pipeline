@@ -15,15 +15,15 @@
             >
                 <v-icon>fa-comments</v-icon>
             </v-btn>
-            
+
         </v-toolbar>
-    
+
 <div>
-  
+
 
             <v-chip class="display-1">
               <v-avatar>
-                
+
                 <v-img
           :src="`/pipeline.png`"
           aspect-ratio="1"
@@ -35,7 +35,7 @@
               Pipeline: The Visual IDE.(WIP)
             </v-chip>
 
-    
+
     <div><br>
     If you know this video: maximixe the window: <img src="/maximize.png"
           height="32"
@@ -45,16 +45,16 @@
           height="33"
           width="33"
         ></img>
-    
+
     <br><br>
 
     </div>
 
         <div>
 
-        <iframe width="476" height="280" src="https://www.youtube.com/embed/sC7Hd6Sr1SI" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        <iframe width="476" height="280" src="https://www.youtube.com/embed/gBizWYQRI7k" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
 
-       
+
 
         </div>
 
