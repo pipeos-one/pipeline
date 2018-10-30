@@ -1,7 +1,10 @@
 <template>
     <swiper ref="mySwiper" :options="swiperOptions">
         <swiper-slide class="swiper-margin no-swipe">
-            <RemixLoadContract v-on:load-from-remix="loadFromRemixWrap"/>
+            <RemixLoadContract
+                v-on:load-from-remix="loadFromRemixWrap"
+                v-on:provider-changed="setNetworkInfo"
+            />
                 <!-- <Tags v-on:tag-toggle="onTagToggle"/> -->
                 <v-flex xs11>
                 <PaginatedList
@@ -54,8 +57,9 @@
         <swiper-slide class="swiper-margin no-swipe">
             <PipeApp
                 :contractSource="contractSource"
+                :deploymentInfo="deploymentInfo"
                 :graphSource="graphSource"
-                v-on:contract-deploy="deployPipeContract"
+                v-on:load-remix="pipedLoadRemix"
             />
         </swiper-slide>
 
@@ -87,7 +91,11 @@ import PipeApp from '../components/pipeapp/PipeApp';
 import RemixLoadContract from '../components/remix/RemixLoadContract';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
-import {randomId, pipeFunctionColorClass} from '../utils/utils';
+import {
+    randomId,
+    pipeFunctionColorClass,
+    compiledContractProcess,
+} from '../utils/utils';
 import Graphs from '../components/pipecanvas/pipecanvaslib.js';
 
 Vue.use(VueAwesomeSwiper);
@@ -116,6 +124,8 @@ export default {
   data() {
     return {
         isRemix: window.self !== window.top,
+        web3: null,
+        chain: '',
         selectedTags: [],
         pages: 1,
         currentPage: 1,
@@ -138,8 +148,10 @@ export default {
         filterOptions,
         pipeJs: {},
         contractSource: '',
+        deploymentInfo: '',
         graphSource: '',
         graphInstance: null,
+        pipedContracts: {},
     };
   },
   mounted() {
@@ -147,6 +159,10 @@ export default {
     this.loadCanvas();
   },
   methods: {
+    setNetworkInfo: function(chain, web3) {
+        this.chain = chain;
+        this.web3 = web3;
+    },
     loadData: function() {
         this.setPipeContainers();
         this.countPipeFunctions();
@@ -159,6 +175,19 @@ export default {
                 onGraphChange: () => {
                     this.contractSource = this.graphInstance.getSource('solidity');
                     this.graphSource = JSON.stringify(this.graphInstance.getSource('graphs'));
+                    this.deploymentInfo = [Pipeos.contracts.PipeProxy.addresses[this.chain]]
+                        .concat(this.graphInstance.getSource('constructor').map(function_id => {
+                            let contract_address;
+                            this.selectedFunctions.forEach(pipedFunction => {
+                                let functionObj = pipedFunction.find(func => func._id == function_id);
+                                if (functionObj) {
+                                    console.log('functionObj', functionObj);
+                                    contract_address = functionObj.container.deployment.deployed.ethaddress;
+                                }
+                            });
+                            return contract_address;
+                        })).map(address => `"${address}"`).join(',');
+                    console.log('this.deploymentInfo', this.deploymentInfo);
                 }
             }
         );
@@ -341,6 +370,7 @@ export default {
                     containerid: container._id,
                     container: Object.assign({}, container),
                     _id: randomId(),
+                    styleClasses: pipeFunctionColorClass(funcabi),
                 });
             }
         });
@@ -363,12 +393,45 @@ export default {
             this.loadFromRemix(compiled_contract, deployment_info);
         }
     },
-    deployPipeContract: function() {
-        console.log('Deploy source code');
-        if (this.isRemix) {
-            this.loadRemixCall('PipelineContract', 'somesoource');
-        }
-    }
+    pipedLoadRemix: function() {
+        let name = `PipedContract_${randomId()}`;
+        this.loadRemixCall(name, this.contractSource);
+        this.pipedContracts[name] = null;
+
+        if (this.chain === 'JavaScriptVM') return;
+
+        Pipeos.remix.listen('txlistener', 'newTransaction', (data) => {
+            console.log('txlistener newTransaction', data);
+            Pipeos.remix.call(
+                'compiler',
+                'getCompilationResult',
+                [],
+                (error, result) => {
+                    console.log(error, result);
+                    if (error) {
+                        throw new Error(error);
+                    }
+                    if (result[0].source.target)
+                    compiledContractProcess(result[0], function(contract) {
+                        console.log('contract', contract);
+                        if (this.pipedContracts[contract.name]) {
+                            if (confirm(`
+                                You have deployed ${contract.name}.
+                                Click "OK" if you want to save it on the Pipeos server.`)
+                            ) {
+                                this.saveFromRemix(contract, {
+                                    deployed: {
+                                        ethaddress: data[0].contractAddress,
+                                        chainid: this.chain,
+                                    }
+                                });
+                            }
+                        }
+                    });
+                }
+            );
+        });
+    },
   }
 };
 </script>

@@ -1,14 +1,5 @@
 <template>
     <div class="load-remix">
-        <!-- <v-tooltip right>
-            <v-btn
-              small
-              slot="activator"
-              v-on:click="loadFromRemix"
-            ><v-icon>play_for_work</v-icon>Remix Smart Contract
-        </v-btn>
-        <span>dvdfd</span>
-        </v-tooltip> -->
         <template v-for="contractName in contracts">
             <v-tooltip bottom>
                 <v-text-field
@@ -29,6 +20,7 @@
 
 <script>
 import Pipeos from '../../namespace/namespace';
+import {compiledContractProcess} from '../../utils/utils';
 
 export default {
     data() {
@@ -53,10 +45,6 @@ export default {
             this.setNetworkInfo();
             this.setContractsFromRemix();
         });
-
-        Pipeos.remix.listen('txlistener', 'newTransaction', function(data) {
-            console.log('txlistener newTransaction', data);
-        });
     },
     watch: {
         chain: function(newValue) {
@@ -80,8 +68,8 @@ export default {
                     console.log('getExecutionContextProvider', error, provider);
                     // provider = injected | web3 | vm
                     if (provider === 'vm') {
-                        this.provider = 'JavaScriptVM';
                         this.chain = 'JavaScriptVM';
+                        this.deployPipeProxy();
                     } else if (provider === 'injected') {
                         this.web3 = window.web3;
                         this.chain = this.web3.version.network;
@@ -96,6 +84,7 @@ export default {
                         //     }
                         // );
                     }
+                    this.$emit('provider-changed', this.chain, this.web3);
                 }
             );
         },
@@ -138,43 +127,50 @@ export default {
                     if (error) {
                         throw new Error(error);
                     }
-                    let compiled = result[0];
-                    const target = compiled.source.target;
-                    // let additional_solsources;
-                    // if (Object.keys(compiled.source.sources).length > 1) {
-                    //     additional_solsources = Object.assign({}, compiled.source.sources);
-                    //     delete additional_solsources[target];
-                    // }
-                    Object.entries(compiled.data.contracts).forEach(entryArray => {
-                        let target = entryArray[0];
-                        let targetObj = entryArray[1];
-                        Object.entries(targetObj).forEach(entry => {
-                            console.log(entry);
-                            let name = entry[0];
-                            let contract = entry[1];
-                            let data = {
-                                name,
-                                container: {
-                                    abi: contract.abi,
-                                    devdoc: contract.devdoc,
-                                    userdoc: contract.userdoc,
-                                    solsource: compiled.source.sources[target].content,
-                                    // additional_solsources,
-                                    bytecode: contract.evm.bytecode,
-                                    deployedBytecode: contract.evm.deployedBytecode,
-                                    metadata: contract.metadata,
-                                },
-                                tags: [],
-                            };
-
-                            // Remove duplicate abi, devdoc, userdoc
-                            delete data.container.metadata.output;
-                            console.log('data', data);
-                            callback(data);
-                        });
-                    });
+                    compiledContractProcess(result[0], callback);
                 }
             );
+        },
+        deployPipeProxy() {
+            if (this.chain === 'JavaScriptVM') {
+                Pipeos.remix.call(
+                    'udapp',
+                    'getAccounts',
+                    [],
+                    function(error, [accounts]) {
+                        console.log(error, accounts);
+                        if (error) {
+                            throw new Error(error);
+                        }
+                        let transaction = {
+                            from: accounts[0],
+                            data: Pipeos.contracts.PipeProxy.compiled.bytecode,
+                            gasLimit: '300000',
+                            value: '0',
+                            useCall: false,
+                        }
+                        console.log('transaction', transaction)
+                        Pipeos.remix.call(
+                            'udapp',
+                            'runTx',
+                            [transaction],
+                            function(error, result) {
+                                console.log(error, result);
+                                if (error) {
+                                    throw new Error(error);
+                                }
+                                if (result[0].error) {
+                                    throw new Error(JSON.stringify(result[0].error));
+                                }
+                                if (!result[0] || !result[0].createdAddress) {
+                                    throw new Error('PipeProxy contract not created');
+                                }
+                                Pipeos.contracts.PipeProxy.addresses['JavaScriptVM'] = result[0].createdAddress;
+                            }
+                        );
+                    }
+                );
+            }
         },
     }
 }

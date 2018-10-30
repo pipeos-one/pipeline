@@ -2,6 +2,7 @@
     <div class='fit'>
         <v-tabs fixed-tab left class="fullheight">
             <v-tab ripple key="solidity">Solidity</v-tab>
+            <v-tab ripple key="deployment">Deployment</v-tab>
             <v-tab ripple key="graph">Graph</v-tab>
             <v-tab-item
                 key="solidity"
@@ -22,14 +23,34 @@
                         <v-btn
                             small flat fab
                             slot="activator"
-                            v-on:click="$emit('contract-deploy')"
+                            v-on:click="$emit('load-remix')"
                         >
-                            <v-icon>call_made</v-icon>
+                            <v-icon>open_in_new</v-icon>
                         </v-btn>
-                        <span>Deploy contract</span>
+                        <p>Load in Remix.</p>
+                        <p>Compile and deploy it now in Remix.</p>
+                        <p>With the deployment info provided.</p>
                     </v-tooltip>
                 </v-toolbar>
                 <textarea ref='contractSource' class='source-txtar'>{{contractSource}}</textarea>
+            </v-tab-item>
+            <v-tab-item
+                key="deployment"
+                class="fullheight swiper-margin"
+            >
+                <v-toolbar flat color="#fff" height="47">
+                    <v-tooltip bottom>
+                        <v-btn
+                            small flat fab
+                            slot="activator"
+                            v-on:click="clipboardCopy('deploymentInfo')"
+                        >
+                            <v-icon>save</v-icon>
+                        </v-btn>
+                        <span>Copy constructor arguments to clipboard</span>
+                    </v-tooltip>
+                </v-toolbar>
+                <textarea ref='deploymentInfo' class='source-txtar'>{{deploymentInfo}}</textarea>
             </v-tab-item>
             <v-tab-item
                 key="graph"
@@ -55,7 +76,7 @@
 
 <script>
 export default {
-    props: ['contractSource', 'graphSource'],
+    props: ['contractSource', 'graphSource', 'deploymentInfo'],
     methods: {
         clipboardCopy: function(reference) {
             this.$refs[reference].select();
