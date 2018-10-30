@@ -7,20 +7,27 @@
             v-on:input="changePage"
           ></v-pagination>
       </div>
-    <v-list two-line>
+    <div v-if="items.length === 0">
+        <p>Pipeline database does not contain contracts deployed on this chain.
+        To see & play with Pipeline stored contracts, please change to Ropsten, Rinkeby or Kovan.</p>
+        <p>Otherwise, please import your own deployed contracts from Remix.</p>
+    </div>
+    <v-list two-line v-if="items.length > 0">
       <template v-for="(item, index) in items">
-        <v-tooltip right>
         <v-subheader
           :key="item._id"
           v-if="item.abiObj.name"
-          slot="activator"
           v-bind:class="[item.styleClasses]"
         >
-          <v-btn
-            v-if="isRemix"
-            v-on:click="$emit('load-remix', item)"
-            flat icon
-          ><v-icon light small>fa-upload</v-icon></v-btn>
+          <v-tooltip top>
+              <v-btn
+                v-if="isRemix"
+                v-on:click="$emit('load-remix', item)"
+                flat icon
+                slot="activator"
+              ><v-icon light small>fa-upload</v-icon></v-btn>
+          <span>Load contract to Remix</span>
+          </v-tooltip>
           <!-- <v-btn small color="#EEEEEE">abi</v-btn> -->
           <!-- <v-btn
             small
@@ -28,27 +35,29 @@
             v-on:click="$emit('function-toggle', item)"
           >pipe</v-btn>
           {{ item.container ? item.container.name : '' }} - {{ item.abiObj ? item.abiObj.name : '' }} -->
-
+          <v-tooltip right>
             <v-btn
               block
               flat
               v-on:click="$emit('function-toggle', item)"
               v-bind:class="[item.styleClasses, 'normaltxt']"
+              slot="activator"
             >
               {{ item.container ? item.container.name : '' }} - {{item.abiObj.name}}
             </v-btn>
-        </v-subheader>
-        <p class="text-sm-left" v-if="item.userdoc">{{item.userdoc.notice}}</p>
-        <template
-            v-if="item.devdoc"
-        >
+            <p>Load to Tree on the right</p>
+            <p class="text-sm-left" v-if="item.userdoc">{{item.userdoc.notice}}</p>
             <template
-                v-for="(param, index) in Object.keys(item.devdoc.params)">
-                <p class="text-sm-left">{{param}}: {{item.devdoc.params[param]}}</p>
+                v-if="item.devdoc"
+            >
+                <template
+                    v-for="(param, index) in Object.keys(item.devdoc.params)">
+                    <p class="text-sm-left">{{param}}: {{item.devdoc.params[param]}}</p>
+                </template>
+                <p class="text-sm-left" v-if="item.devdoc.return">Returns: {{item.devdoc.return}}</p>
             </template>
-            <p class="text-sm-left" v-if="item.devdoc.return">Returns: {{item.devdoc.return}}</p>
-        </template>
-      </v-tooltip>
+          </v-tooltip>
+        </v-subheader>
       </template>
     </v-list>
   </div>

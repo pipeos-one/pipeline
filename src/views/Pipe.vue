@@ -167,6 +167,7 @@ export default {
     setNetworkInfo: function(chain, web3) {
         this.chain = chain;
         this.web3 = web3;
+        this.loadData();
     },
     loadData: function() {
         this.setPipeContainers();
@@ -256,7 +257,10 @@ export default {
     },
     countPipeFunctions: function() {
         console.log('count', this.selectedTags);
-        let query = '?' + this.selectedTags.map(tag => `where[tags][inq]=${tag}`).join('&');
+        let query = '?' + this.selectedTags
+            .map(tag => `where[tags][inq]=${tag}`)
+            .concat([`where[chainid][like]=${this.chain}`])
+            .join('&');
         if (this.selectedTags.length > 0) {
             query += '&where[tags][inq]=';
         }
@@ -266,12 +270,16 @@ export default {
         });
     },
     setPipeFunctions: function() {
+        console.log('setPipeFunctions for', this.chain)
         let query = '?' + Object.keys(this.filterOptions)
             .map(key => `filter[${key}]=${this.filterOptions[key]}`)
             .concat(
                 this.selectedTags.map(tag => `filter[where][tags][inq]=${tag}`)
             ).concat([`filter[order]=timestamp%20DESC`])
+            .concat([`filter[where][chainid]=${this.chain}`])
             .join('&');
+            // where[containerid][like]=5bd7b24235fa57296db71e39
+
         if (this.selectedTags.length > 0) {
             query += '&filter[where][tags][inq]=';
         }
@@ -292,8 +300,21 @@ export default {
         }
 
         Vue.axios.get(containerApi + query).then((response) => {
-            this.selectedContainers = response.data;
-            this.linkContainersFunctions(this.taggedFunctions);
+            let containers = response.data;
+            this.setPipeDeployed(deployed => {
+                this.selectedContainers = containers.map(container => {
+                    container.deployment = deployed.find(depl => depl.containerid == container._id);
+                    return container;
+                });
+                console.log('this.selectedContainers', this.selectedContainers);
+                this.linkContainersFunctions(this.taggedFunctions);
+            });
+        });
+    },
+    setPipeDeployed: function(callback) {
+        Vue.axios.get(`${deployedApi}?filter[where][deployed.chainid]=${this.chain}`).then((response) => {
+            console.log('setPipeDeployed', response);
+            callback(response.data);
         });
     },
     linkContainersFunctions: function(pipeFunctions) {
@@ -343,6 +364,7 @@ export default {
         console.log('selectedTreeContainers', this.selectedTreeContainers);
     },
     saveFromRemix: function(container, deployment) {
+        container.container.chainid = deployment.deployed.chainid;
         Vue.axios.post(containerFunctionsApi, container)
         .then((response) => {
             console.log('post container', response);
