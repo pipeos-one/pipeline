@@ -1007,6 +1007,8 @@ class FuncBox {
                 // console.log(p, p.offsetX, p.offsetY, draw);
 
                 self.objDrag = pipe2.draws[grIndex].circle(12).attr({fill:"#fcc"}).center(p.offsetX, p.offsetY).back();
+                self.objDrag2 = {x: p.offsetX, y:p.offsetY}
+                self.objDrag3 = smoothDrag(undefined, self.objDrag2, self.objDrag2)
                 // drag was completely prevented
             });
             port.on('dragend', (e) => {
@@ -1016,6 +1018,7 @@ class FuncBox {
                 // console.log(startDrop, endDrop);
                 // console.log(gra)
                 self.objDrag.remove()
+                self.objDrag3.remove()
                 if (endDrop !== false && endDrop !== undefined) {
                     // console.log(startDrop, endDrop);
                     const edge = startDrop.concat(endDrop);
@@ -1034,6 +1037,7 @@ class FuncBox {
                 e.stopPropagation();
                 const p = e.detail.event;
                 self.objDrag.center(p.offsetX, p.offsetY);
+                self.objDrag3 = smoothDrag(self.objDrag3, self.objDrag2, {x: p.offsetX, y: p.offsetY})
             });
         }, this.obj.func.abiObj.outputs);
 
@@ -1095,6 +1099,33 @@ class FuncBox {
             );
         }, n.links.in);
     }
+}
+
+function smoothDrag(obj,init, target){
+    const middle = { x: (init.x + target.x) / 2, y: (init.y + target.y) / 2 };
+    const shapness = xr / 4;
+    const arrowSize = 6;
+    const dir = 1
+    let out = {}
+
+    if (obj === undefined){
+        out = edges.path().attr({
+            fill: 'none',
+            stroke: '#555',
+            'stroke-width': 1,
+            'stroke-linecap': 'round',
+            'stroke-linejoin': 'round',
+        });
+    } else {
+        out = obj
+        
+    }
+    out.plot([
+        ['M', init.x, init.y],
+        ['C', init.x, init.y + (shapness * dir), init.x, middle.y, middle.x, middle.y],
+        ['C', target.x, middle.y, target.x, target.y - (shapness * dir) - arrowSize, target.x, target.y],
+    ])
+    return out
 }
 
 class GraphVisitor{
