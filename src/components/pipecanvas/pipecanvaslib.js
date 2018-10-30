@@ -1122,11 +1122,11 @@ class GraphVisitor{
     }
 
     genGraph(g){
-        let ini = this.genF[grIndex] 
-        
-        this.genF[grIndex] = this.ops.intro1 + grIndex+ this.ops.intro11 + this.in.join(",") + this.ops.function_pp1 + " public "
-        
-        
+        let ini = this.genF[grIndex]
+
+        this.genF[grIndex] = this.ops.intro1 + grIndex+ this.ops.intro11 + this.in.join(",") + this.ops.function_pp1 + " public payable "
+
+
 
 
         if (this.outtype.length >0){
