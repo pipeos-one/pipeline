@@ -276,15 +276,22 @@ function proc1() {
         let s = x[2];
         let s2 = {};
         s2[s] = x[3];
+        //console.log(o.links)
+        if (o.links.out[x[1]]=== undefined){
+            o.links.out[x[1]] = []
+        }
         // console.log(o)
 
-        o.links.out[x[1]] = s2;
+        o.links.out[x[1]].push(s2);
         //const o2 = findByI(x[2], pipe2.graphs[grIndex].n);
         let o2 = pipe2.cgraphs[grIndex].n[x[2]]
         s = x[0];
         s2 = {};
         s2[s] = x[1];
-        o2.links.in[x[3]] = s2;
+        if (o2.links.in[x[3]]=== undefined){
+            o2.links.in[x[3]] = []
+        }
+        o2.links.in[x[3]].push(s2);
         return x;
 
     }, pipe2.graphs[grIndex].e);
@@ -434,7 +441,7 @@ function proc2(gr) {
             if (x1.func.abiObj.name == 'PortIn') n[key1] = true;
             if (x1.func.abiObj.inputs.length === 0) n[key1] = true;
         }, pg)
-        // console.log("pg",pg)
+        console.log("pg",pg)
         grIndex = parseInt(key)
 
 
@@ -558,11 +565,19 @@ function proc_d(grf, tabl, row, known, next, vis) {
     R.mapObjIndexed((x, key, all) => {
         let runnable = true
         R.mapObjIndexed((x1, key1, all1) => {
-            const n1 = Object.keys(x1)[0];
-            if ((known[n1] === undefined || known[n1] === false) && parseInt(key1) > 0){
-                runnable = false;
-            }
+            //const n1 = Object.keys(x1)[0];
+            //console.log( key,x1, Object.keys(x1),n1)
+            R.mapObjIndexed((x2, key2, all2) => {
+                
+                const n1 = Object.keys(x2)[0];
+                console.log( "n1",n1)
+                if ((known[n1] === undefined || known[n1] === false) && parseInt(key1) > 0){
+                    runnable = false;
+                }
+            }, x1)
+            
         }, grf[parseInt(key)].links.in);
+
         if (runnable) {
             R.map( (x)=>{
                 if (x.ops.type == "source") {
@@ -577,7 +592,10 @@ function proc_d(grf, tabl, row, known, next, vis) {
 
             R.mapObjIndexed((x2, key2, all2) => {
                 // console.log("next", x2, key2, all2)
-                next1[Object.keys(x2)[0]] = true;
+                R.mapObjIndexed((x3, key3, all3) => {
+                    next1[Object.keys(x3)[0]] = true;
+                }, x2)
+                
             }, grf[parseInt(key)].links.out);
 
         }
@@ -612,7 +630,7 @@ function proc3() {
 }
 
 function addPortFunc(i, o1, state1){
-    let out = { i: i, id: '5bc59e192817116e84bdd831', links: { in: {}, out: { 1: o1 } } , state: state1};
+    let out = { i: i, id: '5bc59e192817116e84bdd831', links: { in: {}, out: { 1: [o1] } } , state: state1};
 
     out = R.merge(out, {func: findById(out.id, pipe2.functions)})
     //out.func.abiObj.outputs[0] = {name: state1.name, type: state1.type}
@@ -650,9 +668,14 @@ function proc4(gr) {
                 graph.nodes[inc] ={ render:new FuncBox( t ), links: { in: R.repeat("", t.func.abiObj.inputs.length), out:R.repeat("", "outputs" in t.func.abiObj? t.func.abiObj.outputs.length: [])}}
 
 */
-                const int = {};
-                int[incr] = 1;
-                x.links.in[parseInt(key)+1] = int;
+                //const int = {};
+                //int[incr] = 1;
+                if (x.links.in[parseInt(key)+1]=== undefined){
+                    x.links.in[parseInt(key)+1] = []
+                }
+                let s2 = {};
+                s2[incr] = 1;
+                x.links.in[parseInt(key)+1].push(s2);
                 pipe2.cgraphs[grIndex].e.push([incr, 1, x.i, parseInt(key) + 1]);
                 // alert(key)
             }
@@ -668,12 +691,20 @@ function proc4(gr) {
                 o1[x.i] = parseInt(key) + 1
                 let name = (x2.name !== undefined)? x2.name : ""
                 let state = {name: "o_"+name+"_"+x.i, type: x2.type, value: undefined}
-                const t = { i: incr, id: '5bc59e192817116e84bdd830', links: { in: { 1: o1}, out: {}  }, state: state};
+                const t = { i: incr, id: '5bc59e192817116e84bdd830', links: { in: { 1: [o1]}, out: {}  }, state: state};
                 gr[incr] = t;
                 // console.log(pipe2.graph.e)
-                const int = {};
-                int[incr] = 1;
-                x.links.out[parseInt(key)+1] = int;
+                //const int = {};
+                //int[incr] = 1;
+                //x.links.out[parseInt(key)+1] = int;
+
+                if (x.links.out[parseInt(key)+1]=== undefined){
+                    x.links.out[parseInt(key)+1] = []
+                }
+                let s2 = {};
+                s2[incr] = 1;
+                x.links.out[parseInt(key)+1].push(s2);
+
                 pipe2.cgraphs[grIndex].e.push([x.i, parseInt(key) + 1, incr, 1]);
                 // alert(key)
             }
@@ -975,7 +1006,7 @@ class FuncBox {
                 const p = e.detail.event;
                 // console.log(p, p.offsetX, p.offsetY, draw);
 
-                this.obj = pipe2.draws[grIndex].circle(12).center(p.offsetX, p.offsetY).back();
+                self.objDrag = pipe2.draws[grIndex].circle(12).attr({fill:"#fcc"}).center(p.offsetX, p.offsetY).back();
                 // drag was completely prevented
             });
             port.on('dragend', (e) => {
@@ -984,7 +1015,8 @@ class FuncBox {
                 startDrop = [node, parseInt(key)+1];
                 // console.log(startDrop, endDrop);
                 // console.log(gra)
-                if (endDrop != false) {
+                self.objDrag.remove()
+                if (endDrop !== false && endDrop !== undefined) {
                     // console.log(startDrop, endDrop);
                     const edge = startDrop.concat(endDrop);
                     // console.log(edge);
@@ -1001,7 +1033,7 @@ class FuncBox {
                 e.preventDefault();
                 e.stopPropagation();
                 const p = e.detail.event;
-                this.obj.center(p.offsetX, p.offsetY);
+                self.objDrag.center(p.offsetX, p.offsetY);
             });
         }, this.obj.func.abiObj.outputs);
 
