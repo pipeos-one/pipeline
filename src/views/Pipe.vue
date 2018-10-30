@@ -218,7 +218,7 @@ export default {
             this.currentPage = newPage;
         }
         this.setPipeFunctions();
-        // this.setPipeContainers();
+        this.setPipeContainers();
     },
     onFunctionToggle: function (pipefunction) {
         console.log('activeCanvas', this.activeCanvas);
@@ -289,11 +289,14 @@ export default {
         });
     },
     setPipeContainers: function() {
-        let query = '?' + Object.keys(this.filterOptions).map(
-            key => `filter[${key}]=${this.filterOptions[key]}`
-        ).concat(
+        let query = '?' +
+            // Object.keys(this.filterOptions).map(
+            //     key => `filter[${key}]=${this.filterOptions[key]}`
+        // ).concat(
+        [].concat(
             this.selectedTags.map(tag => `filter[where][tags][inq]=${tag}`)
-        ).join('&');
+        ).concat([`filter[where][container.chainid]=${this.chain}`])
+        .join('&');
 
         if (this.selectedTags.length > 0) {
             query += '&filter[where][tags][inq]=';
@@ -320,9 +323,11 @@ export default {
     linkContainersFunctions: function(pipeFunctions) {
         this.taggedFunctions = pipeFunctions.map(func => {
             func.container = Object.assign({}, this.selectedContainers.find(cont => cont._id === func.containerid));
+            console.log('linkContainersFunctions', func.containerid, func.container, func)
             func.styleClasses = pipeFunctionColorClass(func.abiObj);
             return func;
         });
+        console.log('this.taggedFunctions', this.taggedFunctions)
     },
     setActiveCanvas: function(value) {
         console.log('setActiveCanvas', value);
