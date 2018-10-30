@@ -37,7 +37,7 @@
 
 
     <div><br>
-    If you know this video: maximixe the window: <img src="/maximize.png"
+    If you know this video: maximize the window: <img src="/maximize.png"
           height="32"
           width="32"
         ></img> and click next: <img
