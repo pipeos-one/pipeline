@@ -69,6 +69,11 @@ export class PipeFunction extends Entity {
   })
   timestamp: Date;
 
+  @property({
+    type: 'string',
+  })
+  chainid: string;
+
   constructor(data?: Partial<PipeFunction>) {
     super(data);
   }

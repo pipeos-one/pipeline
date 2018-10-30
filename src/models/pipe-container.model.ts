@@ -50,6 +50,11 @@ export class SmartContractContainer extends Model {
       type: 'string',
     })
     jssource?: string;
+
+    @property({
+      type: 'string',
+    })
+    chainid: string;
 }
 
 @model()

@@ -177,6 +177,7 @@ export class PipeContainerController {
             uri: pipeContainer.uri,
             tags: pipeContainer.tags,
             timestamp: pipeContainer.timestamp,
+            chainid: (<SmartContractContainer>pipeContainer.container).chainid,
         }
         let pipefunction = await this.pipeContainerRepository.functions(pipeContainer._id).create(functiondoc);
 
