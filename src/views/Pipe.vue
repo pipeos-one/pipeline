@@ -130,7 +130,7 @@ export default {
     return {
         isRemix: window.self !== window.top,
         web3: null,
-        chain: '',
+        chain: null,
         selectedTags: [],
         pages: 1,
         currentPage: 1,
@@ -259,7 +259,7 @@ export default {
         console.log('count', this.selectedTags);
         let query = '?' + this.selectedTags
             .map(tag => `where[tags][inq]=${tag}`)
-            .concat([`where[chainid][like]=${this.chain}`])
+            .concat(this.chain ? [`where[chainid][like]=${this.chain}`] : [])
             .join('&');
         if (this.selectedTags.length > 0) {
             query += '&where[tags][inq]=';
@@ -276,7 +276,7 @@ export default {
             .concat(
                 this.selectedTags.map(tag => `filter[where][tags][inq]=${tag}`)
             ).concat([`filter[order]=timestamp%20DESC`])
-            .concat([`filter[where][chainid]=${this.chain}`])
+            .concat(this.chain ? [`filter[where][chainid]=${this.chain}`] : [])
             .join('&');
             // where[containerid][like]=5bd7b24235fa57296db71e39
 
@@ -295,7 +295,7 @@ export default {
         // ).concat(
         [].concat(
             this.selectedTags.map(tag => `filter[where][tags][inq]=${tag}`)
-        ).concat([`filter[where][container.chainid]=${this.chain}`])
+        ).concat(this.chain ? [`filter[where][container.chainid]=${this.chain}`] : [])
         .join('&');
 
         if (this.selectedTags.length > 0) {
@@ -315,7 +315,11 @@ export default {
         });
     },
     setPipeDeployed: function(callback) {
-        Vue.axios.get(`${deployedApi}?filter[where][deployed.chainid]=${this.chain}`).then((response) => {
+        let query = deployedApi;
+        if (this.chain) {
+            query += `?filter[where][deployed.chainid]=${this.chain}`;
+        }
+        Vue.axios.get(query).then((response) => {
             console.log('setPipeDeployed', response);
             callback(response.data);
         });
