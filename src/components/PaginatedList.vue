@@ -20,7 +20,7 @@
             v-if="isRemix"
             v-on:click="$emit('load-remix', item)"
             flat icon
-          ><v-icon>call_made</v-icon></v-btn>
+          ><v-icon light small>fa-upload</v-icon></v-btn>
           <!-- <v-btn small color="#EEEEEE">abi</v-btn> -->
           <!-- <v-btn
             small
