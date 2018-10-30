@@ -15,25 +15,50 @@
             >
                 <v-icon>fa-comments</v-icon>
             </v-btn>
-            <v-btn
-                small flat fab
-                href="https://www.youtube.com/watch?v=sC7Hd6Sr1SI&list=PL323JufuD9JAyaYCEvrnQ5yOAc3ukuNyF"
-                target="_blank"
-            >
-                <v-icon>fa-video</v-icon>
-            </v-btn>
+            
         </v-toolbar>
+    
+<div>
+  
 
-        <v-img
+            <v-chip class="display-1">
+              <v-avatar>
+                
+                <v-img
           :src="`/pipeline.png`"
           aspect-ratio="1"
           class="grey lighten-2"
-          height="40"
-          width="40"
+          height="44"
+          width="44"
         ></v-img>
-        Pipeline is a visual IDE for building smart contracts.
+              </v-avatar>
+              Pipeline: The Visual IDE.(WIP)
+            </v-chip>
+
+    
+    <div><br>
+    If you know this video: maximixe the window: <img src="/maximize.png"
+          height="32"
+          width="32"
+        ></img> and click next: <img
+          src="/next.png"
+          height="33"
+          width="33"
+        ></img>
+    
+    <br><br>
 
     </div>
+
+        <div>
+
+        <iframe width="476" height="280" src="https://www.youtube.com/embed/sC7Hd6Sr1SI" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+
+       
+
+        </div>
+
+    </div> </div>
 </template>
 
 <style>
