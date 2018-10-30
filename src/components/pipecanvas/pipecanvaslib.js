@@ -1150,21 +1150,20 @@ class GraphVisitor{
     }
 
     renderFunc(funcObj, row){
-        // console.log(funcObj)
-
-        if (row != 0) {
-            //console.log("o--",funcObj.i,Object.keys(pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].links.in[1]))
-            //this.pointer = render[Object.keys(gr[parseInt(funcObj.i)].links.in[1][0])]
-            //alert(this.pointer)
-        }
 
         if (this.row < row){
             this.row = row
             this.pointer = xr
         }
 
-        //tabl[row][parseInt(key)] = this.pointer;
-        // console.log(grIndex, funcObj.i, pipe2.rgraphs[grIndex][parseInt(funcObj.i)])
+        if (row !== 0) {
+            let anchor = pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].links.in["1"]
+            if (Object.keys(anchor).length > 0){
+                this.pointer = Math.max(this.pointer,pipe2.rgraphs[grIndex][Object.keys(anchor[0])[0]].x)
+                console.log(this.pointer)
+            }
+        }
+
         pipe2.rgraphs[grIndex][parseInt(funcObj.i)].redraw(this.pointer, 2*(row + 1) * xr);
         // console.log(pipe2.cgraphs[grIndex])
         this.pointer += (1 + Math.max(pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.inputs.length, pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.outputs.length)) * xr;
