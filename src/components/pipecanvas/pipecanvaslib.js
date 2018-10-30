@@ -863,6 +863,7 @@ class FuncBox {
         this.x = Math.random() * 5 * xr;
         this.y = Math.random() * 5 * xr;
         this.note = this.el.text('');
+        this.cover = this.el.rect((w + 1) * xr, h * 2).attr({opacity:0})
         this.el.move(this.x, this.y);
 
         this.el.dblclick(() => {
