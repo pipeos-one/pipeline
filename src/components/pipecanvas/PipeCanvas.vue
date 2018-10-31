@@ -45,4 +45,10 @@ export default {
     text-overflow: ellipsis;
     cursor: default;
 }
+
+.welcome{
+    fill: "green";
+    stroke: "green";
+    stroke-width: 3;
+}
 </style>

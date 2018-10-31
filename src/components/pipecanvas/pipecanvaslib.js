@@ -88,6 +88,7 @@ const containers = [
 let pipe2 = {};
 let grIndex = 0
 let langs ={}
+let types = {}
 
 let funcs; let gra = {}; let gre;
 // const graphs = [{ nodes: {}, edges: {} }];
@@ -272,7 +273,7 @@ function proc1() {
         //const o = findByI(x[0], pipe2.graphs[grIndex].n);
         if (x === undefined) return
         let o = pipe2.cgraphs[grIndex].n[x[0]]
-        // console.log(o,x);
+        console.log(o,x);
         let s = x[2];
         let s2 = {};
         s2[s] = x[3];
@@ -320,7 +321,7 @@ function proc1() {
 
 
 
-    // console.log("grr",gr)
+    console.log("gr after proc4", pipe2.cgraphs[grIndex].n)
 
     // gr is the nodes + function data
     
@@ -336,10 +337,12 @@ function proc1() {
 
     pipe2.cgraphs[grIndex].n = gra
 
+    console.log("gr after proc4 1", pipe2.cgraphs[grIndex].n)
 
-    pipe2.cgraphs[grIndex].n = R.mapObjIndexed((x, key, all) => R.merge(x, { func: findById(x.id, funcs) }), pipe2.cgraphs[grIndex].n);
 
+    // pipe2.cgraphs[grIndex].n = R.mapObjIndexed((x, key, all) => R.merge(x, { func: findById(x.id, funcs) }), pipe2.cgraphs[grIndex].n);
 
+    console.log("gr after proc4 2", pipe2.cgraphs[grIndex].n)
 
 
 
@@ -368,7 +371,7 @@ function proc2(gr) {
     menu();
 
     // proc4(gr)
-    // console.log(gr)
+    console.log('proc2', gr)
     // return true;
 
 
@@ -381,6 +384,7 @@ function proc2(gr) {
     //console.log("grrrrra",JSON.stringify(x))
     // graph.nodes[x.i] ={ render:new FuncBox( x ), links: { in: R.repeat("", x.func.abiObj.inputs.length), out:R.repeat("", "outputs" in x.func.abiObj? x.func.abiObj.outputs.length: [])}}
         //x.state = {}
+        console.log(JSON.stringify(x))
         pipe2.rgraphs[grIndex][x.i] = new FuncBox(x);
         //gra[x.i] = x;
         let outl = 0;
@@ -630,13 +634,28 @@ function proc3() {
 }
 
 function addPortFunc(i, o1, state1){
-    let out = { i: i, id: '5bc59e192817116e84bdd831', links: { in: {}, out: { 1: [o1] } } , state: state1};
+    let out = { i: i, id: '5bc59e192817116e84bdd831', links: { in: {}, "out": { 1: [o1] } } , state: state1};
 
-    out = R.merge(out, {func: findById(out.id, pipe2.functions)})
-    //out.func.abiObj.outputs[0] = {name: state1.name, type: state1.type}
+    out.func = findById(out.id, pipe2.functions)
+    let out2 = JSON.parse(JSON.stringify(out))
+    // let out2 = out
+
+    // JSON.parse(JSON.stringify(
+    console.log('addPortFunc', out2)
+    // out2.func.abiObj.outputs[0] = {name: "Lore", type:"olt"}
+    // JSON.parse(JSON.stringify(state1))
+    out2.func.abiObj.outputs[0] = {name: state1.name, type: state1.type}
     // console.log('addPortFunc', out.state)
-    return out
+    console.log('addPortFunc', JSON.stringify(out2))
+    return out2
 
+}
+
+function addPortOut(i, o1, state1){
+    let out = { i: i, id: '5bc59e192817116e84bdd830', links: { in: { 1: [o1]}, out: {}  }, state: state1};
+    out.func = findById(out.id, pipe2.functions)
+    let out2 = JSON.parse(JSON.stringify(out))
+    return out2
 }
 
 // add new nodes for ports
@@ -647,7 +666,7 @@ function proc4(gr) {
     let incr = 3000;
     R.map((x) => {
         let x_incr = incr;
-        if (x.func.abiObj.type == "port") return
+        //if (x.func.abiObj.type == "port") return
         R.mapObjIndexed((x1, key, all) => {
             // console.log(x1)
             // console.log(x.links.in[parseInt(key) + 1], key)
@@ -691,7 +710,7 @@ function proc4(gr) {
                 o1[x.i] = parseInt(key) + 1
                 let name = (x2.name !== undefined)? x2.name : ""
                 let state = {name: "o_"+name+"_"+x.i, type: x2.type, value: undefined}
-                const t = { i: incr, id: '5bc59e192817116e84bdd830', links: { in: { 1: [o1]}, out: {}  }, state: state};
+                const t = addPortOut(incr, o1, state)
                 gr[incr] = t;
                 // console.log(pipe2.graph.e)
                 //const int = {};
@@ -713,7 +732,7 @@ function proc4(gr) {
     //console.log(JSON.stringify(gr))
     //console.log(JSON.stringify(gre))
 
-    //console.log(gr, gre)
+    console.log('-----gr after addPort', gr)
 
     // proc_e()
 }
@@ -963,9 +982,22 @@ class FuncBox {
             point = getPort(self.obj, 'in', 1 + parseInt(key));
 
             // let point = getPort(self.obj, "in", 1+parseInt(key))
+           
 
-            const port = self.el.circle(10).center(point.x, point.y).attr({"fill-opacity":0.5});
+            let port = self.el.circle(10).center(point.x, point.y).attr({"fill-opacity":0.5});
             self.el.text(x.name).attr({ 'text-anchor': 'middle', 'font-size': 8, 'font-family': 'Roboto' }).move(point.x - 8, point.y - 12).transform({ rotation: -30 });
+
+
+            if (types[x.type] === undefined){
+                types[x.type] = []
+                
+            }
+            
+            types[x.type].push(port)
+            
+
+
+
             port.mouseover(() => {
                 self.note.text(x.type);
                 const node = self.obj.i;
@@ -1004,8 +1036,14 @@ class FuncBox {
                 // e.preventDefault()
                 // e.stopPropagation()
                 // no other events are bound
+                console.log(x.type, types)
+                R.mapObjIndexed((x1, key1, all1) => {
+                    //x1.addClass("welcome")
+                    x1.attr({fill:"green"})
+                },types[x.type])
                 const p = e.detail.event;
                 // console.log(p, p.offsetX, p.offsetY, draw);
+
 
                 self.objDrag = pipe2.draws[grIndex].circle(12).attr({fill:"#fcc"}).center(p.offsetX, p.offsetY).back();
                 self.objDrag2 = {x: p.offsetX, y:p.offsetY}
@@ -1014,6 +1052,11 @@ class FuncBox {
             });
             port.on('dragend', (e) => {
                 // console.log(e);
+                R.mapObjIndexed((x1, key1, all1) => {
+                    //x1.addClass("welcome")
+                    x1.attr({fill:"black"})
+                },types[x.type])
+
                 const node = self.obj.i;
                 startDrop = [node, parseInt(key)+1];
                 // console.log(startDrop, endDrop);
@@ -1022,13 +1065,22 @@ class FuncBox {
                 self.objDrag3.remove()
                 if (endDrop !== false && endDrop !== undefined) {
                     // console.log(startDrop, endDrop);
-                    const edge = startDrop.concat(endDrop);
+                    let edge = startDrop.concat(endDrop);
+                    
                     // console.log(edge);
                     if (startDrop[0] > 2999) {
-                        pipe2.graph.n.push({ i: startDrop[0], id: '5bc59e192817116e84bdd831'})
+                        console.log("pipe2.graphs",pipe2.graphs);
+                        pipe2.graphs[grIndex].n[startDrop[0]-1000]= { i: startDrop[0]-1000, id: '5bc59e192817116e84bdd831'}
+                        console.log(pipe2.cgraphs[grIndex].n[startDrop[0]].links.out[1])
+                        R.mapObjIndexed((x, key, all) => {
+                            let k = Object.keys(x)[0]
+                            pipe2.graphs[grIndex].e.push([startDrop[0]-1000, startDrop[1], k, x[k]]);
+                        }, pipe2.cgraphs[grIndex].n[startDrop[0]].links.out[1])
+                        edge[0] = edge[0]-1000
                     }
+                    
                     pipe2.graphs[grIndex].e.push(edge);
-                    // console.log(pipe2.graph.e);
+                    
                     return proc1();
                 }
             });
@@ -1147,13 +1199,16 @@ class GraphVisitor{
         this.out = []
         this.outtype = []
         this.returns = []
+        this.outports=[]
+        this.maxY = 0
     }
 
     renderFunc(funcObj, row){
-
+        let startLineY = xr/2
+        let startLineX = xr/2
         if (this.row < row){
             this.row = row
-            this.pointer = xr
+            this.pointer = startLineX
         }
 
         if (row !== 0) {
@@ -1163,8 +1218,23 @@ class GraphVisitor{
                 console.log(this.pointer)
             }
         }
+        let placeY = 2*(row + 1) * xr
 
-        pipe2.rgraphs[grIndex][parseInt(funcObj.i)].redraw(this.pointer, 2*(row + 1) * xr);
+        if (pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.name == "PortIn"){
+            placeY = startLineY
+        }
+
+        
+
+        pipe2.rgraphs[grIndex][parseInt(funcObj.i)].redraw(this.pointer, placeY);
+
+        if (pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.name == "PortOut"){
+            this.outports.push(pipe2.rgraphs[grIndex][parseInt(funcObj.i)])
+            this.maxY = Math.max(this.maxY, placeY)
+        }
+
+
+
         // console.log(pipe2.cgraphs[grIndex])
         this.pointer += (1 + Math.max(pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.inputs.length, pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.outputs.length)) * xr;
 
@@ -1182,6 +1252,9 @@ class GraphVisitor{
     setGraph(g){
         this.row = 0
         this.pointer = xr
+        R.map((x)=>{
+            x.redraw(x.x, this.maxY)
+        },this.outports)
     }
 
     genGraph(g){
