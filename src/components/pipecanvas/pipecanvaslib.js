@@ -1225,6 +1225,7 @@ class GraphVisitor{
         this.outports=[]
         this.maxY = 0
         this.minX = {}
+        this.isPayable = false
     }
 
     renderFunc(funcObj, row){
@@ -1340,6 +1341,9 @@ class GraphVisitor{
     genFunc(funcObj, row){
         // console.log(funcObj)
         if (funcObj.func.abiObj.type == "function") {
+            if (funcObj.func.abiObj.payable) {
+                this.isPayable = true
+            }
             this.genConstr1.push("address public "+ funcObj.func.abiObj.name+"_"+funcObj.i+ " ;")
             this.genConstr2.push("address _"+funcObj.func.abiObj.name+"_"+funcObj.i)
             this.genConstr3.push(funcObj.func.abiObj.name+"_"+funcObj.i+ " = _" + funcObj.func.abiObj.name+"_"+funcObj.i+ ";")
@@ -1355,8 +1359,17 @@ class GraphVisitor{
                 return o
             }, funcObj.func.abiObj.inputs
             )
+            if (funcObj.func.abiObj.payable) {
+                console.log("inputset",inputset)
+            }
+
             this.genF[grIndex] = this.genF[grIndex] + this.ops.inputSig1 + Object.values(inputset).join(",")+this.ops.inputSig2+"\n";
-            this.genF[grIndex] = this.genF[grIndex] + this.ops.ansProxy1 +funcObj.func.abiObj.name +"_"+ funcObj.i+ this.ops.ansProxy2+"\n";
+
+            let rest1 = ""
+            if (funcObj.func.abiObj.payable) {
+                rest1 = ".value(wei_value)"
+            }
+            this.genF[grIndex] = this.genF[grIndex] + this.ops.ansProxy1 +rest1 +"("+funcObj.func.abiObj.name +"_"+ funcObj.i+ this.ops.ansProxy2+"\n";
             let outAssem = []
             let outputset = R.map((x)=>{
                 // console.log(x)
@@ -1459,12 +1472,12 @@ interface PipeProxy {
         "sigFunc2": "\"));",
         "inputSig1": "input42 = abi.encodeWithSelector(signature42,",
         "inputSig2": ");",
-        "ansProxy1": "answer42 = pipe_proxy.proxy(",
+        "ansProxy1": "answer42 = pipe_proxy.proxy",
         "ansProxy2": ", input42, 400000);",
         "restFunc1": "\nassembly {\n",
         "restFunc2": "\n}\n",
         "assem": " := mload(add(answer42, 32))",
-
+// answer42 = pipe_proxy.proxy.value(wei_value)(buy_2, input42, 400000);
         intro1: "\n\nfunction PipedFunction",
         intro11: "(",
         intro2: `) payable public {
