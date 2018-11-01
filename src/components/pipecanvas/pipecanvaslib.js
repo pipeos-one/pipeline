@@ -660,6 +660,29 @@ function addPortOut(i, o1, state1){
 
 // add new nodes for ports
 function proc4(gr) {
+
+    R.mapObjIndexed((x, key, all) => {
+        console.log("pp",JSON.stringify(x))
+        if (x.func.abiObj.type == "port" && x.i <3000) {
+            let o1 = {}
+            o1[x.i] = parseInt(key) + 1
+            let link = x.links.out[1][0]
+            let kkey = Object.keys(link)[0]
+            console.log(kkey, link, pipe2.cgraphs[grIndex].n[kkey])
+            let port = pipe2.cgraphs[grIndex].n[kkey].func.abiObj.inputs[link[parseInt(kkey)]-1]
+            console.log("p",port, pipe2.cgraphs[grIndex].n[kkey].func.abiObj.inputs, link[parseInt(kkey)])
+            let name = (port.name !== undefined)? port.name : ""
+            let state1 = {name: "i_"+name+"_"+kkey, type: port.type, value: undefined}
+            x.state = state1;
+            console.log("pp",x,"state",state1)
+
+
+        }
+
+
+    }, gr);
+
+    
     // console.log(pipe2.graph.e)
     // return true
     // console.log(gr)
@@ -1195,29 +1218,48 @@ class GraphVisitor{
         this.genF2 = []
         this.in = []
         this.pointer = xr;
-        this.row = 0
+        this.row = -1
         this.out = []
         this.outtype = []
         this.returns = []
         this.outports=[]
         this.maxY = 0
+        this.minX = {}
     }
 
     renderFunc(funcObj, row){
         let startLineY = xr/2
         let startLineX = xr/2
+        let w = Math.max(pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.inputs.length, pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.outputs.length)
         if (this.row < row){
             this.row = row
             this.pointer = startLineX
+            this.minX[row] = 30000
         }
 
         if (row !== 0) {
             let anchor = pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].links.in["1"]
             if (Object.keys(anchor).length > 0){
-                this.pointer = Math.max(this.pointer,pipe2.rgraphs[grIndex][Object.keys(anchor[0])[0]].x)
+                console.log(pipe2.rgraphs[grIndex][Object.keys(anchor[0])[0]].x  + xr*w -2, "<", this.minX[row], "pointer",this.pointer)
+                
+                let x = pipe2.rgraphs[grIndex][Object.keys(anchor[0])[0]].x
+
+                /*
+                if (x  + xr*w -2 < this.minX[row]) {
+                    
+                    pipe2.rgraphs[grIndex][parseInt(funcObj.i)].redraw(x, placeY);
+                    this.minX[row] = x
+                    this.pointer += (1 + w) * xr;
+                    return;
+                }
+                */
+
+                this.pointer = Math.max(this.pointer,x)
                 console.log(this.pointer)
             }
         }
+
+        this.minX[row] = Math.min(this.minX[row], this.pointer)
         let placeY = 2*(row + 1) * xr
 
         if (pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.name == "PortIn"){
@@ -1236,7 +1278,9 @@ class GraphVisitor{
 
 
         // console.log(pipe2.cgraphs[grIndex])
-        this.pointer += (1 + Math.max(pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.inputs.length, pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.outputs.length)) * xr;
+        this.pointer += (1 + w) * xr;
+
+        
 
 
     }
