@@ -65,6 +65,110 @@ const ports = [
         signature: 'PortIn()',
         timestamp: '2018-10-16T08:10:33.614Z',
     },
+    {
+        _id: '5bc59e192817116e84bdd832',
+        containerid: '5bc59d5d2817116e84bdd82e',
+        container: { name: 'PipeOS' },
+        abiObj: {
+            constant: true,
+            inputs: [],
+            name: 'MsgData',
+            outputs: [
+                {
+                    name: 'data',
+                    type: 'bytes',
+                },
+                {
+                    name: 'sender',
+                    type: 'address',
+                },
+                {
+                    name: 'sig',
+                    type: 'bytes4',
+                },
+                {
+                    name: 'value',
+                    type: 'uint256',
+                },
+            ],
+            payable: false,
+            stateMutability: 'view',
+            type: 'data',
+        },
+        signature: 'MsgData()',
+        timestamp: '2018-10-16T08:10:33.614Z',
+    },
+    {
+        _id: '5bc59e192817116e84bdd833',
+        containerid: '5bc59d5d2817116e84bdd82e',
+        container: { name: 'PipeOS' },
+        abiObj: {
+            constant: true,
+            inputs: [],
+            name: 'BlockData',
+            outputs: [
+                {
+                    name: 'coinbase',
+                    type: 'address',
+                },
+                {
+                    name: 'dificulty',
+                    type: 'uint256',
+                },
+                {
+                    name: 'gaslimit',
+                    type: 'uint256',
+                },
+                {
+                    name: 'number',
+                    type: 'uint256',
+                },
+                {
+                    name: 'timestamp',
+                    type: 'uint256',
+                },
+            ],
+            payable: false,
+            stateMutability: 'view',
+            type: 'data',
+        },
+        signature: 'BlockData()',
+        timestamp: '2018-10-16T08:10:33.614Z',
+    },
+    {
+        _id: '5bc59e192817116e84bdd834',
+        containerid: '5bc59d5d2817116e84bdd82e',
+        container: { name: 'PipeOS' },
+        abiObj: {
+            constant: true,
+            inputs: [],
+            name: 'MiscData',
+            outputs: [
+                {
+                    name: 'gasleft',
+                    type: 'uint256',
+                },
+                {
+                    name: 'now',
+                    type: 'uint256',
+                },
+                {
+                    name: 'tx.gasprice',
+                    type: 'uint256',
+                },
+                {
+                    name: 'tx.origin',
+                    type: 'address',
+                },
+            ],
+            payable: false,
+            stateMutability: 'view',
+            type: 'data',
+        },
+        signature: 'MiscData()',
+        timestamp: '2018-10-16T08:10:33.614Z',
+    },
+    
 ];
 
 const containers = [
@@ -168,7 +272,7 @@ export default class Graphs {
     }
 
     getSource(lang) {
-        //console.log('getSource', langs[lang])
+        console.log('Sources: ', langs)
         return langs[lang]
     }
 }
@@ -267,6 +371,8 @@ function proc1() {
     // console.log(gre);
 
 
+
+
     // bring edges data inside nodes
     R.map((x) => {
         // console.log(JSON.stringify(pipe2.cgraphs[grIndex].n), x);
@@ -306,6 +412,20 @@ function proc1() {
     //console.log(Object.assign({},pipe2.cgraphs[grIndex].n))
 
     //console.log(JSON.stringify(pipe2.cgraphs[grIndex].n))
+
+    // events reverse i/o
+    R.mapObjIndexed((x, key, all) => {
+        if (x.func.abiObj.type == "event"){
+            console.log(x)
+            if (x.func.abiObj.outputs === undefined) {
+                x.func.abiObj.outputs = []
+            }
+            let ins = JSON.parse(JSON.stringify(x.func.abiObj.inputs))
+            let outs = JSON.parse(JSON.stringify(x.func.abiObj.outputs))
+            x.func.abiObj.outputs = ins
+            x.func.abiObj.inputs = outs
+        }
+    }, pipe2.cgraphs[grIndex].n);
 
     
 
@@ -371,7 +491,7 @@ function proc2(gr) {
     menu();
 
     // proc4(gr)
-    console.log('proc2', gr)
+    // console.log('proc2', gr)
     // return true;
 
 
@@ -384,7 +504,7 @@ function proc2(gr) {
     //console.log("grrrrra",JSON.stringify(x))
     // graph.nodes[x.i] ={ render:new FuncBox( x ), links: { in: R.repeat("", x.func.abiObj.inputs.length), out:R.repeat("", "outputs" in x.func.abiObj? x.func.abiObj.outputs.length: [])}}
         //x.state = {}
-        console.log(JSON.stringify(x))
+        // console.log(JSON.stringify(x))
         pipe2.rgraphs[grIndex][x.i] = new FuncBox(x);
         //gra[x.i] = x;
         let outl = 0;
@@ -423,7 +543,11 @@ function proc2(gr) {
     // redraw from dagre
     // proc3()
 
-    let visitors = [ new GraphVisitor(visOptions.graphRender), new GraphVisitor(visOptions.solidity)]
+    let visitors = [ 
+        new GraphVisitor(visOptions.graphRender), 
+        new GraphVisitor(visOptions.solidity),
+        new GraphVisitor(visOptions.js),
+    ]
 
     R.map( (x)=>{
         if (x.ops.type == "source") {
@@ -646,7 +770,7 @@ function addPortFunc(i, o1, state1){
     // JSON.parse(JSON.stringify(state1))
     out2.func.abiObj.outputs[0] = {name: state1.name, type: state1.type}
     // console.log('addPortFunc', out.state)
-    console.log('addPortFunc', JSON.stringify(out2))
+    // console.log('addPortFunc', JSON.stringify(out2))
     return out2
 
 }
@@ -662,7 +786,7 @@ function addPortOut(i, o1, state1){
 function proc4(gr) {
 
     R.mapObjIndexed((x, key, all) => {
-        console.log("pp",JSON.stringify(x))
+        // console.log("pp",JSON.stringify(x))
         if (x.func.abiObj.type == "port" && x.i <3000) {
             let o1 = {}
             o1[x.i] = parseInt(key) + 1
@@ -752,12 +876,34 @@ function proc4(gr) {
             }
         }, x.func.abiObj.outputs);
     }, gr);
+
+    // add optionaal data
+    // procDat(gr, incr)
+
     //console.log(JSON.stringify(gr))
     //console.log(JSON.stringify(gre))
 
     console.log('-----gr after addPort', gr)
 
     // proc_e()
+}
+
+function procDat(gr, incr){
+    let addl = [
+        '5bc59e192817116e84bdd832',
+        '5bc59e192817116e84bdd833',
+        '5bc59e192817116e84bdd834'
+    ]
+
+    R.map((x)=>{
+        incr++;
+        let t = {i:incr, id: x, links:{in:[], out:[]}}
+        t.func = findById(t.id, pipe2.functions)
+        gr[incr]= t
+
+    }, addl)
+
+
 }
 
 
@@ -1452,22 +1598,17 @@ interface PipeProxy {
         returns (bytes);
 }
 `,
-        "import_p1": "\";\n",
-        "interface_p0": "\ninterface ",
+
         "contract_p0": "\ncontract PipedContract",
         "contract_p1": " {\n    PipeProxy public pipe_proxy;\n",
         "contract_p2": "}\n",
-        "member_p0": ";\n",
-        "function_p0": "\n    function ",
-        "function_pp0": "(  ",
+
         "function_pp1": ")",
-        "function_p1": " payable public ",
-        "function_p2": " ) payable public  ",
+
         "function_ret0": " returns (",
         "function_ret1": ")",
         "function_p2": " {\n    bytes4 signature42;\n    bytes memory input42;\n    bytes memory answer42;\n    uint wei_value = msg.value;\n    address tx_sender = msg.sender;\n",
-        "function_p3": "    }\n",
-        "comma": ",",
+
         "sigFunc1": "signature42 = bytes4(keccak256(\"",
         "sigFunc2": "\"));",
         "inputSig1": "input42 = abi.encodeWithSelector(signature42,",
@@ -1477,10 +1618,9 @@ interface PipeProxy {
         "restFunc1": "\nassembly {\n",
         "restFunc2": "\n}\n",
         "assem": " := mload(add(answer42, 32))",
-// answer42 = pipe_proxy.proxy.value(wei_value)(buy_2, input42, 400000);
-        intro1: "\n\nfunction PipedFunction",
-        intro11: "(",
-        intro2: `) payable public {
+        "intro1": "\n\nfunction PipedFunction",
+        "intro11": "(",
+        "intro2": `) payable public {
         bytes4 signature42;
         bytes memory input42;
         bytes memory answer42;
@@ -1494,7 +1634,46 @@ interface PipeProxy {
         `,
         "const3": "}\n",
 
-        "part1": ""
+
+    },
+    js: {
+        type: "source",
+        lang: "javascript",
+
+        "file_p0" : `{1}`,
+        "proxy": `{2}`,
+        "contract_p0": "{5}",
+        "contract_p1": "{6}",
+        "contract_p2": "{7}",
+
+        "function_pp1": "{11}",
+
+        "function_ret0": "{14}",
+        "function_ret1": "{15}",
+        "function_p2": "{16}",
+
+
+        "sigFunc1": "{18}",
+        "sigFunc2": "{19}",
+        "inputSig1": "{20}",
+        "inputSig2": "{21}",
+        "ansProxy1": "{22}",
+        "ansProxy2": "{23}",
+        "restFunc1": "{24}",
+        "restFunc2": "{25}",
+        "assem": "{26}",
+        "intro1": "{27}",
+        "intro11": "{28}",
+        "intro2": `{29}`,
+        "const1": "{30}",
+        "const2": `{31}`,
+        "const3": "{32}",
+
+
+
+
+
+
     },
 
     graphRender: {
