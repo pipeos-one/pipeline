@@ -1,12 +1,14 @@
 <template>
-  <div class="forms">
-      <ul id="example-1">
-        <li v-for="item in items">
-          <!--<router-link to={{ api + item._id }}>{{ api + item._id }}</router-link>-->
-          <router-link v-bind:to="api + item._id">{{ item.name }}</router-link>
-        </li>
-      </ul>
-  </div>
+    <v-content>
+      <div class="forms">
+          <ul id="example-1">
+            <li v-for="item in items">
+              <!--<router-link to={{ api + item._id }}>{{ api + item._id }}</router-link>-->
+              <router-link v-bind:to="api + item._id">{{ item.name }}</router-link>
+            </li>
+          </ul>
+      </div>
+    </v-content>
 </template>
 
 <script>

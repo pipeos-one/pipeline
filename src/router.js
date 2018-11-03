@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import Home from './views/Home.vue'
+import Pipe from './views/Pipe.vue'
+import Forms from './views/Forms.vue'
 
 Vue.use(Router)
 
@@ -11,14 +13,24 @@ export default new Router({
     //   name: 'home',
     //   component: Home
     // },
-    // {
-    //   path: '/forms',
-    //   name: 'forms',
-    //   // route level code-splitting
-    //   // this generates a separate chunk (about.[hash].js) for this route
-    //   // which is lazy-loaded when the route is visited.
-    //   component: () => import(/* webpackChunkName: "about" */ './views/Forms.vue')
-    // },
+    {
+      path: '/',
+      name: 'pipe',
+      // component: Pipe,
+      // route level code-splitting
+      // this generates a separate chunk (about.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import(/* webpackChunkName: "about" */ './views/Pipe.vue')
+    },
+    {
+      path: '/forms',
+      name: 'forms',
+      component: Forms,
+      // route level code-splitting
+      // this generates a separate chunk (about.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () => import(/* webpackChunkName: "about" */ './views/Forms.vue')
+    },
     {
       path: '/forms/:id',
       name: 'form',
@@ -26,14 +38,6 @@ export default new Router({
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () => import(/* webpackChunkName: "about" */ './components/Form.vue')
-    },
-    {
-      path: '/',
-      name: 'pipe',
-      // route level code-splitting
-      // this generates a separate chunk (about.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import(/* webpackChunkName: "about" */ './views/Pipe.vue')
     },
     {
       path: '/abi/:id',

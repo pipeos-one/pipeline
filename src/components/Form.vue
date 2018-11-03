@@ -46,34 +46,32 @@ export default {
       let schema = JSON.parse(response.data.json);
       const schema_orig = JSON.parse(response.data.json);
       const post_api = response.data.uri;
-      schema.groups[0].fields.push({
+      let submit_location;
+
+      if (schema.groups && schema.groups.length) {
+          submit_location = schema.groups[schema.groups.length - 1].fields;
+      }
+      else {
+          if (!schema.fields) schema.fields = [];
+          submit_location = schema.fields;
+      }
+      submit_location.push({
         type: 'submit',
         label: '',
         caption: 'Submit form',
         validateBeforeSubmit: true,
         onSubmit(model, schema2) {
-          const data = Object.assign({}, model);
-          if (schema_orig.groups[0].fields.find(item => item.label == 'timestamp')) {
-            data.timestamp = new Date();
+          console.log('moodel', model);
+          let data = {};
+
+          if (schema_orig.fields) {
+              createData(schema_orig.fields, data, model);
+              prepareData(schema_orig.fields, data);
           }
-
-          schema_orig.groups[0].fields.filter(item => item.type == "vueMultiSelect" && item.selectValues).forEach(item => {
-            if (data[item.label]) {
-                data[item.label] = data[item.label].map(elem => elem[item.selectValues.value]);
-            }
-          });
-
-          schema_orig.groups[0].fields.filter(item => item.inputType == "object").forEach(item => {
-            if (data[item.label]) {
-                try {
-                    data[item.label] = JSON.parse(data[item.label]);
-                }
-                catch(error) {
-                  console.error(error);
-                  alert(`Field ${item.label}: ${error}`);
-                  return;
-                }
-            }
+          schema_orig.groups.forEach(group => {
+              data[group.legend] = {};
+              createData(group.fields, data[group.legend], model);
+              prepareData(group.fields, data[group.legend]);
           });
 
           console.log('data', data);
@@ -90,20 +88,50 @@ export default {
           });
         },
       });
-      schema.groups[0].fields.forEach((item) => {
-        if (item.type == "vueMultiSelect" && item.selectValues && item.selectValues.uri) {
-            Vue.axios.get(Pipeos.pipeserver.host + item.selectValues.uri).then((tagresponse) => {
-                // console.log('tagresponse', tagresponse.data);
-                item.values = tagresponse.data;
-                this.schema = schema;
-            });
-        }
-      });
+
+      const setTags = (fields) => {
+          fields.forEach((item) => {
+            if (item.type == "vueMultiSelect" && item.selectValues && item.selectValues.uri) {
+                Vue.axios.get(Pipeos.pipeserver.host + item.selectValues.uri).then((tagresponse) => {
+                    // console.log('tagresponse', tagresponse.data);
+                    item.values = tagresponse.data;
+                    this.schema = schema;
+                });
+            }
+          });
+      }
+      if (schema.fields) setTags(schema.fields);
+      schema.groups.forEach(group => setTags(group.fields));
     });
   },
 };
+
+function createData(fields, data_object, model) {
+    fields.forEach(field => {
+        data_object[field.model] = model[field.model];
+    });
+}
+
+function prepareData(schema_array, data) {
+    schema_array.filter(item => item.type == "vueMultiSelect" && item.selectValues).forEach(item => {
+      if (data[item.label]) {
+          data[item.label] = data[item.label].map(elem => elem[item.selectValues.value]);
+      }
+    });
+
+    schema_array.filter(item => item.inputType == "object").forEach(item => {
+      if (data[item.label]) {
+          try {
+              data[item.label] = JSON.parse(data[item.label]);
+          }
+          catch(error) {
+            console.error(error);
+            alert(`Field ${item.label}: ${error}`);
+            return;
+          }
+      }
+    });
+}
 </script>
 
-<!-- New step!
-     Add Multiselect CSS. Can be added as a static asset or inside a component. -->
 <style src="vue-multiselect/dist/vue-multiselect.min.css"></style>
