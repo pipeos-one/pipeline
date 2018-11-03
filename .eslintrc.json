@@ -7,6 +7,8 @@
         "indent": ["error", 4],
         "object-curly-spacing": ["error", "never"],
         "object-curly-newline": ["error", { "multiline": true }],
-        "no-plusplus": "off"
+        "no-plusplus": "off",
+        "func-names": ["error", "never"],
+        "import/prefer-default-export": ["error", "never"]
     }
 }

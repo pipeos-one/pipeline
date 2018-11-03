@@ -131,6 +131,7 @@ export default {
         isRemix: window.self !== window.top,
         web3: null,
         chain: null,
+        chain_query: null,
         selectedTags: [],
         pages: 1,
         currentPage: 1,
@@ -167,6 +168,7 @@ export default {
   methods: {
     setNetworkInfo: function(chain, web3) {
         this.chain = chain;
+        this.chain_query = chain === 'JavaScriptVM' ? '42' : chain;
         this.web3 = web3;
         this.loadData();
     },
@@ -260,7 +262,7 @@ export default {
         console.log('count', this.selectedTags);
         let query = '?' + this.selectedTags
             .map(tag => `where[tags][inq]=${tag}`)
-            .concat(this.chain ? [`where[chainid][like]=${this.chain}`] : [])
+            .concat(this.chain_query ? [`where[chainid][like]=${this.chain_query}`] : [])
             .join('&');
         if (this.selectedTags.length > 0) {
             query += '&where[tags][inq]=';
@@ -271,13 +273,13 @@ export default {
         });
     },
     setPipeFunctions: function() {
-        console.log('setPipeFunctions for', this.chain)
+        console.log('setPipeFunctions for', this.chain_query)
         let query = '?' + Object.keys(this.filterOptions)
             .map(key => `filter[${key}]=${this.filterOptions[key]}`)
             .concat(
                 this.selectedTags.map(tag => `filter[where][tags][inq]=${tag}`)
             ).concat([`filter[order]=timestamp%20DESC`])
-            .concat(this.chain ? [`filter[where][chainid]=${this.chain}`] : [])
+            .concat(this.chain_query ? [`filter[where][chainid]=${this.chain_query}`] : [])
             .join('&');
             // where[containerid][like]=5bd7b24235fa57296db71e39
 
@@ -296,7 +298,7 @@ export default {
         // ).concat(
         [].concat(
             this.selectedTags.map(tag => `filter[where][tags][inq]=${tag}`)
-        ).concat(this.chain ? [`filter[where][container.chainid]=${this.chain}`] : [])
+        ).concat(this.chain_query ? [`filter[where][container.chainid]=${this.chain_query}`] : [])
         .join('&');
 
         if (this.selectedTags.length > 0) {
@@ -317,8 +319,8 @@ export default {
     },
     setPipeDeployed: function(callback) {
         let query = deployedApi;
-        if (this.chain) {
-            query += `?filter[where][deployed.chainid]=${this.chain}`;
+        if (this.chain_query) {
+            query += `?filter[where][deployed.chainid]=${this.chain_query}`;
         }
         Vue.axios.get(query).then((response) => {
             console.log('setPipeDeployed', response);

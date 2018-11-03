@@ -21,6 +21,7 @@
 <script>
 import Pipeos from '../../namespace/namespace';
 import {compiledContractProcess} from '../../utils/utils';
+import {deployOnJVM} from './utils.js';
 
 export default {
     data() {
@@ -133,43 +134,9 @@ export default {
         },
         deployPipeProxy() {
             if (this.chain === 'JavaScriptVM') {
-                Pipeos.remix.call(
-                    'udapp',
-                    'getAccounts',
-                    [],
-                    function(error, [accounts]) {
-                        console.log(error, accounts);
-                        if (error) {
-                            throw new Error(error);
-                        }
-                        let transaction = {
-                            from: accounts[0],
-                            data: Pipeos.contracts.PipeProxy.compiled.bytecode,
-                            gasLimit: '300000',
-                            value: '0',
-                            useCall: false,
-                        }
-                        console.log('transaction', transaction)
-                        Pipeos.remix.call(
-                            'udapp',
-                            'runTx',
-                            [transaction],
-                            function(error, result) {
-                                console.log(error, result);
-                                if (error) {
-                                    throw new Error(error);
-                                }
-                                if (result[0].error) {
-                                    throw new Error(JSON.stringify(result[0].error));
-                                }
-                                if (!result[0] || !result[0].createdAddress) {
-                                    throw new Error('PipeProxy contract not created');
-                                }
-                                Pipeos.contracts.PipeProxy.addresses['JavaScriptVM'] = result[0].createdAddress;
-                            }
-                        );
-                    }
-                );
+                deployOnJVM(Pipeos.contracts.PipeProxy.compiled.bytecode, '300000', (result) => {
+                    Pipeos.contracts.PipeProxy.addresses['JavaScriptVM'] = result.createdAddress;
+                });
             }
         },
     }
