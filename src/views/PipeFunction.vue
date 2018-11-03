@@ -1,32 +1,29 @@
 <template>
-    <div>
-        <template v-for="(input, index) in inputs">
-            <PipeIO :io="input" :key="index"/>
-        </template>
-    </div>
+    <AbiFunction :abi="abi"/>
 </template>
 
 <script>
 import Vue from 'vue';
-import PipeIO from '../components/abi/PipeIO.vue';
 import Pipeos from '../namespace/namespace';
+import AbiFunction from '../components/abi/AbiFunction';
 
 const api = Pipeos.pipeserver.api.function;
 
 export default {
-    components: {PipeIO},
+    components: {AbiFunction},
     data() {
-        return {inputs: []}
+        return {
+            abi: {},
+        }
     },
     created() {
         let route = `${api}/${this.$router.currentRoute.params.id}`;
         console.log('route', route);
         Vue.axios.get(route).then((response) => {
             if (response.data) {
-                let abi = response.data.abiObj || {};
-                this.inputs = abi.inputs || [];
+                this.abi = response.data.abiObj || {};
             }
         });
-    }
+    },
 }
 </script>

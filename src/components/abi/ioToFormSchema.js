@@ -52,7 +52,7 @@ for (let i = 8; i <= 256; i += 8) {
 
 console.log('typeMap', typeMap);
 
-function ioToFormSchema(io) {
+export function inputToFormSchema(io) {
     const schema = {
         type: typeMap[io.type].type,
         inputType: typeMap[io.type].inputType,
@@ -64,4 +64,14 @@ function ioToFormSchema(io) {
     return schema;
 }
 
-export default ioToFormSchema;
+export function outputToFormSchema(io) {
+    const schema = {
+        type: typeMap[io.type].type,
+        inputType: typeMap[io.type].inputType,
+        values: typeMap[io.type].values,
+        label: io.name,
+        model: io.name,
+        readonly: true,
+    };
+    return schema;
+}
