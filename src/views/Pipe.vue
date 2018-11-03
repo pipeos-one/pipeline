@@ -135,6 +135,7 @@ export default {
         pages: 1,
         currentPage: 1,
         taggedFunctions: [],
+        taggedFunctionsCache: [],
         selectedTreeContainers: [],
         selectedFunctions: [[]],
         activeCanvas: 0,
@@ -331,6 +332,9 @@ export default {
             func.styleClasses = pipeFunctionColorClass(func.abiObj);
             return func;
         });
+        this.taggedFunctionsCache = this.taggedFunctionsCache.concat(
+            this.taggedFunctions.filter(func => !this.taggedFunctionsCache.includes(func))
+        );
         console.log('this.taggedFunctions', this.taggedFunctions)
     },
     setActiveCanvas: function(value) {
