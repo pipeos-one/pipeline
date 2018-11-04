@@ -50,13 +50,19 @@ export class OpenapiController {
 
     pipeContainer = {
         name: gabi.devdoc.title || 'unknown',
-        abi: gabi.gabi,
-        devdoc: gabi.devdoc,
-        userdoc: gabi.userdoc,
-        openapiid: openapi._id,
+        container: {
+            abi: gabi.gabi,
+            devdoc: gabi.devdoc,
+            userdoc: gabi.userdoc,
+            openapiid: openapi._id,
+        },
         tags: ['openapi'],
     }
-    pipeContainer = await containerController.createFunctions(pipeContainer);
+
+    pipeContainer = await containerController.createFunctions(pipeContainer).catch((e: Error) => {
+        this.openapiRepository.deleteById(openapi._id);
+        throw new Error('PipeContainer was not created.');
+    });
     if (!pipeContainer || !pipeContainer._id) {
         this.openapiRepository.deleteById(openapi._id);
         throw new Error('PipeContainer was not created.');
@@ -70,7 +76,12 @@ export class OpenapiController {
             openapiid: openapi._id,
         }
     }
-    pipeDeployed = await deployedController.create(pipeDeployed);
+
+    pipeDeployed = await deployedController.create(pipeDeployed).catch((e: Error) => {
+        containerController.deleteContainerFunctions(pipeContainer._id);
+        this.openapiRepository.deleteById(openapi._id);
+        throw new Error('PipeDeployed was not created.');
+    });
     if (!pipeDeployed || !pipeDeployed._id) {
         containerController.deleteContainerFunctions(pipeContainer._id);
         this.openapiRepository.deleteById(openapi._id);

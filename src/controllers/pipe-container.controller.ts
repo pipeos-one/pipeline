@@ -159,9 +159,9 @@ export class PipeContainerController {
     let abi: AbiFunction[], devdoc: Devdoc, userdoc: Userdoc;
     let emptydoc = {methods: {}};
 
-    abi = (<SmartContractContainer>pipeContainer.container).abi || [];
-    devdoc = (<SmartContractContainer>pipeContainer.container).devdoc || emptydoc;
-    userdoc = (<SmartContractContainer>pipeContainer.container).userdoc || emptydoc;
+    abi = pipeContainer.container.abi || [];
+    devdoc = pipeContainer.container.devdoc || emptydoc;
+    userdoc = pipeContainer.container.userdoc || emptydoc;
 
     for (let i=0; i < abi.length; i++) {
         let funcabi: AbiFunction = abi[i];

@@ -1,4 +1,5 @@
-import {Entity, Model, model, property} from '@loopback/repository';
+import {Entity, Model, model, property, belongsTo} from '@loopback/repository';
+import {PipeContainer} from './pipe-container.model';
 
 @model()
 class Uri extends Model {
@@ -49,10 +50,7 @@ export class PipeDeployed extends Entity {
   })
   _id: string;
 
-  @property({
-    type: 'string',
-    required: true,
-  })
+  @belongsTo(() => PipeContainer, {keyTo: '_id', keyFrom: 'containerid'})
   containerid: string;
 
   @property({

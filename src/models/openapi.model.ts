@@ -22,8 +22,13 @@ export class Openapi extends Entity {
   })
   name?: string;
 
+  @property({
+    type: 'string',
+  })
+  uri?: string;
+
   @hasOne()
-  containerid: PipeContainer;
+  containerid?: PipeContainer;
 
   @property({
     type: 'date',

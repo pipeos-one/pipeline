@@ -95,7 +95,7 @@ export class OpenapiToGabi {
                     .split(' ')
                     .map((word: string) => word[0].toUpperCase() + word.substring(1))
                     .join(''),
-                type,
+                type: type || '',
             });
         });
 

@@ -4,7 +4,7 @@ import {AbiFunction} from '../interfaces/abi';
 import {Devdoc, Userdoc} from '../interfaces/soldocs';
 
 @model()
-export class SmartContractContainer extends Model {
+export class DocumentedContainer extends Model {
     @property({
       type: 'array',
       itemType: 'object',
@@ -20,7 +20,10 @@ export class SmartContractContainer extends Model {
       type: 'object',
     })
     userdoc: Userdoc;
+}
 
+@model()
+export class SmartContractContainer extends DocumentedContainer {
     @property({
       type: 'object',
     })
@@ -58,19 +61,24 @@ export class SmartContractContainer extends Model {
 }
 
 @model()
-export class OpenApiContainer extends Model {
-    @property({
-      type: 'string',
-    })
-    openapiid: string;
-}
-
-@model()
-export class JavscriptContainer extends Model {
+export class JavscriptContainer extends DocumentedContainer {
     @property({
       type: 'string',
     })
     jssource: string;
+
+    @property({
+      type: 'string',
+    })
+    exported: string;
+}
+
+@model()
+export class OpenApiContainer extends JavscriptContainer {
+    @property({
+      type: 'string',
+    })
+    openapiid: string;
 }
 
 @model()
