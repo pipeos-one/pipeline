@@ -47,21 +47,21 @@
     "src"
   ],
   "dependencies": {
-    "@loopback/boot": "^1.0.1",
+    "@loopback/boot": "^1.0.2",
     "@loopback/context": "^1.0.0",
     "@loopback/core": "^1.0.0",
     "@loopback/dist-util": "^0.4.0",
-    "@loopback/openapi-v3": "^1.0.1",
-    "@loopback/repository": "^1.0.1",
-    "@loopback/rest": "^1.0.1",
+    "@loopback/openapi-v3": "^1.0.2",
+    "@loopback/repository": "^1.0.2",
+    "@loopback/rest": "^1.1.0",
     "@loopback/service-proxy": "^1.0.0",
     "@types/swagger-schema-official": "^2.0.12",
-    "loopback-connector-mongodb": "^3.8.0",
+    "loopback-connector-mongodb": "^3.9.1",
     "solc": "^0.4.25"
   },
   "devDependencies": {
     "@loopback/build": "^1.0.0",
     "@loopback/testlab": "^1.0.0",
-    "@types/node": "^10.12.0"
+    "@types/node": "^10.12.2"
   }
 }
