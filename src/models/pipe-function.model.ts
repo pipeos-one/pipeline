@@ -12,7 +12,7 @@ export class PipeFunction extends Entity {
   })
   _id: string;
 
-  @belongsTo(() => PipeContainer, {keyTo: 'functions'})
+  @belongsTo(() => PipeContainer, {keyTo: '_id', keyFrom: 'containerid'})
   containerid: string;
 
   @property({
