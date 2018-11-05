@@ -81,10 +81,11 @@ export default {
           }
         },
       });
-
+      let hasTags = false;
       const setTags = (fields) => {
           fields.forEach((item) => {
             if (item.type == "vueMultiSelect" && item.selectValues && item.selectValues.uri) {
+                hasTags = true;
                 Vue.axios.get(Pipeos.pipeserver.host + item.selectValues.uri).then((tagresponse) => {
                     // console.log('tagresponse', tagresponse.data);
                     item.values = tagresponse.data;
@@ -97,7 +98,7 @@ export default {
       if (schema.groups) {
           schema.groups.forEach(group => setTags(group.fields));
       }
-      this.schema = schema;
+      if (!hasTags) this.schema = schema;
     });
   },
   methods: {
