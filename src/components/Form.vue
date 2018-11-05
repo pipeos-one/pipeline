@@ -38,8 +38,7 @@ export default {
     Vue.axios.get(`${api}/${this.$router.currentRoute.params.id}`).then((response) => {
       console.log('response', response.data);
       const schema_name = response.data.name;
-      // let schema = JSON.parse(response.data.json);
-      let schema = {"fields":[{"type":"input","inputType":"text","label":"Id","model":"_id","visible":false},{"type":"input","inputType":"text","label":"Name","model":"name","required":true},{"type":"input","inputType":"text","label":"uri","model":"uri"},{"type":"input","inputType":"text","label":"json","model":"json"},{"type":"textArea","inputType":"text","label":"timestamp","model":"timestamp","visible":false}]};
+      let schema = JSON.parse(response.data.json);
       const schema_orig = JSON.parse(response.data.json);
       this.post_api = response.data.uri;
       let submit_location;
