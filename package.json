@@ -9,8 +9,8 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0-rc.1",
-    "dagre": "^0.8.2",
     "@fortawesome/fontawesome-free": "^5.4.2",
+    "dagre": "^0.8.2",
     "jquery": "^3.3.1",
     "ramda": "^0.25.0",
     "register-service-worker": "^1.0.0",

@@ -380,6 +380,8 @@ export default {
     },
     saveFromRemix: function(container, deployment) {
         container.container.chainid = deployment.deployed.chainid;
+        if (!container.tags) container.tags = [];
+        container.tags.push('solidity');
         Vue.axios.post(containerFunctionsApi, container)
         .then((response) => {
             console.log('post container', response);
