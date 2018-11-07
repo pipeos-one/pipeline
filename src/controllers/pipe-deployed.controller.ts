@@ -119,4 +119,18 @@ export class PipeDeployedController {
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.pipeDeployedRepository.deleteById(id);
   }
+
+  @del('/pipedeployed/{id}', {
+      responses: {
+          '200': {
+              description: 'PipeDeployed DELETE success count',
+              content: {'application/json': {schema: CountSchema}},
+          },
+      },
+  })
+  async delete(
+      @param.query.object('where', getWhereSchemaFor(PipeDeployed)) where?: Where,
+  ): Promise<Count> {
+    return await this.pipeDeployedRepository.deleteAll(where);
+  }
 }

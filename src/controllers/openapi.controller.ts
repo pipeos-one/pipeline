@@ -46,7 +46,6 @@ export class OpenapiController {
     let deployedController = new PipeDeployedController(deployedRepository);
 
     let gabi = new OpenapiToGabi(openapi.json);
-    openapi = await this.openapiRepository.create(openapi);
 
     pipeContainer = {
         name: gabi.devdoc.title || 'unknown',
@@ -58,7 +57,6 @@ export class OpenapiController {
         },
         tags: ['openapi'],
     }
-
     pipeContainer = await containerController.createFunctions(pipeContainer).catch((e: Error) => {
         this.openapiRepository.deleteById(openapi._id);
         throw new Error('PipeContainer was not created.');
@@ -67,6 +65,9 @@ export class OpenapiController {
         this.openapiRepository.deleteById(openapi._id);
         throw new Error('PipeContainer was not created.');
     }
+    openapi.name = pipeContainer.name;
+    openapi.containerid = pipeContainer._id;
+    openapi = await this.openapiRepository.create(openapi);
 
     pipeDeployed = {
         containerid: pipeContainer._id,
@@ -173,5 +174,27 @@ export class OpenapiController {
   })
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.openapiRepository.deleteById(id);
+  }
+
+  @del('/openapi/{id}/all', {
+    responses: {
+        '200': {
+            description: 'Openapi, PipeContainer, PipeDeployed, PipeFunction DELETE success count',
+            content: {'application/json': {schema: CountSchema}},
+        },
+    },
+  })
+  async deleteContainerDeployedFunctions(@param.path.string('id') id: string): Promise<Count> {
+    let containerRepository = await this.openapiRepository.container;
+    let containerController = new PipeContainerController(containerRepository);
+
+    let deployedRepository = await this.openapiRepository.deployed;
+    let deployedController = new PipeDeployedController(deployedRepository);
+
+    let openapi: Openapi = await this.openapiRepository.findById(id);
+
+    await deployedController.delete({containerid: {like: openapi.containerid}});
+    await this.openapiRepository.deleteById(id);
+    return await containerController.deleteContainerFunctions(openapi.containerid);
   }
 }
