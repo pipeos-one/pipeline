@@ -13,6 +13,7 @@ export class PipeContainerRepository extends DefaultCrudRepository<
   PipeContainer,
   typeof PipeContainer.prototype._id
 > {
+  public pipefunctions: Promise<PipeFunctionRepository>;
   public functions: HasManyRepositoryFactory<PipeFunction, typeof PipeContainer.prototype._id>;
   constructor(
     @inject('datasources.atlasmongo') protected datasource: juggler.DataSource,
@@ -24,5 +25,7 @@ export class PipeContainerRepository extends DefaultCrudRepository<
       'functions',
       getPipeFunctionRepository,
     );
+    this.pipefunctions = getPipeFunctionRepository();
+
   }
 }

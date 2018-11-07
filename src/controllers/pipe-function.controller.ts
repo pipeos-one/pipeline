@@ -83,6 +83,20 @@ export class PipeFunctionController {
     return await this.pipeFunctionRepository.updateAll(pipeFunction, where);
   }
 
+  @del('/pipefunction', {
+    responses: {
+      '200': {
+        description: 'PipeFunction DELETE success count',
+        content: {'application/json': {schema: CountSchema}},
+      },
+    },
+  })
+  async delete(
+    @param.query.object('where', getWhereSchemaFor(PipeFunction)) where: Where,
+  ): Promise<Count> {
+    return await this.pipeFunctionRepository.deleteAll(where);
+  }
+
   @get('/pipefunction/{id}', {
     responses: {
       '200': {

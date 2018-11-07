@@ -17,6 +17,7 @@ import {
 } from '@loopback/rest';
 import {PipeContainer, SmartContractContainer, PipeFunction} from '../models';
 import {PipeContainerRepository} from '../repositories';
+import {PipeFunctionController} from './pipe-function.controller';
 import {AbiFunctionInput, AbiFunctionOuput, AbiFunction} from '../interfaces/abi';
 import {
     Devdoc,
@@ -190,13 +191,21 @@ export class PipeContainerController {
 
   @del('/pipecontainer/{id}/pipefunctions', {
     responses: {
-      '204': {
-        description: 'PipeContainer and PipeFunctions DELETE success',
+      '200': {
+        description: 'PipeContainer.PipeFunction DELETE success count',
+        content: {'application/json': {schema: CountSchema}},
       },
     },
   })
-  async deleteContainerFunctions(@param.path.string('id') id: string): Promise<void> {
-    await this.pipeContainerRepository.functions(id).delete({containerid: id});
+  async deleteContainerFunctions(
+    @param.path.string('id') id: string,
+    // @param.query.object('where', getWhereSchemaFor(PipeFunction)) where?: Where,
+  ): Promise<Count> {
+    let pipefunctionRepository = await this.pipeContainerRepository.pipefunctions;
+    let pipeFunctionController = new PipeFunctionController(pipefunctionRepository);
+    await this.pipeContainerRepository.deleteById(id);
+    return await pipeFunctionController.delete({containerid: {like: id}});
+    // return await this.pipeContainerRepository.functions(id).delete();
   }
 
   // @get('/pipecontainer/{id}/compile', {
