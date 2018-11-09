@@ -123,7 +123,7 @@ export class PipeContainerController {
   })
   async updateById(
     @param.path.string('id') id: string,
-    @requestBody() pipeContainer: PipeContainer,
+    @requestBody() pipeContainer: Partial<PipeContainer>,
   ): Promise<void> {
     await this.pipeContainerRepository.updateById(id, pipeContainer);
   }
@@ -178,7 +178,7 @@ export class PipeContainerController {
             uri: pipeContainer.uri,
             tags: pipeContainer.tags,
             timestamp: pipeContainer.timestamp,
-            chainid: (<SmartContractContainer>pipeContainer.container).chainid,
+            chainids: pipeContainer.chainids,
         }
         let pipefunction = await this.pipeContainerRepository.functions(pipeContainer._id).create(functiondoc);
 

@@ -124,6 +124,12 @@ export class PipeContainer extends Entity {
   tags?: string[];
 
   @property({
+    type: 'array',
+    itemType: 'string',
+  })
+  chainids: string[];
+
+  @property({
     type: 'date',
     generated: true,
     default: new Date(),
