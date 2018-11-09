@@ -379,16 +379,38 @@ export default {
         console.log('selectedTreeContainers', this.selectedTreeContainers);
     },
     saveFromRemix: function(container, deployment) {
-        container.container.chainid = deployment.deployed.chainid;
         if (!container.tags) container.tags = [];
         container.tags.push('solidity');
-        Vue.axios.post(containerFunctionsApi, container)
-        .then((response) => {
-            console.log('post container', response);
+
+        Vue.axios.get(
+            `${containerApi}?filter[where][container.bytecode.object]=${container.container.bytecode.object}`
+        ).then((response) => {
+            let existant = response.data[0];
+            let chainid = deployment.deployed.chainid;
+
+            // Insert new container only if there is no other container with the same bytecode
+            if (!existant) {
+                console.info('Inserting new container and functions');
+                container.chainids = [chainid];
+                return Vue.axios.post(containerFunctionsApi, container);
+            }
+
+            // Update chainids if this was a new chain
+            if (!existant.chainids.includes(chainid)) {
+                let chainids = existant.chainids.concat([chainid]);
+                console.info('Update chainids on container', chainids);
+                Vue.axios.patch(`${containerApi}/${existant._id}`, {chainids});
+            }
+            response.data = existant
+            return response;
+        }).then((response) => {
+            console.log('posted container', response);
+            // Connect deployed instance with container
             deployment.containerid = response.data._id;
             return Vue.axios.post(deployedApi, deployment);
         }).then((response) => {
-            console.log('post deployment', response);
+            console.log('posted deployment', response);
+            // Reload data after insert, to include information in the paginated list
             this.loadData();
         }).catch(function (error) {
             console.log(error);
