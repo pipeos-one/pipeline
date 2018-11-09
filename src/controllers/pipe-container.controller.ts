@@ -17,7 +17,7 @@ import {
 } from '@loopback/rest';
 import {PipeContainer, SmartContractContainer, PipeFunction} from '../models';
 import {PipeContainerRepository} from '../repositories';
-import {PipeFunctionController} from './pipe-function.controller';
+import {PipeFunctionController, PipeDeployedController} from '../controllers';
 import {AbiFunctionInput, AbiFunctionOuput, AbiFunction} from '../interfaces/abi';
 import {
     Devdoc,
@@ -204,7 +204,11 @@ export class PipeContainerController {
     let pipefunctionRepository = await this.pipeContainerRepository.pipefunctions;
     let pipeFunctionController = new PipeFunctionController(pipefunctionRepository);
     await this.pipeContainerRepository.deleteById(id);
-    return await pipeFunctionController.delete({containerid: {like: id}});
+    let deployedRepository = await this.pipeContainerRepository.deployed;
+    let deployedController = new PipeDeployedController(deployedRepository);
+    await pipeFunctionController.delete({containerid: {like: id}});
+    return await deployedController.delete({containerid: {like: id}});
+
     // return await this.pipeContainerRepository.functions(id).delete();
   }
 

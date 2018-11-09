@@ -1,5 +1,6 @@
 import {PipeContainer, PipeFunction} from '../models';
 import {PipeFunctionRepository} from './pipe-function.repository';
+import {PipeDeployedRepository} from './pipe-deployed.repository';
 import {
   DefaultCrudRepository,
   juggler,
@@ -15,10 +16,13 @@ export class PipeContainerRepository extends DefaultCrudRepository<
 > {
   public pipefunctions: Promise<PipeFunctionRepository>;
   public functions: HasManyRepositoryFactory<PipeFunction, typeof PipeContainer.prototype._id>;
+  public deployed: Promise<PipeDeployedRepository>;
   constructor(
     @inject('datasources.atlasmongo') protected datasource: juggler.DataSource,
     @repository.getter(PipeFunctionRepository)
     getPipeFunctionRepository: Getter<PipeFunctionRepository>,
+    @repository.getter(PipeDeployedRepository)
+    getPipeDeployedRepository: Getter<PipeDeployedRepository>,
   ) {
     super(PipeContainer, datasource);
     this.functions = this._createHasManyRepositoryFactoryFor(
@@ -26,6 +30,6 @@ export class PipeContainerRepository extends DefaultCrudRepository<
       getPipeFunctionRepository,
     );
     this.pipefunctions = getPipeFunctionRepository();
-
+    this.deployed =  getPipeDeployedRepository();
   }
 }
