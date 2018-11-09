@@ -57,6 +57,8 @@ export class OpenapiController {
         },
         tags: ['openapi'],
     }
+    console.log('-- pipeContainer', JSON.stringify(pipeContainer));
+    throw new Error('stop');
     pipeContainer = await containerController.createFunctions(pipeContainer).catch((e: Error) => {
         this.openapiRepository.deleteById(openapi._id);
         throw new Error('PipeContainer was not created.');

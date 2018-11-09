@@ -20,6 +20,11 @@ export class Openapi extends Entity {
   @property({
     type: 'string',
   })
+  yaml: 'string';
+
+  @property({
+    type: 'string',
+  })
   name?: string;
 
   @property({

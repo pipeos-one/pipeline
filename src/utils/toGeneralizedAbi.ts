@@ -5,6 +5,8 @@ import {
     ResponseObject,
     ReferenceObject,
     ParameterObject,
+    ComponentsObject,
+    SchemaObject,
 } from 'openapi3-ts';
 import {
     AbiFunctionInput,
@@ -35,13 +37,13 @@ export class OpenapiToGabi {
     init() {
         this.devdoc.title = this.openapi.info.title;
         if (this.openapi.info.contact) {
-            this.devdoc.author = `${this.openapi.info.contact.name} - ${this.openapi.info.contact.email} - ${this.openapi.info.contact.url}`;
+            this.devdoc.author = Object.entries(this.openapi.info.contact).map((entry) => entry[1]).join(' - ');
         }
         Object.keys(this.openapi.paths).forEach((name: string) => {
             let path: PathItemObject = this.openapi.paths[name];
             Object.keys(path).forEach((type: string) => {
                 let content: OperationObject = path[type];
-                this.methodToAbiFunction(name, type, content);
+                this.methodToAbiFunction(name, type, content, this.openapi.components);
             });
         });
     }
@@ -50,7 +52,8 @@ export class OpenapiToGabi {
         return `${name}(${types.join(',')})`;
     }
 
-    methodToAbiFunction(name: string, type: string, content: OperationObject) {
+    methodToAbiFunction(name: string, type: string, content: OperationObject, components: ComponentsObject | undefined) {
+        console.log('methodToAbiFunction', name, type, content);
         let inputs: AbiFunctionInput[] = [];
         let outputs: AbiFunctionOuput[] = [];
         let abiFunction: AbiFunction;
@@ -59,21 +62,36 @@ export class OpenapiToGabi {
 
         if (content.parameters) {
             content.parameters.forEach((parameter) => {
+                let extra: any = {
+                    openapi: {
+                        required: (<ParameterObject>parameter).required,
+                        in: (<ParameterObject>parameter).in,
+                    }
+                }
+                let schema: SchemaObject | ReferenceObject | undefined = (<ParameterObject>parameter).schema;
+                let type = (<SchemaObject>schema).format
+                    || (<SchemaObject>schema).type
+                    || 'any';
+
+                if (schema && schema.$ref && components && components.schemas) {
+                    type = schema.$ref.replace('#/components/', '').split('/')[1];
+                    extra.openapi[type] = components.schemas[type];
+                }
                 inputs.push({
                     name: (<ParameterObject>parameter).name,
-                    type: (<ParameterObject>parameter).type,
-                    extra: {
-                        openapi: {
-                            required: (<ParameterObject>parameter).required,
-                            in: (<ParameterObject>parameter).in,
-                        }
-                    }
+                    type,
+                    extra,
                 });
                 devdocParameters[(<ParameterObject>parameter).name] = (<ParameterObject>parameter).description;
             });
         }
 
         Object.keys(content.responses).forEach((code: string) => {
+            let extra: any = {
+                openapi: {
+                    code,
+                }
+            }
             let type: string = '';
             if (content.responses[code].schema) {
                 if (content.responses[code].schema.type) {
@@ -91,11 +109,9 @@ export class OpenapiToGabi {
                 }
             }
             outputs.push({
-                name: content.responses[code].description
-                    .split(' ')
-                    .map((word: string) => word[0].toUpperCase() + word.substring(1))
-                    .join(''),
+                name: 'Code_' + code,
                 type: type || '',
+                extra,
             });
         });
 
