@@ -53,11 +53,19 @@ export class SmartContractContainer extends DocumentedContainer {
       type: 'string',
     })
     jssource?: string;
+}
+
+@model()
+export class PythonContainer extends DocumentedContainer {
+    @property({
+      type: 'string',
+    })
+    pysource: string;
 
     @property({
       type: 'string',
     })
-    chainid: string;
+    exported: string;
 }
 
 @model()
@@ -99,7 +107,7 @@ export class PipeContainer extends Entity {
   @property({
     type: 'object',
   })
-  container: SmartContractContainer | JavscriptContainer | OpenApiContainer;
+  container: SmartContractContainer | JavscriptContainer | OpenApiContainer | PythonContainer;
 
   @property({
     type: 'string',
