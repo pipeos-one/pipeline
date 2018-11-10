@@ -190,11 +190,11 @@ export default {
 
         Vue.axios.get(containerFunctionsApi + query).then((response) => {
             console.log('response', response);
-            let pipecontainers = response.data.pipecontainers.map(container => {
+            this.selectedContainers = response.data.pipecontainers.map(container => {
                 container.deployment = response.data.pipedeployments.find(depl => depl.containerid == container._id);
                 return container;
             });
-            this.linkContainersFunctions(response.data.pipefunctions, pipecontainers);
+            this.linkContainersFunctions(response.data.pipefunctions);
         });
     },
     countPipeContainers: function() {
@@ -295,9 +295,9 @@ export default {
         }
         document.head.appendChild(script);
     },
-    linkContainersFunctions: function(pipeFunctions, pipeContainers) {
+    linkContainersFunctions: function(pipeFunctions) {
         this.taggedFunctions = pipeFunctions.map(func => {
-            func.container = Object.assign({}, pipeContainers.find(cont => cont._id === func.containerid));
+            func.container = Object.assign({}, this.selectedContainers.find(cont => cont._id === func.containerid));
             func.styleClasses = pipeFunctionColorClass(func.abiObj);
             return func;
         });
