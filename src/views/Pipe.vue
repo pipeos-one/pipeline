@@ -105,14 +105,14 @@ import Graphs from '../components/pipecanvas/pipecanvaslib.js';
 Vue.use(VueAwesomeSwiper);
 
 const get_api = Pipeos.pipeserver.api.json;
-const functionsAPI = Pipeos.pipeserver.api.function;
+const functionsApi = Pipeos.pipeserver.api.function;
 const containerApi = Pipeos.pipeserver.api.container;
 const containerFunctionsApi = Pipeos.pipeserver.api.container + '/pipefunctions';
 const deployedApi = Pipeos.pipeserver.api.deployed;
 
 let filterOptions = {
     offset: 0,
-    limit: 10,
+    limit: 2,
     skip: 0,
 };
 
@@ -173,9 +173,47 @@ export default {
         this.loadData();
     },
     loadData: function() {
-        this.setPipeContainers();
-        this.countPipeFunctions();
-        this.setPipeFunctions();
+        this.countPipeContainers();
+
+        let query = '?' +
+            Object.keys(this.filterOptions).map(
+                key => `filter[${key}]=${this.filterOptions[key]}`
+        ).concat(
+            this.selectedTags.map(tag => `filter[where][tags][inq]=${tag}`)
+        ).concat(
+            this.selectedTags.length > 0 ? ['filter[where][tags][inq]='] : []
+        ).concat(
+            this.chain_query ? [
+                `filter[where][chainids][inq]=${this.chain_query}`, 'filter[where][chainids][inq]='
+            ] : []
+        ).join('&');
+
+        Vue.axios.get(containerFunctionsApi + query).then((response) => {
+            console.log('response', response);
+            let pipecontainers = response.data.pipecontainers.map(container => {
+                container.deployment = response.data.pipedeployments.find(depl => depl.containerid == container._id);
+                return container;
+            });
+            this.linkContainersFunctions(response.data.pipefunctions, pipecontainers);
+        });
+    },
+    countPipeContainers: function() {
+        let query = '?' + this.selectedTags
+        .map(
+            tag => `where[tags][inq]=${tag}`
+        ).concat(
+            this.selectedTags.length > 0 ? ['where[tags][inq]='] : []
+        ).concat(
+            this.chain_query ? [
+                `where[chainids][inq]=${this.chain_query}`,
+                `where[chainids][inq]=`,
+            ] : []
+        ).join('&');
+
+        Vue.axios.get(containerApi + '/count' + query).then((response) => {
+            this.pages = Math.ceil(response.data.count / filterOptions.limit);
+            console.log('countPipeFunctions', response.data, this.pages, filterOptions);
+        });
     },
     loadCanvas: function() {
         this.graphInstance = new Graphs(
@@ -220,8 +258,7 @@ export default {
         if (0 < newPage <= this.pages) {
             this.currentPage = newPage;
         }
-        this.setPipeFunctions();
-        this.setPipeContainers();
+        this.loadData();
     },
     onFunctionToggle: function (pipefunction) {
         console.log('activeCanvas', this.activeCanvas);
@@ -258,85 +295,12 @@ export default {
         }
         document.head.appendChild(script);
     },
-    countPipeFunctions: function() {
-        console.log('count', this.selectedTags);
-        let query = '?' + this.selectedTags
-            .map(tag => `where[tags][inq]=${tag}`)
-            .concat(this.chain_query ? [`where[chainid][like]=${this.chain_query}`] : [])
-            .join('&');
-        if (this.selectedTags.length > 0) {
-            query += '&where[tags][inq]=';
-        }
-        console.log('count', functionsAPI + '/count' + query)
-        Vue.axios.get(functionsAPI + '/count' + query).then((response) => {
-          this.pages = Math.ceil(response.data.count / filterOptions.limit);
-        });
-    },
-    setPipeFunctions: function() {
-        console.log('setPipeFunctions for', this.chain_query)
-        let query = '?' + Object.keys(this.filterOptions)
-            .map(key => `filter[${key}]=${this.filterOptions[key]}`)
-            .concat(
-                this.selectedTags.map(tag => `filter[where][tags][inq]=${tag}`)
-            ).concat([`filter[order]=timestamp%20DESC`])
-            .concat(this.chain_query ? [`filter[where][chainid]=${this.chain_query}`] : [])
-            .join('&');
-            // where[containerid][like]=5bd7b24235fa57296db71e39
-
-        if (this.selectedTags.length > 0) {
-            query += '&filter[where][tags][inq]=';
-        }
-
-        Vue.axios.get(functionsAPI + query).then((response) => {
-          this.linkContainersFunctions(response.data);
-        });
-    },
-    setPipeContainers: function() {
-        let query = '?' +
-            // Object.keys(this.filterOptions).map(
-            //     key => `filter[${key}]=${this.filterOptions[key]}`
-        // ).concat(
-        [].concat(
-            this.selectedTags.map(tag => `filter[where][tags][inq]=${tag}`)
-        ).concat(this.chain_query ? [`filter[where][container.chainid]=${this.chain_query}`] : [])
-        .join('&');
-
-        if (this.selectedTags.length > 0) {
-            query += '&filter[where][tags][inq]=';
-        }
-
-        Vue.axios.get(containerApi + query).then((response) => {
-            let containers = response.data;
-            this.setPipeDeployed(deployed => {
-                this.selectedContainers = containers.map(container => {
-                    container.deployment = deployed.find(depl => depl.containerid == container._id);
-                    return container;
-                });
-                console.log('this.selectedContainers', this.selectedContainers);
-                this.linkContainersFunctions(this.taggedFunctions);
-            });
-        });
-    },
-    setPipeDeployed: function(callback) {
-        let query = deployedApi;
-        if (this.chain_query) {
-            query += `?filter[where][deployed.chainid]=${this.chain_query}`;
-        }
-        Vue.axios.get(query).then((response) => {
-            console.log('setPipeDeployed', response);
-            callback(response.data);
-        });
-    },
-    linkContainersFunctions: function(pipeFunctions) {
+    linkContainersFunctions: function(pipeFunctions, pipeContainers) {
         this.taggedFunctions = pipeFunctions.map(func => {
-            func.container = Object.assign({}, this.selectedContainers.find(cont => cont._id === func.containerid));
-            console.log('linkContainersFunctions', func.containerid, func.container, func)
+            func.container = Object.assign({}, pipeContainers.find(cont => cont._id === func.containerid));
             func.styleClasses = pipeFunctionColorClass(func.abiObj);
             return func;
         });
-        this.taggedFunctionsCache = this.taggedFunctionsCache.concat(
-            this.taggedFunctions.filter(func => !this.taggedFunctionsCache.includes(func))
-        );
         console.log('this.taggedFunctions', this.taggedFunctions)
     },
     setActiveCanvas: function(value) {
