@@ -23,6 +23,7 @@ import {
     Devdoc,
     Userdoc,
 } from '../interfaces/soldocs';
+import {GetContainerFunctionsDeployed} from '../interfaces';
 
 export class PipeContainerController {
   constructor(
@@ -139,6 +140,40 @@ export class PipeContainerController {
     await this.pipeContainerRepository.deleteById(id);
   }
 
+  @get('/pipecontainer/pipefunctions')
+  async findContainerFunctionsDeployed(
+      @param.query.object('filter', getFilterSchemaFor(PipeContainer)) filter?: Filter,
+  ): Promise<GetContainerFunctionsDeployed> {
+    let functions_filter, deployed_queries, deployed_filter;
+    let pipecontainers, pipedeployments, pipefunctions;
+
+    let pipefunctionRepository = await this.pipeContainerRepository.pipefunctions;
+    let deployedRepository = await this.pipeContainerRepository.deployed;
+
+    pipecontainers = await this.pipeContainerRepository.find(filter);
+
+    // PipeFunction filter
+    functions_filter = JSON.parse(JSON.stringify({where: {or: pipecontainers.map(container => {
+        return {"containerid": {"like": container._id}};
+    })}}));
+
+    // PipeDeployed filter
+    deployed_queries = [];
+    if (filter && filter.where && filter.where.chainids) {
+        deployed_queries.push({or: filter.where.chainids.inq.map((chainid: string) => {
+            return {'deployed.chainid': chainid}
+        })});
+    }
+    deployed_filter = JSON.parse(JSON.stringify({where: {and:
+        [functions_filter.where].concat(deployed_queries),
+    }}));
+
+    pipefunctions = await pipefunctionRepository.find(functions_filter);
+    pipedeployments = await deployedRepository.find(deployed_filter);
+
+    return {pipecontainers, pipedeployments, pipefunctions};
+  }
+
   // Additional routes
   @post('/pipecontainer/pipefunctions')
   async createFunctions(
@@ -203,9 +238,11 @@ export class PipeContainerController {
   ): Promise<Count> {
     let pipefunctionRepository = await this.pipeContainerRepository.pipefunctions;
     let pipeFunctionController = new PipeFunctionController(pipefunctionRepository);
-    await this.pipeContainerRepository.deleteById(id);
+
     let deployedRepository = await this.pipeContainerRepository.deployed;
     let deployedController = new PipeDeployedController(deployedRepository);
+
+    await this.pipeContainerRepository.deleteById(id);
     await pipeFunctionController.delete({containerid: {like: id}});
     return await deployedController.delete({containerid: {like: id}});
 
