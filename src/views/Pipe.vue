@@ -8,19 +8,23 @@
                 v-on:load-from-remix="loadFromRemixWrap"
                 v-on:provider-changed="setNetworkInfo"
             />
-                <!-- <Tags v-on:tag-toggle="onTagToggle"/> -->
-                <v-flex xs11>
-                <PaginatedList
-                    :items="taggedFunctions"
-                    :pages="pages"
-                    :currentPage="currentPage"
-                    :isRemix="isRemix"
-                    v-bind:tags="selectedTags"
-                    v-on:function-toggle="onTreeFunctionToggle"
-                    v-on:change-page="changePage"
-                    v-on:load-remix="loadRemix"
-                />
-                </v-flex>
+                <v-layout row wrap>
+                    <v-flex xs3>
+                        <Tags v-on:tag-toggle="onTagToggle"/>
+                    </v-flex>
+                    <v-flex xs9>
+                    <PaginatedList
+                        :items="taggedFunctions"
+                        :pages="pages"
+                        :currentPage="currentPage"
+                        :isRemix="isRemix"
+                        v-bind:tags="selectedTags"
+                        v-on:function-toggle="onTreeFunctionToggle"
+                        v-on:change-page="changePage"
+                        v-on:load-remix="loadRemix"
+                    />
+                    </v-flex>
+                </v-layout>
         </swiper-slide class="swiper-margin">
 
         <swiper-slide class="swiper-margin no-swipe">
@@ -243,12 +247,8 @@ export default {
     addToCanvas: function(pipefunction, index) {
         this.graphInstance.addFunction(pipefunction, index);
     },
-    onTagToggle: function (tagName) {
-      if (tagName === 'all') {
-        this.selectedTags = [];
-      } else {
-          this.selectedTags = [tagName];
-      }
+    onTagToggle: function (selectedTags) {
+      this.selectedTags = selectedTags;
       console.log('this.selectedTags', this.selectedTags);
       this.loadData();
     },
@@ -483,7 +483,7 @@ body {
     width: 100%!important;
 }
 .swiper-slide:nth-child(2n), .swiper-slide:nth-child(4n) {
-    width: 66%!important;
+    width: 70%!important;
 }
 .swiper-slide:nth-child(3n), .swiper-slide:nth-child(5n) {
     width: 30%!important;
