@@ -38,7 +38,7 @@ class EthUri extends Model {
     @property({
       type: 'string',
     })
-    bytecode?: string;
+    constructorArgs?: string;
 }
 
 @model()

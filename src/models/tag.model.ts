@@ -21,6 +21,11 @@ export class Tag extends Entity {
   description?: string;
 
   @property({
+    type: 'string',
+  })
+  uri?: string;
+
+  @property({
     type: 'date',
     generated: true,
     default: new Date(),
