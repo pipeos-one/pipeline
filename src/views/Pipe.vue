@@ -112,6 +112,7 @@ const get_api = Pipeos.pipeserver.api.json;
 const functionsApi = Pipeos.pipeserver.api.function;
 const containerApi = Pipeos.pipeserver.api.container;
 const containerFunctionsApi = Pipeos.pipeserver.api.container + '/pipefunctions';
+const containerDeployedApi = Pipeos.pipeserver.api.container + '/pipedeployed';
 const deployedApi = Pipeos.pipeserver.api.deployed;
 
 let filterOptions = {
@@ -359,19 +360,13 @@ export default {
                 return Vue.axios.post(containerFunctionsApi, container);
             }
 
-            // Update chainids if this was a new chain
-            if (!existant.chainids.includes(chainid)) {
-                let chainids = existant.chainids.concat([chainid]);
-                console.info('Update chainids on container', chainids);
-                Vue.axios.patch(`${containerApi}/${existant._id}`, {chainids});
-            }
             response.data = existant
             return response;
         }).then((response) => {
             console.log('posted container', response);
             // Connect deployed instance with container
             deployment.containerid = response.data._id;
-            return Vue.axios.post(deployedApi, deployment);
+            return Vue.axios.post(containerDeployedApi, deployment);
         }).then((response) => {
             console.log('posted deployment', response);
             // Reload data after insert, to include information in the paginated list
