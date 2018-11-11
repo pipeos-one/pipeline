@@ -25,6 +25,8 @@ import {
 } from '../interfaces/soldocs';
 import {GetContainerFunctionsDeployed} from '../interfaces';
 
+let solc = require('solc');
+
 export class PipeContainerController {
   constructor(
     @repository(PipeContainerRepository)
@@ -179,7 +181,14 @@ export class PipeContainerController {
   async createFunctions(
     @requestBody() pipeContainer: PipeContainer,
   ): Promise<PipeContainer | void> {
+    // For a Solidity smart contract, if we only have the source, we try to compile it
+    // so we can store the abi, devdoc & userdoc
+    pipeContainer.container = this.tryCompileSmartContractContainer(
+        pipeContainer.name,
+        (<SmartContractContainer>pipeContainer.container)
+    );
     let newContainer = await this.create(pipeContainer);
+
     this.createFunctionsFromContainer(newContainer).catch((e: Error) => {
         console.log('createFunctionsFromContainer', e);
         this.deleteContainerFunctions(newContainer._id);
@@ -249,6 +258,29 @@ export class PipeContainerController {
     // return await this.pipeContainerRepository.functions(id).delete();
   }
 
+    tryCompileSmartContractContainer(contractName: string, container: SmartContractContainer): any {
+        let compiled, metadata;
+        if (container.solsource && (!container.abi || !container.devdoc || !container.userdoc)) {
+            compiled = this.compile(container.solsource);
+            metadata = JSON.parse(compiled.contracts[`:${contractName}`].metadata)
+            container.abi = container.abi || metadata.output.abi;
+            container.devdoc = container.devdoc || metadata.output.devdoc;
+            container.userdoc = container.userdoc || metadata.output.userdoc;
+        }
+        return container;
+    }
+
+    compile(source: string): any {
+        try {
+            const compiled = solc.compile(source, 0);
+            return compiled;
+        }
+        catch {
+            console.log('Compilation failed.');
+            return null;
+        }
+    }
+
   // @get('/pipecontainer/{id}/compile', {
   //   responses: {
   //     '200': {
@@ -309,12 +341,4 @@ export class PipeContainerController {
   //   return updatedContainer;
   // }
   //
-  // compile(source: string): any {
-  //   const compiled = solc.compile(source, 0);
-  //   console.log('compiled', compiled);
-  //   if (!compiled) {
-  //       throw new Error('Compilation failed.');
-  //   }
-  //   return compiled;
-  // }
 }
