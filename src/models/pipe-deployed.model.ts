@@ -2,7 +2,7 @@ import {Entity, Model, model, property, belongsTo} from '@loopback/repository';
 import {PipeContainer} from './pipe-container.model';
 
 @model()
-class Uri extends Model {
+export class Uri extends Model {
     @property({
       type: 'string',
       required: true,
@@ -22,7 +22,7 @@ class Uri extends Model {
 }
 
 @model()
-class EthUri extends Model {
+export class EthUri extends Model {
     @property({
       type: 'string',
       required: true,

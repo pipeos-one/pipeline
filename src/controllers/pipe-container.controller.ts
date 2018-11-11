@@ -15,7 +15,7 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
-import {PipeContainer, SmartContractContainer, PipeFunction} from '../models';
+import {PipeContainer, SmartContractContainer, PipeFunction, PipeDeployed, EthUri} from '../models';
 import {PipeContainerRepository} from '../repositories';
 import {PipeFunctionController, PipeDeployedController} from '../controllers';
 import {AbiFunctionInput, AbiFunctionOuput, AbiFunction} from '../interfaces/abi';
@@ -197,6 +197,28 @@ export class PipeContainerController {
     return newContainer;
   }
 
+  @post('/pipecontainer/pipedeployed', {
+    responses: {
+      '200': {
+        description: 'PipeDeployed model instance',
+        content: {'application/json': {'x-ts-type': PipeDeployed}},
+      },
+    },
+  })
+  async addDeployed(
+      @requestBody() pipeDeployed: PipeDeployed,
+  ): Promise<PipeDeployed> {
+    let deployedRepository = await this.pipeContainerRepository.deployed;
+    let container = await this.findById(pipeDeployed.containerid);
+
+    container.chainids = container.chainids || [];
+    if (!container.chainids.includes((<EthUri>pipeDeployed.deployed).chainid)) {
+        container.chainids.push((<EthUri>pipeDeployed.deployed).chainid);
+        await this.updateById(pipeDeployed.containerid, {chainids: container.chainids});
+    }
+    return await deployedRepository.create(pipeDeployed);
+  }
+
   @post('/pipecontainer/{id}/pipefunctions')
   async createFunctionsFromContainer(
     @requestBody() pipeContainer: PipeContainer,
@@ -252,8 +274,8 @@ export class PipeContainerController {
     let deployedController = new PipeDeployedController(deployedRepository);
 
     await this.pipeContainerRepository.deleteById(id);
-    await pipeFunctionController.delete({containerid: {like: id}});
-    return await deployedController.delete({containerid: {like: id}});
+    await deployedController.delete({containerid: {like: id}});
+    return await pipeFunctionController.delete({containerid: {like: id}}); 
 
     // return await this.pipeContainerRepository.functions(id).delete();
   }
