@@ -70,9 +70,10 @@ export class PipeFunction extends Entity {
   timestamp: Date;
 
   @property({
-    type: 'string',
+    type: 'array',
+    itemType: 'string',
   })
-  chainid: string;
+  chainids: string[];
 
   constructor(data?: Partial<PipeFunction>) {
     super(data);
