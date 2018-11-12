@@ -14,12 +14,13 @@
                     </v-flex>
                     <v-flex xs9>
                     <PaginatedList
-                        :items="taggedFunctions"
+                        :items="selectedContainers"
                         :pages="pages"
                         :currentPage="currentPage"
                         :isRemix="isRemix"
                         v-bind:tags="selectedTags"
-                        v-on:function-toggle="onTreeFunctionToggle"
+                        v-on:item-toggle="onTreeToggle"
+                        v-on:subitem-toggle=""
                         v-on:change-page="changePage"
                         v-on:load-remix="loadRemix"
                     />
@@ -28,7 +29,7 @@
         </swiper-slide class="swiper-margin">
 
         <swiper-slide class="swiper-margin no-swipe">
-            <PipeTree :items="selectedTreeContainers" v-on:item-toggle="onFunctionToggle"/>
+            <PipeTree :items="selectedTreeContainers" v-on:subitem-toggle="onFunctionToggle"/>
         </swiper-slide>
 
         <swiper-slide class="swiper-margin-slide swiper-margin no-swipe">
@@ -117,7 +118,7 @@ const deployedApi = Pipeos.pipeserver.api.deployed;
 
 let filterOptions = {
     offset: 0,
-    limit: 2,
+    limit: 5,
     skip: 0,
 };
 
@@ -140,8 +141,6 @@ export default {
         selectedTags: [],
         pages: 1,
         currentPage: 1,
-        taggedFunctions: [],
-        taggedFunctionsCache: [],
         selectedTreeContainers: [],
         selectedFunctions: [[]],
         activeCanvas: 0,
@@ -195,11 +194,11 @@ export default {
 
         Vue.axios.get(containerFunctionsApi + query).then((response) => {
             console.log('response', response);
-            this.selectedContainers = response.data.pipecontainers.map(container => {
+            let pipecontainers = response.data.pipecontainers.map(container => {
                 container.deployment = response.data.pipedeployments.find(depl => depl.containerid == container._id);
                 return container;
             });
-            this.linkContainersFunctions(response.data.pipefunctions);
+            this.linkContainersFunctions(response.data.pipefunctions, pipecontainers);
         });
     },
     countPipeContainers: function() {
@@ -276,12 +275,10 @@ export default {
         console.log('this.selectedFunctions', this.selectedFunctions);
         this.addToCanvas(pipefunction, this.activeCanvas);
     },
-    onTreeFunctionToggle: function (pipefunction) {
-        let index = this.selectedTreeContainers.findIndex(container => container._id == pipefunction.container._id);
+    onTreeToggle: function (pipecontract) {
+        let index = this.selectedTreeContainers.findIndex(container => container._id == pipecontract._id);
         if (index < 0) {
-            let container = this.selectedContainers.find(container => container._id == pipefunction.container._id);
-            container.functions = this.taggedFunctions.filter(func => func.containerid == container._id);
-            this.selectedTreeContainers.push(container);
+            this.selectedTreeContainers.push(pipecontract);
         }
         // this.loadPipeJs(pipefunction);
     },
@@ -296,13 +293,17 @@ export default {
         }
         document.head.appendChild(script);
     },
-    linkContainersFunctions: function(pipeFunctions) {
-        this.taggedFunctions = pipeFunctions.map(func => {
-            func.container = Object.assign({}, this.selectedContainers.find(cont => cont._id === func.containerid));
+    linkContainersFunctions: function(pipeFunctions, pipeContainers) {
+        pipeFunctions = pipeFunctions.map(func => {
+            func.container = Object.assign({}, pipeContainers.find(cont => cont._id === func.containerid));
             func.styleClasses = pipeFunctionColorClass(func.abiObj);
             return func;
         });
-        console.log('this.taggedFunctions', this.taggedFunctions)
+        this.selectedContainers = pipeContainers.map(container => {
+            container.functions = pipeFunctions.filter(func => func.containerid == container._id);
+            return container;
+        });
+        console.log('this.selectedContainers', this.selectedContainers);
     },
     setActiveCanvas: function(value) {
         console.log('setActiveCanvas', value);
@@ -321,7 +322,7 @@ export default {
         this.canvases += 1;
     },
     loadRemix: function(item) {
-        this.loadRemixCall(item.container.name, item.container.container.solsource);
+        this.loadRemixCall(item.name, item.container.solsource);
     },
     loadRemixCall: function(name, source) {
         let fileName = `browser/Pipeos_${name}.sol`;
