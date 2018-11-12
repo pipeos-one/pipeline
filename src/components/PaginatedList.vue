@@ -4,6 +4,7 @@
           <v-pagination
             :length="pages"
             :value="currentPage"
+            total-visible="7"
             v-on:input="changePage"
           ></v-pagination>
       </div>
@@ -51,7 +52,7 @@
                 v-if="item.devdoc"
             >
                 <template
-                    v-for="(param, index) in Object.keys(item.devdoc.params)">
+                    v-for="(param, index) in Object.keys(item.devdoc.params || {})">
                     <p class="text-sm-left">{{param}}: {{item.devdoc.params[param]}}</p>
                 </template>
                 <p class="text-sm-left" v-if="item.devdoc.return">Returns: {{item.devdoc.return}}</p>
