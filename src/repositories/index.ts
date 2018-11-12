@@ -4,3 +4,4 @@ export * from './pipe-function.repository';
 export * from './pipe-container.repository';
 export * from './pipe-deployed.repository';
 export * from './openapi.repository';
+export * from './project.repository';

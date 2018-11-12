@@ -4,3 +4,4 @@ export * from './pipe-function.model';
 export * from './pipe-container.model';
 export * from './pipe-deployed.model';
 export * from './openapi.model';
+export * from './project.model';
