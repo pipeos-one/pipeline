@@ -187,6 +187,7 @@ export class PipeContainerController {
         pipeContainer.name,
         (<SmartContractContainer>pipeContainer.container)
     );
+    if (!pipeContainer.container) return;
     let newContainer = await this.create(pipeContainer);
 
     this.createFunctionsFromContainer(newContainer).catch((e: Error) => {
@@ -234,7 +235,9 @@ export class PipeContainerController {
         let funcabi: AbiFunction = abi[i];
         let signature, functiondoc;
 
-        signature = funcabi.inputs.map((input: AbiFunctionInput) => input.type).join(',');
+        if (funcabi.inputs) {
+            signature = funcabi.inputs.map((input: AbiFunctionInput) => input.type).join(',');
+        }
         signature = funcabi.name ? `${funcabi.name}(${signature})` : undefined;
         functiondoc = {
             signature,
@@ -275,7 +278,7 @@ export class PipeContainerController {
 
     await this.pipeContainerRepository.deleteById(id);
     await deployedController.delete({containerid: {like: id}});
-    return await pipeFunctionController.delete({containerid: {like: id}}); 
+    return await pipeFunctionController.delete({containerid: {like: id}});
 
     // return await this.pipeContainerRepository.functions(id).delete();
   }
@@ -284,10 +287,20 @@ export class PipeContainerController {
         let compiled, metadata;
         if (container.solsource && (!container.abi || !container.devdoc || !container.userdoc)) {
             compiled = this.compile(container.solsource);
-            metadata = JSON.parse(compiled.contracts[`:${contractName}`].metadata)
-            container.abi = container.abi || metadata.output.abi;
-            container.devdoc = container.devdoc || metadata.output.devdoc;
-            container.userdoc = container.userdoc || metadata.output.userdoc;
+            if (compiled.contracts[`:${contractName}`]) {
+                try {
+                    metadata = JSON.parse(compiled.contracts[`:${contractName}`].metadata)
+                    container.abi = container.abi || metadata.output.abi;
+                    container.devdoc = container.devdoc || metadata.output.devdoc;
+                    container.userdoc = container.userdoc || metadata.output.userdoc;
+                } catch {
+                    console.log('Metadata could not be parsed: ', compiled.contracts[`:${contractName}`].metadata);
+                }
+            }
+        }
+        if (container.solsource && !container.abi) {
+            console.log(contractName + ' not inserted.');
+            return;
         }
         return container;
     }
