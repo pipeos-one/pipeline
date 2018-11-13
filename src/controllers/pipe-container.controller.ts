@@ -86,7 +86,7 @@ export class PipeContainerController {
     },
   })
   async updateAll(
-    @requestBody() pipeContainer: PipeContainer,
+    @requestBody() pipeContainer: Partial<PipeContainer>,
     @param.query.object('where', getWhereSchemaFor(PipeContainer)) where?: Where,
   ): Promise<Count> {
     return await this.pipeContainerRepository.updateAll(pipeContainer, where);
@@ -146,7 +146,7 @@ export class PipeContainerController {
   async findContainerFunctionsDeployed(
       @param.query.object('filter', getFilterSchemaFor(PipeContainer)) filter?: Filter,
   ): Promise<GetContainerFunctionsDeployed> {
-    let functions_filter, deployed_queries, deployed_filter;
+    let functions_filter, deployed_queries, deployed_filter, containerids;
     let pipecontainers, pipedeployments, pipefunctions;
 
     let pipefunctionRepository = await this.pipeContainerRepository.pipefunctions;
@@ -155,9 +155,13 @@ export class PipeContainerController {
     pipecontainers = await this.pipeContainerRepository.find(filter);
 
     // PipeFunction filter
-    functions_filter = JSON.parse(JSON.stringify({where: {or: pipecontainers.map(container => {
+    containerids = pipecontainers.map(container => {
         return {"containerid": {"like": container._id}};
-    })}}));
+    });
+    if (containerids.length == 0) {
+        containerids = [{"containerid": {"like": "xxxxxx"}}];
+    }
+    functions_filter = JSON.parse(JSON.stringify({where: {or: containerids}}));
 
     // PipeDeployed filter
     deployed_queries = [];

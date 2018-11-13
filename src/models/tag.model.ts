@@ -26,6 +26,12 @@ export class Tag extends Entity {
   uri?: string;
 
   @property({
+    type: 'number',
+    default: 0,
+  })
+  count: number;
+
+  @property({
     type: 'date',
     generated: true,
     default: new Date(),

@@ -120,8 +120,14 @@ export class PipeContainer extends Entity {
   @property({
     type: 'array',
     itemType: 'string',
+    required: true,
   })
-  tags?: string[];
+  tags: string[];
+
+  @property({
+    type: 'string',
+  })
+  project?: string;
 
   @property({
     type: 'array',

@@ -5,7 +5,7 @@ export class Project extends Entity {
   @property({
     type: 'string',
     id: true,
-    required: true,
+    generated: true,
   })
   _id: string;
 
@@ -34,6 +34,12 @@ export class Project extends Entity {
     type: 'string',
   })
   github?: string;
+
+  @property({
+    type: 'number',
+    default: 0,
+  })
+  count: number;
 
   constructor(data?: Partial<Project>) {
     super(data);
