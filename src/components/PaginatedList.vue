@@ -17,6 +17,7 @@
         <PipeTree
             :items="items"
             :loadToRemix="isRemix"
+            :loadToTree="1"
             v-on:item-toggle="itemToggle"
             v-on:subitem-toggle="subitemToggle"
             v-on:load-remix="loadToRemix"

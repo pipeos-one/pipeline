@@ -29,7 +29,12 @@
         </swiper-slide class="swiper-margin">
 
         <swiper-slide class="swiper-margin no-swipe">
-            <PipeTree :items="selectedTreeContainers" v-on:subitem-toggle="onFunctionToggle"/>
+            <PipeTree
+                :items="selectedTreeContainers"
+                :removeItem="1"
+                v-on:subitem-toggle="onFunctionToggle"
+                v-on:remove-item="removeTreeItem"
+            />
         </swiper-slide>
 
         <swiper-slide class="swiper-margin-slide swiper-margin no-swipe">
@@ -118,7 +123,7 @@ const deployedApi = Pipeos.pipeserver.api.deployed;
 
 let filterOptions = {
     offset: 0,
-    limit: 5,
+    limit: 7,
     skip: 0,
 };
 
@@ -275,12 +280,18 @@ export default {
         console.log('this.selectedFunctions', this.selectedFunctions);
         this.addToCanvas(pipefunction, this.activeCanvas);
     },
-    onTreeToggle: function (pipecontract) {
-        let index = this.selectedTreeContainers.findIndex(container => container._id == pipecontract._id);
+    onTreeToggle: function (pipecontainer) {
+        let index = this.selectedTreeContainers.findIndex(container => container._id == pipecontainer._id);
         if (index < 0) {
-            this.selectedTreeContainers.push(pipecontract);
+            this.selectedTreeContainers.push(pipecontainer);
         }
         // this.loadPipeJs(pipefunction);
+    },
+    removeTreeItem: function(pipecontainer) {
+        let index = this.selectedTreeContainers.findIndex(container => container._id == pipecontainer._id);
+        if (index >= 0) {
+            this.selectedTreeContainers.splice(index, 1);
+        }
     },
     loadPipeJs: function(pipefunction) {
         const containerid = pipefunction.containerid;
