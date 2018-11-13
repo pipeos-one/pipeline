@@ -9,8 +9,11 @@
                 v-on:provider-changed="setNetworkInfo"
             />
                 <v-layout row wrap>
-                    <v-flex xs3>
-                        <Tags v-on:tag-toggle="onTagToggle"/>
+                    <v-flex xs3 style="margin-top: 70px;">
+                        <Search
+                            v-on:select="onSearchSelect"
+                            v-on:remove="onSearchRemove"
+                        />
                     </v-flex>
                     <v-flex xs9>
                     <PaginatedList
@@ -96,13 +99,13 @@
 <script>
 import Vue from 'vue';
 import Pipeos from '../namespace/namespace';
-import Tags from '../components/Tags';
 import PaginatedList from '../components/PaginatedList';
 import PipeTree from '../components/PipeTree';
 import PipeCanvas from '../components/pipecanvas/PipeCanvas';
 import PipeApp from '../components/pipeapp/PipeApp';
 import PipeAbout from '../components/about/PipeAbout';
 import RemixLoadContract from '../components/remix/RemixLoadContract';
+import Search from '../components/Search';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
 import {
@@ -130,7 +133,7 @@ let filterOptions = {
 export default {
   components: {
     PipeAbout,
-    Tags,
+    Search,
     PaginatedList,
     PipeTree,
     PipeCanvas,
@@ -144,6 +147,7 @@ export default {
         chain: null,
         chain_query: null,
         selectedTags: [],
+        selectedProjects: [],
         pages: 1,
         currentPage: 1,
         selectedTreeContainers: [],
@@ -181,23 +185,32 @@ export default {
         this.web3 = web3;
         this.loadData();
     },
+    buildContainersQuery() {
+        let query = {};
+        if (this.selectedTags.length > 0) {
+            query.tags = {inq: this.selectedTags};
+        }
+        if (this.chain_query) {
+            query.chainids = {inq: [this.chain_query]};
+        }
+        if (this.selectedProjects.length > 0) {
+            query.or = this.selectedProjects.map((project) => {
+                    return {project: {like: project, options: 'i'}}
+            });
+        }
+
+        return query;
+    },
     loadData: function() {
+        let query, containersQuery;
         this.countPipeContainers();
 
-        let query = '?' +
-            Object.keys(this.filterOptions).map(
-                key => `filter[${key}]=${this.filterOptions[key]}`
-        ).concat(
-            this.selectedTags.map(tag => `filter[where][tags][inq]=${tag}`)
-        ).concat(
-            this.selectedTags.length > 0 ? ['filter[where][tags][inq]='] : []
-        ).concat(
-            this.chain_query ? [
-                `filter[where][chainids][inq]=${this.chain_query}`, 'filter[where][chainids][inq]='
-            ] : []
-        ).join('&');
+        let filter = this.filterOptions;
+        filter.where = this.buildContainersQuery();
+        filter = '?filter=' + JSON.stringify(filter);
+        console.log('filter', filter);
 
-        Vue.axios.get(containerFunctionsApi + query).then((response) => {
+        Vue.axios.get(containerFunctionsApi + filter).then((response) => {
             console.log('response', response);
             let pipecontainers = response.data.pipecontainers.map(container => {
                 container.deployment = response.data.pipedeployments.find(depl => depl.containerid == container._id);
@@ -207,19 +220,11 @@ export default {
         });
     },
     countPipeContainers: function() {
-        let query = '?' + this.selectedTags
-        .map(
-            tag => `where[tags][inq]=${tag}`
-        ).concat(
-            this.selectedTags.length > 0 ? ['where[tags][inq]='] : []
-        ).concat(
-            this.chain_query ? [
-                `where[chainids][inq]=${this.chain_query}`,
-                `where[chainids][inq]=`,
-            ] : []
-        ).join('&');
+        let where = this.buildContainersQuery();
+        where = '?where=' + JSON.stringify(where);
 
-        Vue.axios.get(containerApi + '/count' + query).then((response) => {
+        console.log('where', where)
+        Vue.axios.get(containerApi + '/count' + where).then((response) => {
             this.pages = Math.ceil(response.data.count / filterOptions.limit);
             console.log('countPipeFunctions', response.data, this.pages, filterOptions);
         });
@@ -252,10 +257,32 @@ export default {
     addToCanvas: function(pipefunction, index) {
         this.graphInstance.addFunction(pipefunction, index);
     },
-    onTagToggle: function (selectedTags) {
-      this.selectedTags = selectedTags;
-      console.log('this.selectedTags', this.selectedTags);
-      this.loadData();
+    onSearchSelect: function (searchSelected) {
+        let tags = [], projects = [];
+        searchSelected.forEach((selected) => {
+            if (selected.tag) tags.push(selected.name);
+            if (selected.project) projects.push(selected.name);
+        });
+        this.selectedTags = tags;
+        this.selectedProjects = projects;
+        this.loadData();
+    },
+    onSearchRemove: function(searchRemove) {
+        if (searchRemove.tag) {
+            this.selectedTags.splice(
+                this.selectedTags.findIndex((name) => {
+                    name === searchRemove.name
+                }),
+                1
+            );
+        } else if (searchRemove.project) {
+            this.selectedProjects.splice(
+                this.selectedProjects.findIndex((name) => {
+                    name === searchRemove.name
+                }),
+                1
+            );
+        }
     },
     changePage: function(page) {
         this.filterOptions.skip = this.filterOptions.limit * (page - 1);
