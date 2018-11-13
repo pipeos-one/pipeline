@@ -11,6 +11,7 @@ const Pipeos = {
             function: `${pipeserverIp}/pipefunction`,
             deployed: `${pipeserverIp}/pipedeployed`,
             tag: `${pipeserverIp}/tag`,
+            project: `${pipeserverIp}/project`,
         },
     },
     contracts: {
