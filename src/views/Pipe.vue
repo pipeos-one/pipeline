@@ -175,7 +175,6 @@ export default {
     };
   },
   mounted() {
-    this.loadData();
     this.loadCanvas();
   },
   methods: {
@@ -184,6 +183,11 @@ export default {
         this.chain_query = chain === 'JavaScriptVM' ? '3' : chain;
         this.web3 = web3;
         this.loadData();
+        setTimeout(() => {
+            if (this.chain === '1') {
+                alert('Pipeline is Work In Progress. Do not deploy Pipeline created contracts on mainnet.');
+            }
+        }, 3000);
     },
     buildContainersQuery() {
         let query = {};
