@@ -10,8 +10,8 @@
       </div>
     <div v-if="items.length === 0">
         <p>Pipeline database does not contain contracts deployed on this chain.
-        To see & play with Pipeline stored contracts, please change to Ropsten, Rinkeby or Kovan.</p>
-        <p>Otherwise, please import your own deployed contracts from Remix.</p>
+        To see & play with Pipeline stored contracts, change to Ropsten, Rinkeby or Kovan.</p>
+        <p>Otherwise, import your own deployed contracts from Remix.</p>
     </div>
     <v-list two-line v-if="items.length > 0">
         <PipeTree

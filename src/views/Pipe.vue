@@ -4,15 +4,15 @@
             <PipeAbout/>
         </swiper-slide>
         <swiper-slide class="swiper-margin no-swipe">
-            <RemixLoadContract
-                v-on:load-from-remix="loadFromRemixWrap"
-                v-on:provider-changed="setNetworkInfo"
-            />
                 <v-layout row wrap>
                     <v-flex xs3 style="margin-top: 70px;">
                         <Search
                             v-on:select="onSearchSelect"
                             v-on:remove="onSearchRemove"
+                        />
+                        <RemixLoadContract
+                            v-on:load-from-remix="loadFromRemixWrap"
+                            v-on:provider-changed="setNetworkInfo"
                         />
                     </v-flex>
                     <v-flex xs9>
@@ -181,7 +181,7 @@ export default {
   methods: {
     setNetworkInfo: function(chain, web3) {
         this.chain = chain;
-        this.chain_query = chain === 'JavaScriptVM' ? '42' : chain;
+        this.chain_query = chain === 'JavaScriptVM' ? '3' : chain;
         this.web3 = web3;
         this.loadData();
     },
@@ -385,6 +385,7 @@ export default {
     saveFromRemix: function(container, deployment) {
         if (!container.tags) container.tags = [];
         container.tags.push('solidity');
+        container.tags.push('uncurated');
 
         Vue.axios.get(
             `${containerApi}?filter[where][container.bytecode.object]=${container.container.bytecode.object}`
@@ -477,6 +478,7 @@ export default {
                     }
                     if (result[0].source.target)
                     compiledContractProcess(result[0], function(contract) {
+                        contract.tags.push('piped');
                         console.log('contract', contract);
                         if (this.pipedContracts[contract.name]) {
                             if (confirm(`

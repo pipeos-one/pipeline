@@ -1,20 +1,24 @@
 <template>
     <div class="load-remix">
-        <template v-for="contractName in contracts">
-            <v-tooltip bottom>
-                <v-text-field
-                    :ref="'addr_input_' + contractName"
-                    :label="contractName + ' - deployed on ' + chainName"
-                    placeholder="0x0000000000000000000000000000000000000000"
-                    append-icon="fa-download"
-                    @click:append="loadFromRemix(contractName)"
-                    slot="activator"
-                    key="contractName"
-                     :rules="rules"
-                ></v-text-field>
-                <p>Set deployment address to load the {{contractName}} contract into the Pipeline plugin.</p><p>To change what contracts to load, please compile another file in Remix.</p>
-            </v-tooltip>
-        </template>
+        <v-select
+            v-model="selectContract"
+            :items="contracts"
+            label="Load from Remix"
+        ></v-select
+        <p>To change what contracts to load, compile another file in Remix.</p>
+        <v-tooltip bottom>
+            <v-text-field
+                ref="addr_input"
+                v-if="contractName"
+                :label="contractName + ' - deployed on ' + chainName"
+                placeholder="0x0000000000000000000000000000000000000000"
+                append-icon="fa-download"
+                @click:append="loadFromRemix(contractName)"
+                slot="activator"
+                :rules="rules"
+            ></v-text-field>
+            <p>Set deployment address to load the {{contractName}} contract into the Pipeline plugin.</p>
+        </v-tooltip>
     </div>
 </template>
 
@@ -30,6 +34,9 @@ export default {
             contracts: [],
             chain: '',
             chainName: '',
+            contractName: '',
+            showAddressInput: false,
+            selectContract: null,
             web3: null,
             rules: [
                 v => v ? (v.length === 42 || validationError) : '',
@@ -48,19 +55,23 @@ export default {
         });
     },
     watch: {
-        chain: function(newValue) {
+        chain(newValue) {
             if (newValue === 'JavaScriptVM') {
                 this.chainName = newValue;
             } else {
                 this.chainName = 'Chain ID ' + newValue;
             }
+        },
+        selectContract(name) {
+            this.contractName = name;
         }
     },
     methods: {
-        ethaddressInput(contractName) {
-            return this.$refs['addr_input_' + contractName][0];
+        ethaddressInput() {
+            console.log(this);
+            return this.$refs['addr_input'];
         },
-        setNetworkInfo: function() {
+        setNetworkInfo() {
             Pipeos.remix.call(
                 'app',
                 'getExecutionContextProvider',
@@ -75,7 +86,7 @@ export default {
                         this.web3 = window.web3;
                         this.chain = this.web3.version.network;
                     } else {
-                        alert('Please use an injected provider. Node by endpoint is not supported.');
+                        alert('Use an injected provider. Node by endpoint is not supported.');
                         // Pipeos.remix.call(
                         //     'app',
                         //     'getProviderEndpoint',
@@ -89,15 +100,15 @@ export default {
                 }
             );
         },
-        setContractsFromRemix: function() {
+        setContractsFromRemix() {
             let contracts = [];
             this.getDataFromRemix(function(container) {
                 contracts.push(container.name);
             });
             this.contracts = contracts;
         },
-        loadFromRemix: function(contractName) {
-            let input = this.ethaddressInput(contractName);
+        loadFromRemix(contractName) {
+            let input = this.ethaddressInput();
             let ethaddress = input.internalValue;
             let deployment_info;
 
@@ -145,6 +156,6 @@ export default {
 
 <style>
 .load-remix {
-    margin-left: 50px;
+    margin-top: 25px;
 }
 </style>
