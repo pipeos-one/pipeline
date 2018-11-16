@@ -73,7 +73,8 @@ export default {
     },
     watch: {
         search (val) {
-            val && val !== this.select && this.querySelections(val)
+            val && val !== this.select && this.querySelections(val);
+            this.$emit('search', val);
         },
         select (selected) {
             this.$emit('select', selected);
@@ -89,6 +90,7 @@ export default {
             this.$emit('remove', item);
         },
         querySelections (searchText) {
+            if (searchText.length < 2) return;
             this.loading = true;
             let items = [];
             const query = `?filter={"where":{"name":{"like":"${searchText}","options":"i"}}}`

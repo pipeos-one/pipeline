@@ -8,6 +8,7 @@
                     <v-flex xs3 style="margin-top: 70px;">
                         <Search
                             v-on:select="onSearchSelect"
+                            v-on:search="onSearchQuery"
                             v-on:remove="onSearchRemove"
                         />
                         <RemixLoadContract
@@ -148,6 +149,7 @@ export default {
         chain_query: null,
         selectedTags: [],
         selectedProjects: [],
+        searchQuery: null,
         pages: 1,
         currentPage: 1,
         selectedTreeContainers: [],
@@ -175,6 +177,7 @@ export default {
     };
   },
   mounted() {
+    this.loadData();
     this.loadCanvas();
   },
   methods: {
@@ -201,6 +204,9 @@ export default {
             query.or = this.selectedProjects.map((project) => {
                     return {project: {like: project, options: 'i'}}
             });
+        }
+        if (this.searchQuery) {
+            query.name = {like: this.searchQuery, options: 'i'};
         }
 
         return query;
@@ -271,7 +277,14 @@ export default {
         this.selectedProjects = projects;
         this.loadData();
     },
+    onSearchQuery: function(searchQuery) {
+        searchQuery = searchQuery.length > 3 ? searchQuery : null;
+        if (!this.searchQuery && !searchQuery) return;
+        this.searchQuery = searchQuery;
+        this.loadData();
+    },
     onSearchRemove: function(searchRemove) {
+        this.searchQuery = null;
         if (searchRemove.tag) {
             this.selectedTags.splice(
                 this.selectedTags.findIndex((name) => {
