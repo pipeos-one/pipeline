@@ -300,6 +300,8 @@ export class PipeContainerController {
                 } catch {
                     console.log('Metadata could not be parsed: ', compiled.contracts[`:${contractName}`].metadata);
                 }
+            } else if (compiled.errors[0].includes('ParserError: Expected pragma')) {
+                container.solsource = '// No source code available.';
             }
         }
         if (container.solsource && !container.abi) {
