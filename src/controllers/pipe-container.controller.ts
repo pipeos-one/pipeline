@@ -146,7 +146,7 @@ export class PipeContainerController {
   async findContainerFunctionsDeployed(
       @param.query.object('filter', getFilterSchemaFor(PipeContainer)) filter?: Filter,
   ): Promise<GetContainerFunctionsDeployed> {
-    let functions_filter, deployed_queries, deployed_filter, containerids;
+    let functions_filter, deployed_queries: any[], deployed_filter, containerids;
     let pipecontainers, pipedeployments, pipefunctions;
 
     let pipefunctionRepository = await this.pipeContainerRepository.pipefunctions;
