@@ -5,25 +5,25 @@ import {
 } from '@loopback/repository';
 import {inject, Getter} from '@loopback/core';
 import {Openapi} from '../models';
-import {PipeContainerRepository} from './pipe-container.repository';
-import {PipeDeployedRepository} from './pipe-deployed.repository';
+import {PClassRepository} from './pclass.repository';
+import {PClassIRepository} from './pclass-instance.repository';
 
 
 export class OpenapiRepository extends DefaultCrudRepository<
   Openapi,
   typeof Openapi.prototype._id
 > {
-  public container: Promise<PipeContainerRepository>;
-  public deployed: Promise<PipeDeployedRepository>;
+  public pclass: Promise<PClassRepository>;
+  public pclassi: Promise<PClassIRepository>;
   constructor(
     @inject('datasources.atlasmongo') protected datasource: juggler.DataSource,
-    @repository.getter(PipeContainerRepository)
-    getPipeContainerRepository: Getter<PipeContainerRepository>,
-    @repository.getter(PipeDeployedRepository)
-    getPipeDeployedRepository: Getter<PipeDeployedRepository>,
+    @repository.getter(PClassRepository)
+    getPClassRepository: Getter<PClassRepository>,
+    @repository.getter(PClassIRepository)
+    getPClassIRepository: Getter<PClassIRepository>,
   ) {
     super(Openapi, datasource);
-    this.container = getPipeContainerRepository();
-    this.deployed =  getPipeDeployedRepository();
+    this.pclass = getPClassRepository();
+    this.pclassi =  getPClassIRepository();
   }
 }

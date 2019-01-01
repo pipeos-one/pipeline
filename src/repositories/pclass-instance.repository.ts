@@ -1,15 +1,15 @@
 import {DefaultCrudRepository, juggler} from '@loopback/repository';
-import {PipeDeployed} from '../models';
+import {PClassI} from '../models';
 import {inject} from '@loopback/core';
 
 
-export class PipeDeployedRepository extends DefaultCrudRepository<
-  PipeDeployed,
-  typeof PipeDeployed.prototype._id
+export class PClassIRepository extends DefaultCrudRepository<
+  PClassI,
+  typeof PClassI.prototype._id
 > {
   constructor(
     @inject('datasources.atlasmongo') protected datasource: juggler.DataSource,
   ) {
-    super(PipeDeployed, datasource);
+    super(PClassI, datasource);
   }
 }
