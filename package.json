@@ -53,10 +53,11 @@
     "@loopback/dist-util": "^0.4.0",
     "@loopback/openapi-v3": "^1.1.4",
     "@loopback/repository": "^1.0.6",
-    "@loopback/rest": "^1.5.0",
+    "@loopback/rest": "^1.5.1",
     "@loopback/service-proxy": "^1.0.4",
     "@types/swagger-schema-official": "^2.0.14",
     "loopback-connector-mongodb": "^3.9.2",
+    "loopback-connector-rest": "^3.4.1",
     "solc": "^0.4.25"
   },
   "devDependencies": {

@@ -4,7 +4,8 @@ import {DStorage} from './storage.model';
 @model()
 export class EthPMMeta extends Model {
     @property({
-       type: 'string[]',
+        type: 'array',
+        itemType: 'string',
     })
     authors: string[];
 
@@ -19,7 +20,8 @@ export class EthPMMeta extends Model {
     description: string;
 
     @property({
-       type: 'string[]',
+        type: 'array',
+        itemType: 'string',
     })
     tags: string[];
 
@@ -85,8 +87,9 @@ export class EthPMPackage extends Model {
 
     // TODO: hasMany
     @property({
-       type: 'string[]',
-       required: true,
+        type: 'array',
+        itemType: 'string',
+        required: true,
     })
     contracts: string[];  // PClass _ids
 
@@ -120,12 +123,12 @@ export class Package extends Entity {
 
     @property({
        type: 'object',
-       required: true,
     })
     package: EthPMPackage;
 
     @property({
-       type: 'string[]',
+        type: 'array',
+        itemType: 'string',
     })
     modules: string[];
 

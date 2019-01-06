@@ -1,4 +1,5 @@
 import {Model, model, property, belongsTo} from '@loopback/repository';
+import {DStorageType} from '../interfaces';
 
 @model()
 export class DStorage extends Model {
@@ -12,5 +13,5 @@ export class DStorage extends Model {
        type: 'string',
        required: true,
     })
-    type: string;  // ipfs, bzz
+    type: DStorageType;
 }

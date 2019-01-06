@@ -5,3 +5,4 @@ export * from './pfunction.controller';
 export * from './pclass-instance.controller';
 export * from './openapi.controller';
 export * from './project.controller';
+export * from './package.controller';

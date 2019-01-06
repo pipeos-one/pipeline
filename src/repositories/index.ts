@@ -5,3 +5,4 @@ export * from './pclass.repository';
 export * from './pclass-instance.repository';
 export * from './openapi.repository';
 export * from './project.repository';
+export * from './package.repository';
