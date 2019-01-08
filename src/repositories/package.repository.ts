@@ -1,15 +1,24 @@
-import {DefaultCrudRepository, juggler} from '@loopback/repository';
+import {DefaultCrudRepository, juggler, repository} from '@loopback/repository';
+import {inject, Getter} from '@loopback/core';
 import {Package} from '../models';
-import {inject} from '@loopback/core';
-
+import {PClassRepository} from './pclass.repository';
+import {PClassIRepository} from './pclass-instance.repository';
 
 export class PackageRepository extends DefaultCrudRepository<
-  Package,
-  typeof Package.prototype._id
+    Package,
+    typeof Package.prototype._id
 > {
-  constructor(
-    @inject('datasources.atlasmongo') protected datasource: juggler.DataSource,
-  ) {
-    super(Package, datasource);
+    public pclass: Promise<PClassRepository>;
+    public pclassi: Promise<PClassIRepository>;
+    constructor(
+        @inject('datasources.atlasmongo') protected datasource: juggler.DataSource,
+        @repository.getter(PClassRepository)
+            getpclassRepository: Getter<PClassRepository>,
+        @repository.getter(PClassIRepository)
+            getpclassiRepository: Getter<PClassIRepository>,
+    ) {
+        super(Package, datasource);
+        this.pclass = getpclassRepository();
+        this.pclassi = getpclassiRepository();
   }
 }

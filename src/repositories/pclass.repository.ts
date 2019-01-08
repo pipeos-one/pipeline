@@ -26,7 +26,7 @@ export class PClassRepository extends DefaultCrudRepository<
   ) {
     super(PClass, datasource);
     this.functions = this._createHasManyRepositoryFactoryFor(
-      'functions',
+      'pfunctions',
       getPFunctionRepository,
     );
     this.pfunctions = getPFunctionRepository();

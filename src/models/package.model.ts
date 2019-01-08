@@ -1,4 +1,4 @@
-import {Entity, Model, model, property, belongsTo} from '@loopback/repository';
+import {Entity, Model, model, property, hasMany} from '@loopback/repository';
 import {DStorage} from './storage.model';
 
 @model()
@@ -84,6 +84,9 @@ export class EthPMPackage extends Model {
        type: 'object',
     })
     meta: EthPMMeta;
+
+    // @hasMany(() => PClass, {keyTo: 'classid'})
+    // pfunctions?: PClass[];
 
     // TODO: hasMany
     @property({
