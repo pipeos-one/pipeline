@@ -23,7 +23,7 @@ export class EthPMMeta extends Model {
         type: 'array',
         itemType: 'string',
     })
-    tags: string[];
+    keywords: string[];
 
     @property({
        type: 'object',
