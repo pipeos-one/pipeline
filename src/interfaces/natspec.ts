@@ -20,3 +20,5 @@ export interface Natspec {
     dev?: string;
     methods: NatspecMethods;
 }
+
+export const EMPTY_NATSPEC = {methods: {}};

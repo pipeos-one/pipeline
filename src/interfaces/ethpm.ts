@@ -106,5 +106,5 @@ export interface EthPMPackageJson {
     sources: Sources;
     contract_types: ContractTypes;
     deployments: Deployments;
-    build_dependencies: BuildDependencies;
+    build_dependencies?: BuildDependencies;
 }

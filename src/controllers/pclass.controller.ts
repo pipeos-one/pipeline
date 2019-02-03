@@ -14,12 +14,13 @@ import {
   patch,
   del,
   requestBody,
+  HttpErrors,
 } from '@loopback/rest';
 import {PClass, SolClass, PFunction, PClassI, SolInstance} from '../models';
 import {PClassRepository} from '../repositories';
 import {PFunctionController, PClassIController} from '../controllers';
 import {AbiFunctionInput, AbiFunctionOuput, AbiFunction} from '../interfaces/gapi';
-import {Natspec} from '../interfaces/natspec';
+import {Natspec, EMPTY_NATSPEC} from '../interfaces/natspec';
 import {GetPClassFunctionsPClassI} from '../interfaces';
 
 let solc = require('solc');
@@ -181,14 +182,17 @@ export class PClassController {
   @post('/pclass/pfunctions')
   async createFunctions(
     @requestBody() pclass: PClass,
-  ): Promise<PClass | void> {
+  ): Promise<PClass> {
     // For a Solidity smart contract, if we only have the source, we try to compile it
     // so we can store the abi, natspec
     pclass.pclass = this.tryCompileSolClass(
         pclass.name,
         (<SolClass>pclass.pclass)
     );
-    if (!pclass.pclass) return;
+    if (!pclass.pclass) {
+        throw new HttpErrors.InternalServerError('PClass instance does not contain pclass');
+    }
+
     let newPclass = await this.create(pclass);
 
     this.createFunctionsFromPClass(newPclass).catch((e: Error) => {
@@ -327,7 +331,7 @@ export class PClassController {
         }
     }
 
-    getNatspec(devdoc: Natspec, userdoc: Natspec): Natspec {
+    getNatspec(devdoc: Natspec = EMPTY_NATSPEC, userdoc: Natspec = EMPTY_NATSPEC): Natspec {
         let natspec: Natspec;
         natspec = Object.assign({}, userdoc, devdoc);
         Object.keys(userdoc.methods).forEach((methodName: string) => {
