@@ -132,7 +132,11 @@ export class OApiClass extends AbstractClass {
     openapiid: string;
 }
 
-@model()
+@model({
+  settings: {
+    strictObjectIDCoercion: true,
+  },
+})
 export class PClass extends Entity {
   @property({
     type: 'string',

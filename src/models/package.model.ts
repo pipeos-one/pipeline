@@ -103,7 +103,11 @@ export class EthPMPackage extends Model {
     deployments: Deployment[];
 }
 
-@model()
+@model({
+  settings: {
+    strictObjectIDCoercion: true,
+  },
+})
 export class Package extends Entity {
     @property({
        type: 'string',

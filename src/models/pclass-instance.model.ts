@@ -70,7 +70,11 @@ export class SolInstance extends Model {
     constructorArgs?: string;  // 0x
 }
 
-@model()
+@model({
+  settings: {
+    strictObjectIDCoercion: true,
+  },
+})
 export class PClassI extends Entity {
   @property({
     type: 'string',

@@ -2,7 +2,11 @@ import {Entity, Model, model, property, hasMany} from '@loopback/repository';
 import {PFunction} from './pfunction.model';
 import {DStorage} from './storage.model';
 
-@model()
+@model({
+  settings: {
+    strictObjectIDCoercion: true,
+  },
+})
 export class Graph extends Entity {
     @property({
        type: 'string',

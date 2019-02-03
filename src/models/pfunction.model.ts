@@ -42,7 +42,11 @@ export class SolFunction extends AbstractFunction {
 @model()
 export class JsFunction extends AbstractFunction {}
 
-@model()
+@model({
+  settings: {
+    strictObjectIDCoercion: true,
+  },
+})
 export class PFunction extends Entity {
   @property({
     type: 'string',
