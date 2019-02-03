@@ -35,10 +35,25 @@ export interface Bytecode {
     link_dependencies: LinkValue[];
 }
 
+export interface Optimizer {
+    enabled: boolean;
+    runs: number;
+}
+
+export interface CompilerInputOutputJSONSettings {
+    remappings: string[];
+    optimizer: Optimizer;
+    evmVersion: string;
+    metadata: object;
+    libraries: object;
+}
+
 export interface CompilerInputOutputJSON {
     language: string;
     sources: object;
-    settings: object;
+    settings: CompilerInputOutputJSONSettings;
+    optimize: boolean;
+    runs: number;
 }
 
 export interface Compiler {
@@ -66,6 +81,7 @@ export interface ContractInstance {
     transaction: string;
     block: string;
     runtime_bytecode: Bytecode;
+    deployment_bytecode?: Bytecode;
     compiler: Compiler;
     link_dependencies: LinkValue[];
 }

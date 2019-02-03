@@ -51,6 +51,11 @@ export class SolInstance extends Model {
     @property({
       type: 'object',
     })
+    deployment_bytecode: Bytecode;  // unlinked bytecode
+
+    @property({
+      type: 'object',
+    })
     compiler: Compiler;
 
     @property({
