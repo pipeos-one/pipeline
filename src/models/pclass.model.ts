@@ -27,12 +27,12 @@ export class AbstractClass extends Model {
     @property({
       type: 'object',
     })
-    devdoc: Natspec;
+    devdoc?: Natspec;
 
     @property({
       type: 'object',
     })
-    userdoc: Natspec;
+    userdoc?: Natspec;
 
     @property({
       type: 'array',
@@ -43,12 +43,12 @@ export class AbstractClass extends Model {
     @property({
       type: 'string',
     })
-    flatsource: string;
+    flatsource?: string;
 
     @property({
       type: 'string',
     })
-    flatsource_hash: string;
+    flatsource_hash?: string;
 }
 
 @model()
@@ -160,7 +160,7 @@ export class PClass extends Entity {
   @property({
     type: 'string',
   })
-  module: string;
+  module?: string;
 
   @property({
     type: 'string',
@@ -177,7 +177,7 @@ export class PClass extends Entity {
     type: 'array',
     itemType: 'string',
   })
-  composite: string[];
+  composite?: string[];
 
   @property({
     type: 'string',
@@ -190,7 +190,6 @@ export class PClass extends Entity {
   @property({
     type: 'array',
     itemType: 'string',
-    required: true,
   })
   tags: string[];
 

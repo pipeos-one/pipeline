@@ -27,8 +27,11 @@ import {
     DStorageType,
     EthPMPackageJson,
     PackageMeta,
-    ContractType
+    ContractType,
+    ContractInstance,
 } from '../interfaces';
+import {bip122UriToChainId, BIP122_TO_CHAINID} from '../utils/chain';
+import {pipeToEthpm} from '../utils/ethpm';
 
 export class PackageController {
   constructor(
@@ -116,7 +119,7 @@ export class PackageController {
   })
   async updateById(
     @param.path.string('id') id: string,
-    @requestBody() ppackage: Package,
+    @requestBody() ppackage: Partial<Package>,
   ): Promise<void> {
     await this.packageRepository.updateById(id, ppackage);
   }
@@ -201,7 +204,7 @@ export class PackageController {
     return await this.packageRepository.create(ppackage);
   }
 
-  @get('/package/deconstruct/{id}', {
+  @get('/package/import/{id}', {
     responses: {
       '200': {
         description: 'Package model instance',
@@ -209,14 +212,13 @@ export class PackageController {
       },
     },
   })
-  async deconstructPackage(
+  async importFromEthpm(
     @param.path.string('id') id: string,
 ): Promise<any> {
-    let ppackage: Package, package_update: object;
+    let ppackage: Package, package_update: any;
     let package_json: EthPMPackageJson;
-    // let contracts: string[] = [];
-    let contracts: object[] = [];
-    let deployments: object[] = [], modules: string[] = [];
+    let pclassIds: any = {};
+    let deployments: any[] = [], modules: string[] = [];
     let sources: any[] = [];
 
     let pclassController = new PClassController(await this.packageRepository.pclass);
@@ -249,7 +251,7 @@ export class PackageController {
             source_string = (await dstorage.get(
                 source_entry.storage.type,
                 source_entry.storage.hash,
-            ))[0];
+            ).catch((error) => { throw(error) }))[0];
             if (!source_string) {
                 throw new HttpErrors.NotFound(`Source for ${source} not found`);
             }
@@ -266,13 +268,23 @@ export class PackageController {
         return key.replace(/\/(?:.(?!\/))+$/, '').replace(/^\.\//, '');
     }).filter((v, i, a) => a.indexOf(v) === i);
 
-    await Object.entries(package_json.contract_types).map(async (entry: any) => {
+    await Promise.all(Object.entries(package_json.contract_types).map(async (entry: any): Promise<void> => {
         let contract_alias: string = entry[0];
         let contractType: ContractType = entry[1];
-        // console.log(contract_alias, contractType);
-        let pclass;
+        let pclass: any, pclassId: string;
+        let chainids: string[] = [];
+
+        Object.entries(package_json.deployments).map((entry: any) => {
+            let bip122_uri: string = entry[0];
+            let chain_id = bip122UriToChainId(bip122_uri);
+
+            if (entry[1][contract_alias]) {
+                chainids.push(BIP122_TO_CHAINID[chain_id[0]]);
+            }
+        });
+
         pclass = {
-            name: contract_alias,
+            name: contract_alias || contractType.contract_name,
             packageid: ppackage._id,
             // module: ,
             type: 'sol',
@@ -282,52 +294,98 @@ export class PackageController {
                 sources,
                 // flatsource: ,
                 // flatsource_hash: ,
-                name: contractType.contract_name,
+                name: contractType.contract_name || contract_alias,
                 deployment_bytecode: contractType.deployment_bytecode,
                 runtime_bytecode: contractType.runtime_bytecode,
                 // metadata: , // ?
                 compiler: contractType.compiler,
             },
-            // tags: ,
-            // chainids: ,
+            tags: package_json.meta ? package_json.meta.keywords : [],
+            chainids,
         }
+        pclassId = (
+            await pclassController.createFunctions(pclass)
+        )._id;
 
-        // contracts.push((await pclassController.createFunctions(pclass))._id);
-        contracts.push(pclass);
-    });
+        pclassIds[pclass.name] = pclassId;
+    }));
 
-    // Object.entries(package_json.deployments).map((chain_id, Deployment) => {
-    //     console.log(entry, key);
-    //     let pclassi, deployment;
-    //     pclassi = {
-    //
-    //     }
-    //
-    //     deployment = {
-    //         chain_id: ,
-    //         genesis_hash: ,
-    //         block_hash: ,
-    //         bip122_uri: ,
-    //         instanceid: (await pclassiController.create(pclassi))._id,
-    //     }
-    //     deployments.push(deployment);
-    // }
+    await Promise.all(Object.entries(package_json.deployments).map(async (entry: any): Promise<void> => {
+        let bip122_uri: string = entry[0];
+
+        await Promise.all(Object.entries(entry[1]).map(async (entry2: any): Promise<void> => {
+            let contract_instance_name: string = entry2[0];
+            let ethpm_deployment: ContractInstance = entry2[1];
+            let pclassi, chain_id: string[], compiler;
+            let deploymentId: string;
+
+            chain_id = bip122UriToChainId(bip122_uri);
+
+            pclassi = {
+                packageid: ppackage._id,
+                classid: pclassIds[ethpm_deployment.contract_type],
+                instance: {
+                    instance_name: contract_instance_name,
+                    address: ethpm_deployment.address,
+                    transaction: ethpm_deployment.transaction,
+                    block: ethpm_deployment.block,
+                    runtime_bytecode: ethpm_deployment.runtime_bytecode,
+                    deployment_bytecode: ethpm_deployment.deployment_bytecode,
+                    // constructorArgs,
+                    compiler: ethpm_deployment.compiler,
+                    chain_id: BIP122_TO_CHAINID[chain_id[0]],
+                    genesis_hash: chain_id[0],
+                    block_hash: chain_id[2],
+                    bip122_uri: bip122_uri,
+                }
+            }
+
+            deploymentId = (
+                await pclassiController.pclassIRepository.create(pclassi)
+            )._id;
+            deployments.push(deploymentId);
+        }));
+    }));
+
+    // TODO build_dependencies
 
     package_update = {
-        // lockfile_version is for backwards compatibility
         manifest_version: package_json.manifest_version,
         package_name: package_json.package_name,
         version: package_json.version,
         meta: package_json.meta,
-        contracts,
+        contracts: Object.values(pclassIds),
         deployments,
+        // build_dependencies,
     }
 
-    return [package_update, modules];
+    return this.updateById(ppackage._id, {
+        package: package_update,
+        modules,
+    });
+  }
 
-    // return this.updateById(ppackage._id, {
-    //     package,
-    //     modules,
-    // });
+  @get('/package/export/{id}', {
+    responses: {
+      '200': {
+        description: 'Package model instance',
+        // content: {'application/json': {schema: {'x-ts-type': Package}}},
+      },
+    },
+  })
+  async exportToEthpm(
+    @param.path.string('id') id: string,
+): Promise<EthPMPackageJson> {
+    let ppackage, pclasses, pclassii;
+    let package_json: EthPMPackageJson;
+
+    let pclassController = new PClassController(await this.packageRepository.pclass);
+    let pclassiController = new PClassIController(await this.packageRepository.pclassi);
+
+    ppackage = await this.findById(id);
+    pclasses = await pclassController.find({where: {packageid: id}});
+    pclassii = await pclassiController.find({where: {packageid: id}});
+
+    return pipeToEthpm(ppackage.package, pclasses, pclassii);
   }
 }

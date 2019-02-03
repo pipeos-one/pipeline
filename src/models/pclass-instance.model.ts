@@ -28,6 +28,11 @@ export class OApiInstance extends Model {
 export class SolInstance extends Model {
     @property({
       type: 'string',
+    })
+    instance_name: string;  // ethpm's Contract Instance Name
+
+    @property({
+      type: 'string',
       required: true,
     })
     address: string;
@@ -54,6 +59,11 @@ export class SolInstance extends Model {
     deployment_bytecode: Bytecode;  // unlinked bytecode
 
     @property({
+      type: 'string',
+    })
+    constructorArgs?: string;  // 0x
+
+    @property({
       type: 'object',
     })
     compiler: Compiler;
@@ -65,9 +75,19 @@ export class SolInstance extends Model {
     chainid: string;
 
     @property({
-      type: 'string',
+       type: 'string',
     })
-    constructorArgs?: string;  // 0x
+    genesis_hash: string;
+
+    @property({
+       type: 'string',
+    })
+    block_hash: string;
+
+    @property({
+       type: 'string',
+    })
+    bip122_uri: string;
 }
 
 @model({
@@ -83,10 +103,20 @@ export class PClassI extends Entity {
   })
   _id: string;
 
-  @belongsTo(() => Package, {keyTo: '_id', keyFrom: 'packageid'})
+  // @belongsTo(() => Package, {keyTo: '_id', keyFrom: 'packageid'})
+  // packageid: string;
+  //
+  // @belongsTo(() => PClass, {keyTo: '_id', keyFrom: 'classid'})
+  // classid: string;
+
+  @property({
+     type: 'string',
+  })
   packageid: string;
 
-  @belongsTo(() => PClass, {keyTo: '_id', keyFrom: 'classid'})
+  @property({
+     type: 'string',
+  })
   classid: string;
 
   @property({

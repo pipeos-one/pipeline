@@ -1,5 +1,7 @@
 import {Entity, Model, model, property, hasMany} from '@loopback/repository';
 import {DStorage} from './storage.model';
+import {PClass} from './pclass.model';
+import {PClassI} from './pclass-instance.model';
 
 @model()
 export class EthPMMeta extends Model {
@@ -32,35 +34,6 @@ export class EthPMMeta extends Model {
 }
 
 @model()
-export class Deployment extends Model {
-    @property({
-       type: 'string',
-    })
-    chain_id: string;
-
-    @property({
-       type: 'string',
-    })
-    genesis_hash: string;
-
-    @property({
-       type: 'string',
-    })
-    block_hash: string;
-
-    @property({
-       type: 'string',
-    })
-    bip122_uri: string;
-
-    // TODO: hasOne
-    @property({
-       type: 'string',
-    })
-    instanceid: string;  // PClassI _id
-}
-
-@model()
 export class EthPMPackage extends Model {
     @property({
        type: 'string',
@@ -85,10 +58,12 @@ export class EthPMPackage extends Model {
     })
     meta: EthPMMeta;
 
-    // @hasMany(() => PClass, {keyTo: 'classid'})
-    // pfunctions?: PClass[];
+    // @hasMany(() => PClass, {keyTo: 'packageid'})
+    // contracts: PClass[];
+    //
+    // @hasMany(() => PClassI, {keyTo: 'packageid'})
+    // deployments: PClassI[];
 
-    // TODO: hasMany
     @property({
         type: 'array',
         itemType: 'string',
@@ -97,10 +72,11 @@ export class EthPMPackage extends Model {
     contracts: string[];  // PClass _ids
 
     @property({
-       type: 'Deployment[]',
-       required: true,
+        type: 'array',
+        itemType: 'string',
+        required: true,
     })
-    deployments: Deployment[];
+    deployments: string[];  // PClassI _ids
 }
 
 @model({
