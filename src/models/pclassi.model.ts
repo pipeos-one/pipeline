@@ -123,7 +123,7 @@ export class PClassI extends Entity {
     type: 'object',
     required: true,
   })
-  instance: SolInstance | OApiInstance;
+  pclassi: SolInstance | OApiInstance;
 
   @property({
     type: 'date',

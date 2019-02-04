@@ -1,7 +1,7 @@
 import {Entity, Model, model, property, hasMany} from '@loopback/repository';
 import {DStorage} from './storage.model';
 import {PClass} from './pclass.model';
-import {PClassI} from './pclass-instance.model';
+import {PClassI} from './pclassi.model';
 
 @model()
 export class EthPMMeta extends Model {

@@ -22,7 +22,7 @@ import {Package, DStorage} from '../models';
 import {PackageRepository} from '../repositories';
 import {DStorageController} from './dstorage.controller';
 import {PClassController} from './pclass.controller';
-import {PClassIController} from './pclass-instance.controller';
+import {PClassIController} from './pclassi.controller';
 import {
     DStorageType,
     EthPMPackageJson,
@@ -324,7 +324,7 @@ export class PackageController {
             pclassi = {
                 packageid: ppackage._id,
                 pclassid: pclassIds[ethpm_deployment.contract_type],
-                instance: {
+                pclassi: {
                     instance_name: contract_instance_name,
                     address: ethpm_deployment.address,
                     transaction: ethpm_deployment.transaction,

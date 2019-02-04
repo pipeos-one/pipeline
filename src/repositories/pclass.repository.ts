@@ -1,6 +1,6 @@
 import {PClass, PFunction} from '../models';
 import {PFunctionRepository} from './pfunction.repository';
-import {PClassIRepository} from './pclass-instance.repository';
+import {PClassIRepository} from './pclassi.repository';
 import {
   DefaultCrudRepository,
   juggler,

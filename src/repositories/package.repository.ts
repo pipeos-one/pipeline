@@ -2,7 +2,7 @@ import {DefaultCrudRepository, juggler, repository} from '@loopback/repository';
 import {inject, Getter} from '@loopback/core';
 import {Package} from '../models';
 import {PClassRepository} from './pclass.repository';
-import {PClassIRepository} from './pclass-instance.repository';
+import {PClassIRepository} from './pclassi.repository';
 
 export class PackageRepository extends DefaultCrudRepository<
     Package,

@@ -6,7 +6,7 @@ import {
 import {inject, Getter} from '@loopback/core';
 import {Openapi} from '../models';
 import {PClassRepository} from './pclass.repository';
-import {PClassIRepository} from './pclass-instance.repository';
+import {PClassIRepository} from './pclassi.repository';
 
 
 export class OpenapiRepository extends DefaultCrudRepository<

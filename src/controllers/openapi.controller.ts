@@ -37,7 +37,7 @@ export class OpenapiController {
   })
   async create(@requestBody() openapi: Openapi): Promise<Openapi> {
     let pclass: any;
-    let pinstance: any;
+    let pclassi: any;
 
     let pclassRepository = await this.openapiRepository.pclass;
     let pclassController = new PClassController(pclassRepository);
@@ -68,24 +68,24 @@ export class OpenapiController {
     openapi.pclassid = pclass._id;
     openapi = await this.openapiRepository.create(openapi);
 
-    pinstance = {
+    pclassi = {
         pclassid: pclass._id,
-        instance: {
+        pclassi: {
             host: openapi.json.host,
             basePath: openapi.json.basePath,
             openapiid: openapi._id,
         }
     }
 
-    pinstance = await pclassiController.create(pinstance).catch((e: Error) => {
+    pclassi = await pclassiController.create(pclassi).catch((e: Error) => {
         pclassController.deletePClassFunctions(pclass._id);
         this.openapiRepository.deleteById(openapi._id);
-        throw new Error('PClassInstance was not created.');
+        throw new Error('PClassI was not created.');
     });
-    if (!pinstance || !pinstance._id) {
+    if (!pclassi || !pclassi._id) {
         pclassController.deletePClassFunctions(pclass._id);
         this.openapiRepository.deleteById(openapi._id);
-        throw new Error('PClassInstance was not created.');
+        throw new Error('PClassI was not created.');
     }
 
     return openapi;
@@ -178,7 +178,7 @@ export class OpenapiController {
   @del('/openapi/{id}/all', {
     responses: {
         '200': {
-            description: 'Openapi, PClass, PClassInstance, PFunction DELETE success count',
+            description: 'Openapi, PClass, PClassI, PFunction DELETE success count',
             content: {'application/json': {schema: CountSchema}},
         },
     },

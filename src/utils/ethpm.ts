@@ -27,18 +27,18 @@ export let pipeToEthpm = (ppackage: any, pclasses: any, pclassii: any): EthPMPac
     });
 
     pclassii.forEach((pclassi: any) => {
-        let bip122_uri = pclassi.instance.bip122_uri;
+        let bip122_uri = pclassi.pclassi.bip122_uri;
 
         if (!deployments[bip122_uri]) {
             deployments[bip122_uri] = {}
         }
-        deployments[bip122_uri][pclassi.instance.instance_name] = {
+        deployments[bip122_uri][pclassi.pclassi.instance_name] = {
             contract_type: pclassidToAlias[pclassi.pclassid],
-            address: pclassi.instance.address,
-            transaction: pclassi.instance.transaction,
-            block: pclassi.instance.block,
-            runtime_bytecode: pclassi.instance.runtime_bytecode,
-            compiler: pclassi.instance.compiler,
+            address: pclassi.pclassi.address,
+            transaction: pclassi.pclassi.transaction,
+            block: pclassi.pclassi.block,
+            runtime_bytecode: pclassi.pclassi.runtime_bytecode,
+            compiler: pclassi.pclassi.compiler,
         }
     });
 

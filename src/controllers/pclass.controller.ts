@@ -165,7 +165,7 @@ export class PClassController {
     pclassi_queries = [];
     if (filter && filter.where && filter.where.chainids) {
         pclassi_queries.push({or: filter.where.chainids.inq.map((chainid: string) => {
-            return {'instance.chainid': chainid}
+            return {'pclassi.chain_id': chainid}
         })});
     }
     pclassi_filter = JSON.parse(JSON.stringify({where: {and:
@@ -218,8 +218,8 @@ export class PClassController {
     let pclass = await this.findById(pclassi.pclassid);
 
     pclass.chainids = pclass.chainids || [];
-    if (!pclass.chainids.includes((<SolInstance>pclassi.instance).chainid)) {
-        pclass.chainids.push((<SolInstance>pclassi.instance).chainid);
+    if (!pclass.chainids.includes((<SolInstance>pclassi.pclassi).chainid)) {
+        pclass.chainids.push((<SolInstance>pclassi.pclassi).chainid);
         await this.updateById(pclassi.pclassid, {chainids: pclass.chainids});
     }
     return await pclassiRepository.create(pclassi);
