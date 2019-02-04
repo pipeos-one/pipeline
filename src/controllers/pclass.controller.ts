@@ -144,7 +144,7 @@ export class PClassController {
   async findPClassFunctionsPClassI(
       @param.query.object('filter', getFilterSchemaFor(PClass)) filter?: Filter,
   ): Promise<GetPClassFunctionsPClassI> {
-    let functions_filter, pclassi_queries: any[], pclassi_filter, classids;
+    let functions_filter, pclassi_queries: any[], pclassi_filter, pclassids;
     let pclasses, pclassii, pfunctions;
 
     let pfunctionRepository = await this.pclassRepository.pfunctions;
@@ -153,13 +153,13 @@ export class PClassController {
     pclasses = await this.pclassRepository.find(filter);
 
     // PFunction filter
-    classids = pclasses.map(pclass => {
-        return {"classid": {"like": pclass._id}};
+    pclassids = pclasses.map(pclass => {
+        return {"pclassid": {"like": pclass._id}};
     });
-    if (classids.length == 0) {
-        classids = [{"classid": {"like": "xxxxxx"}}];
+    if (pclassids.length == 0) {
+        pclassids = [{"pclassid": {"like": "xxxxxx"}}];
     }
-    functions_filter = JSON.parse(JSON.stringify({where: {or: classids}}));
+    functions_filter = JSON.parse(JSON.stringify({where: {or: pclassids}}));
 
     // PClassI filter
     pclassi_queries = [];
@@ -215,12 +215,12 @@ export class PClassController {
       @requestBody() pclassi: PClassI,
   ): Promise<PClassI> {
     let pclassiRepository = await this.pclassRepository.pclassi;
-    let pclass = await this.findById(pclassi.classid);
+    let pclass = await this.findById(pclassi.pclassid);
 
     pclass.chainids = pclass.chainids || [];
     if (!pclass.chainids.includes((<SolInstance>pclassi.instance).chainid)) {
         pclass.chainids.push((<SolInstance>pclassi.instance).chainid);
-        await this.updateById(pclassi.classid, {chainids: pclass.chainids});
+        await this.updateById(pclassi.pclassid, {chainids: pclass.chainids});
     }
     return await pclassiRepository.create(pclassi);
   }
@@ -282,8 +282,8 @@ export class PClassController {
     let pclassiController = new PClassIController(pclassiRepository);
 
     await this.pclassRepository.deleteById(id);
-    await pclassiController.delete({classid: {like: id}});
-    return await pfunctionController.delete({classid: {like: id}});
+    await pclassiController.delete({pclassid: {like: id}});
+    return await pfunctionController.delete({pclassid: {like: id}});
 
     // return await this.pclassRepository.functions(id).delete();
   }

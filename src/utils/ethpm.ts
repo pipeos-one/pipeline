@@ -2,11 +2,11 @@ import {EthPMPackageJson} from '../interfaces/ethpm';
 
 export let pipeToEthpm = (ppackage: any, pclasses: any, pclassii: any): EthPMPackageJson => {
     let contract_types: any = {}, deployments: any = {}, sources: any = {};
-    let classidToAlias: any = {};
+    let pclassidToAlias: any = {};
 
     pclasses.forEach((pclass: any) => {
         let contract_alias = pclass.name;
-        classidToAlias[pclass._id] = contract_alias;
+        pclassidToAlias[pclass._id] = contract_alias;
 
         pclass.pclass.sources.forEach((source: any) => {
             if (!sources[source.relative_path]) {
@@ -33,7 +33,7 @@ export let pipeToEthpm = (ppackage: any, pclasses: any, pclassii: any): EthPMPac
             deployments[bip122_uri] = {}
         }
         deployments[bip122_uri][pclassi.instance.instance_name] = {
-            contract_type: classidToAlias[pclassi.classid],
+            contract_type: pclassidToAlias[pclassi.pclassid],
             address: pclassi.instance.address,
             transaction: pclassi.instance.transaction,
             block: pclassi.instance.block,

@@ -55,8 +55,8 @@ export class PFunction extends Entity {
   })
   _id: string;
 
-  @belongsTo(() => PClass, {keyTo: '_id', keyFrom: 'classid'})
-  classid: string;
+  @belongsTo(() => PClass, {keyTo: '_id', keyFrom: 'pclassid'})
+  pclassid: string;
 
   @belongsTo(() => Graph, {keyTo: '_id', keyFrom: 'graphid'})
   graphid: string;

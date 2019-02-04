@@ -106,8 +106,8 @@ export class PClassI extends Entity {
   // @belongsTo(() => Package, {keyTo: '_id', keyFrom: 'packageid'})
   // packageid: string;
   //
-  // @belongsTo(() => PClass, {keyTo: '_id', keyFrom: 'classid'})
-  // classid: string;
+  // @belongsTo(() => PClass, {keyTo: '_id', keyFrom: 'pclassid'})
+  // pclassid: string;
 
   @property({
      type: 'string',
@@ -117,7 +117,7 @@ export class PClassI extends Entity {
   @property({
      type: 'string',
   })
-  classid: string;
+  pclassid: string;
 
   @property({
     type: 'object',

@@ -25,7 +25,7 @@ export class PFunctionRepository extends DefaultCrudRepository<
   ) {
     super(PFunction, datasource);
     this.pclass = this._createBelongsToAccessorFor(
-      'classid',
+      'pclassid',
       getPClassRepository,
     );
   }

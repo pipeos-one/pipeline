@@ -35,7 +35,7 @@ export class Openapi extends Entity {
   @property({
     type: 'string',
   })
-  classid: string;
+  pclassid: string;
 
   @property({
     type: 'date',

@@ -323,7 +323,7 @@ export class PackageController {
 
             pclassi = {
                 packageid: ppackage._id,
-                classid: pclassIds[ethpm_deployment.contract_type],
+                pclassid: pclassIds[ethpm_deployment.contract_type],
                 instance: {
                     instance_name: contract_instance_name,
                     address: ethpm_deployment.address,

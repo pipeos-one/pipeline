@@ -184,7 +184,7 @@ export class PClass extends Entity {
   })
   uri?: string;
 
-  @hasMany(() => PFunction, {keyTo: 'classid'})
+  @hasMany(() => PFunction, {keyTo: 'pclassid'})
   pfunctions?: PFunction[];
 
   @property({

@@ -65,11 +65,11 @@ export class OpenapiController {
         throw new Error('PClass was not created.');
     }
     openapi.name = pclass.name;
-    openapi.classid = pclass._id;
+    openapi.pclassid = pclass._id;
     openapi = await this.openapiRepository.create(openapi);
 
     pinstance = {
-        classid: pclass._id,
+        pclassid: pclass._id,
         instance: {
             host: openapi.json.host,
             basePath: openapi.json.basePath,
@@ -192,8 +192,8 @@ export class OpenapiController {
 
     let openapi: Openapi = await this.openapiRepository.findById(id);
 
-    await pclassiController.delete({classid: {like: openapi.classid}});
+    await pclassiController.delete({pclassid: {like: openapi.pclassid}});
     await this.openapiRepository.deleteById(id);
-    return await pclassController.deletePClassFunctions(openapi.classid);
+    return await pclassController.deletePClassFunctions(openapi.pclassid);
   }
 }
