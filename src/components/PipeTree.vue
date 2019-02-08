@@ -49,7 +49,7 @@
         </v-layout>
       </div>
       <v-list two-line>
-        <template v-for="(item, index) in item.functions" v-if="item.abiObj.name">
+        <template v-for="(item, index) in item.functions" v-if="item.pfunction.gapi.name">
             <v-tooltip right max-width="300">
               <v-subheader
                 :key="item._id"
@@ -62,18 +62,18 @@
                     v-on:click="$emit('subitem-toggle', item)"
                     v-bind:class="[item.styleClasses, 'normaltxt']"
                 >
-                    {{ item.abiObj.name }}
+                    {{ item.pfunction.gapi.name }}
                 </v-btn>
               </v-subheader>
-              <p class="text-sm-left" v-if="item.userdoc">{{item.userdoc.notice}}</p>
+              <p class="text-sm-left" v-if="item.pfunction.natspec">{{item.pfunction.natspec.notice}}</p>
               <template
-                  v-if="item.devdoc"
+                  v-if="item.pfunction.natspec"
               >
                   <template
-                      v-for="(param, index) in Object.keys(item.devdoc.params || {})">
-                      <p class="text-sm-left">{{param}}: {{item.devdoc.params[param]}}</p>
+                      v-for="(param, index) in Object.keys(item.pfunction.natspec.params || {})">
+                      <p class="text-sm-left">{{param}}: {{item.pfunction.natspec.params[param]}}</p>
                   </template>
-                  <p class="text-sm-left" v-if="item.devdoc.return">Returns: {{item.devdoc.return}}</p>
+                  <p class="text-sm-left" v-if="item.pfunction.natspec.return">Returns: {{item.pfunction.natspec.return}}</p>
               </template>
             </v-tooltip>
         </template>

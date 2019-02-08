@@ -52,7 +52,7 @@ export default {
         },
         subitemToggle: function(item) {
             this.$emit('subitem-toggle', item);
-        }
+        },
     }
 };
 </script>

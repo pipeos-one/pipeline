@@ -21,7 +21,7 @@ export default {
         console.log('route', route);
         Vue.axios.get(route).then((response) => {
             if (response.data) {
-                this.abi = response.data.abiObj || {};
+                this.abi = response.data.gapi || {};
             }
         });
     },

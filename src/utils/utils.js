@@ -2,13 +2,13 @@ export function randomId() {
     return Math.floor(Math.random() * (10 ** 10));
 }
 
-export function pipeFunctionColorClass(abiObj) {
+export function pfunctionColorClass(gapi) {
     let colorClass = '';
-    if (abiObj.type === 'event') {
+    if (gapi.type === 'event') {
         colorClass = 'event';
-    } else if (abiObj.type === 'payable') {
+    } else if (gapi.type === 'payable') {
         colorClass = 'payable';
-    } else if (!abiObj.constant) {
+    } else if (!gapi.constant) {
         colorClass = 'nonconstant';
     }
     return colorClass;
@@ -29,7 +29,7 @@ export function compiledContractProcess(compiled, callback) {
             const contract = entry[1];
             const data = {
                 name,
-                container: {
+                pclass: {
                     abi: contract.abi,
                     devdoc: contract.devdoc,
                     userdoc: contract.userdoc,
@@ -43,7 +43,7 @@ export function compiledContractProcess(compiled, callback) {
             };
 
             // Remove duplicate abi, devdoc, userdoc
-            delete data.container.metadata.output;
+            delete data.pclass.metadata.output;
             console.log('data', data);
             callback(data);
         });

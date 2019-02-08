@@ -111,7 +111,7 @@ import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
 import {
     randomId,
-    pipeFunctionColorClass,
+    pfunctionColorClass,
     compiledContractProcess,
 } from '../utils/utils';
 import Graphs from '../components/pipecanvas/pipecanvaslib.js';
@@ -119,11 +119,11 @@ import Graphs from '../components/pipecanvas/pipecanvaslib.js';
 Vue.use(VueAwesomeSwiper);
 
 const get_api = Pipeos.pipeserver.api.json;
-const functionsApi = Pipeos.pipeserver.api.function;
-const containerApi = Pipeos.pipeserver.api.container;
-const containerFunctionsApi = Pipeos.pipeserver.api.container + '/pipefunctions';
-const containerDeployedApi = Pipeos.pipeserver.api.container + '/pipedeployed';
-const deployedApi = Pipeos.pipeserver.api.deployed;
+const functionsApi = Pipeos.pipeserver.api.pfunction;
+const containerApi = Pipeos.pipeserver.api.pclass;
+const containerFunctionsApi = Pipeos.pipeserver.api.pclass + '/pfunctions';
+const containerDeployedApi = Pipeos.pipeserver.api.pclass + '/pclassi';
+const deployedApi = Pipeos.pipeserver.api.pclassi;
 
 let filterOptions = {
     offset: 0,
@@ -213,7 +213,7 @@ export default {
     },
     loadData: function() {
         let query, containersQuery;
-        this.countPipeContainers();
+        this.countPClasses();
 
         let filter = this.filterOptions;
         filter.where = this.buildContainersQuery();
@@ -222,21 +222,21 @@ export default {
 
         Vue.axios.get(containerFunctionsApi + filter).then((response) => {
             console.log('response', response);
-            let pipecontainers = response.data.pipecontainers.map(container => {
-                container.deployment = response.data.pipedeployments.find(depl => depl.containerid == container._id);
-                return container;
+            let pclasses = response.data.pclasses.map(pclass => {
+                pclass.deployment = response.data.pclassii.find(depl => depl.pclassid == pclass._id);
+                return pclass;
             });
-            this.linkContainersFunctions(response.data.pipefunctions, pipecontainers);
+            this.linkContainersFunctions(response.data.pfunctions, pclasses);
         });
     },
-    countPipeContainers: function() {
+    countPClasses: function() {
         let where = this.buildContainersQuery();
         where = '?where=' + JSON.stringify(where);
 
         console.log('where', where)
         Vue.axios.get(containerApi + '/count' + where).then((response) => {
             this.pages = Math.ceil(response.data.count / filterOptions.limit);
-            console.log('countPipeFunctions', response.data, this.pages, filterOptions);
+            console.log('countPFunctions', response.data, this.pages, filterOptions);
         });
     },
     loadCanvas: function() {
@@ -252,8 +252,7 @@ export default {
                             this.selectedFunctions.forEach(pipedFunction => {
                                 let functionObj = pipedFunction.find(func => func._id == function_id);
                                 if (functionObj) {
-                                    console.log('functionObj', functionObj);
-                                    contract_address = functionObj.container.deployment.deployed.ethaddress;
+                                    contract_address = functionObj.pclass.deployment.pclassi.address;
                                 }
                             });
                             return contract_address;
@@ -264,8 +263,8 @@ export default {
         );
         this.graphInstance.addGraph(`draw_${this.activeCanvas + 1}`);
     },
-    addToCanvas: function(pipefunction, index) {
-        this.graphInstance.addFunction(pipefunction, index);
+    addToCanvas: function(pfunction, index) {
+        this.graphInstance.addFunction(pfunction, index);
     },
     onSearchSelect: function (searchSelected) {
         let tags = [], projects = [];
@@ -309,53 +308,53 @@ export default {
         }
         this.loadData();
     },
-    onFunctionToggle: function (pipefunction) {
+    onFunctionToggle: function (pfunction) {
         console.log('activeCanvas', this.activeCanvas);
         console.log('selectedFunctions', this.selectedFunctions);
         let index = this.selectedFunctions[this.activeCanvas].findIndex(func => {
-            func._id == pipefunction._id
+            func._id == pfunction._id
         });
         if (index > -1) {
           this.selectedFunctions[this.activeCanvas].splice(index, 1);
         }
         else {
-          this.selectedFunctions[this.activeCanvas].push(pipefunction);
+          this.selectedFunctions[this.activeCanvas].push(pfunction);
         }
         console.log('this.selectedFunctions', this.selectedFunctions);
-        this.addToCanvas(pipefunction, this.activeCanvas);
+        this.addToCanvas(pfunction, this.activeCanvas);
     },
-    onTreeToggle: function (pipecontainer) {
-        let index = this.selectedTreeContainers.findIndex(container => container._id == pipecontainer._id);
+    onTreeToggle: function (pclass) {
+        let index = this.selectedTreeContainers.findIndex(container => container._id == pclass._id);
         if (index < 0) {
-            this.selectedTreeContainers.push(pipecontainer);
+            this.selectedTreeContainers.push(pclass);
         }
-        // this.loadPipeJs(pipefunction);
+        // this.loadPipeJs(pfunction);
     },
-    removeTreeItem: function(pipecontainer) {
-        let index = this.selectedTreeContainers.findIndex(container => container._id == pipecontainer._id);
+    removeTreeItem: function(pclass) {
+        let index = this.selectedTreeContainers.findIndex(container => container._id == pclass._id);
         if (index >= 0) {
             this.selectedTreeContainers.splice(index, 1);
         }
     },
-    loadPipeJs: function(pipefunction) {
-        const containerid = pipefunction.containerid;
-        const script_api = `${containerApi}/${containerid}/js`;
+    loadPipeJs: function(pfunction) {
+        const pclassid = pfunction.pclassid;
+        const script_api = `${containerApi}/${pclassid}/js`;
         let script = document.createElement('script')
         script.src = script_api;
         script.async = true
         script.onload = () => {
-            this.pipeJs[`${containerid}_${pipefunction.name}`] = window[pipefunction.name];
+            this.pipeJs[`${pclassid}_${pfunction.name}`] = window[pfunction.name];
         }
         document.head.appendChild(script);
     },
-    linkContainersFunctions: function(pipeFunctions, pipeContainers) {
-        pipeFunctions = pipeFunctions.map(func => {
-            func.container = Object.assign({}, pipeContainers.find(cont => cont._id === func.containerid));
-            func.styleClasses = pipeFunctionColorClass(func.abiObj);
+    linkContainersFunctions: function(pfunctions, pclasses) {
+        pfunctions = pfunctions.map(func => {
+            func.pclass = Object.assign({}, pclasses.find(cont => cont._id === func.pclassid));
+            func.styleClasses = pfunctionColorClass(func.pfunction.gapi);
             return func;
         });
-        this.selectedContainers = pipeContainers.map(container => {
-            container.functions = pipeFunctions.filter(func => func.containerid == container._id);
+        this.selectedContainers = pclasses.map(container => {
+            container.functions = pfunctions.filter(func => func.pclassid == container._id);
             return container;
         });
         console.log('this.selectedContainers', this.selectedContainers);
@@ -377,7 +376,7 @@ export default {
         this.canvases += 1;
     },
     loadRemix: function(item) {
-        this.loadRemixCall(item.name, item.container.solsource);
+        this.loadRemixCall(item.name, item.pclass.solsource);
     },
     loadRemixCall: function(name, source) {
         let fileName = `browser/Pipeos_${name}.sol`;
@@ -405,10 +404,10 @@ export default {
         container.tags.push('uncurated');
 
         Vue.axios.get(
-            `${containerApi}?filter[where][container.bytecode.object]=${container.container.bytecode.object}`
+            `${containerApi}?filter[where][container.bytecode.object]=${container.pclass.bytecode.object}`
         ).then((response) => {
             let existant = response.data[0];
-            let chainid = deployment.deployed.chainid;
+            let chainid = deployment.pclassi.chain_id;
 
             // Insert new container only if there is no other container with the same bytecode
             if (!existant) {
@@ -422,7 +421,7 @@ export default {
         }).then((response) => {
             console.log('posted container', response);
             // Connect deployed instance with container
-            deployment.containerid = response.data._id;
+            deployment.pclassid = response.data._id;
             return Vue.axios.post(containerDeployedApi, deployment);
         }).then((response) => {
             console.log('posted deployment', response);
@@ -433,9 +432,8 @@ export default {
         });
     },
     buildFunctionsFromContainer: function(container) {
-        let abi = container.container.abi;
-        let devdoc = container.container.devdoc;
-        let userdoc = container.container.userdoc;
+        let abi = container.pclass.abi;
+        let natspec = container.pclass.natspec;
         let functions = [];
 
         abi.forEach(funcabi => {
@@ -446,13 +444,12 @@ export default {
 
                 functions.push({
                     signature,
-                    abiObj: funcabi,
-                    devdoc: devdoc.methods[signature],
-                    userdoc: userdoc.methods[signature],
-                    containerid: container._id,
+                    gapi: funcabi,
+                    natspec: natspec.methods[signature],
+                    pclassid: container._id,
                     container: Object.assign({}, container),
                     _id: randomId(),
-                    styleClasses: pipeFunctionColorClass(funcabi),
+                    styleClasses: pfunctionColorClass(funcabi),
                 });
             }
         });
@@ -460,9 +457,9 @@ export default {
     },
     loadFromRemixWrap: function(compiled_contract, deployment_info) {
         let message = `
-            Loading ${compiled_contract.name} (deployed at ${deployment_info.deployed.ethaddress} on chain ${deployment_info.deployed.chainid}) to Pipeline.
+            Loading ${compiled_contract.name} (deployed at ${deployment_info.pclassi.address} on chain ${deployment_info.pclassi.chain_id}) to Pipeline.
         `;
-        if (deployment_info.deployed.chainid === 'JavaScriptVM') {
+        if (deployment_info.pclassi.chain_id === 'JavaScriptVM') {
             alert(`${message} The contract will only load in the plugin client and will disappear on Refresh.`);
             this.loadFromRemix(compiled_contract, deployment_info);
         } else if (confirm(`

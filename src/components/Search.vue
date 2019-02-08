@@ -57,7 +57,7 @@ import Pipeos from '../namespace/namespace';
 const tagsApi = Pipeos.pipeserver.api.tag;
 const projectApi = Pipeos.pipeserver.api.project;
 const functionsApi = Pipeos.pipeserver.api.function;
-const containerApi = Pipeos.pipeserver.api.container;
+const pclassApi = Pipeos.pipeserver.api.pclass;
 
 export default {
     props: ['results'],
