@@ -501,8 +501,8 @@ export default {
                             ) {
                                 this.saveFromRemix(contract, {
                                     deployed: {
-                                        ethaddress: data[0].contractAddress,
-                                        chainid: this.chain,
+                                        address: data[0].contractAddress,
+                                        chain_id: this.chain,
                                     }
                                 });
                             }
