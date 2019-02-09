@@ -432,7 +432,7 @@ export default {
         });
     },
     buildFunctionsFromContainer: function(container) {
-        let abi = container.pclass.abi;
+        let abi = container.pclass.gapi;
         let natspec = container.pclass.natspec;
         let functions = [];
 
@@ -443,13 +443,15 @@ export default {
                 signature = `${funcabi.name}(${funcabi.inputs.map(input => input.type).join(',')})`;
 
                 functions.push({
-                    signature,
-                    gapi: funcabi,
-                    natspec: natspec.methods[signature],
-                    pclassid: container._id,
-                    container: Object.assign({}, container),
                     _id: randomId(),
                     styleClasses: pfunctionColorClass(funcabi),
+                    pclassid: container._id,
+                    pclass: Object.assign({}, container),
+                    pfunction: {
+                        signature,
+                        gapi: funcabi,
+                        natspec: natspec.methods[signature],
+                    },
                 });
             }
         });

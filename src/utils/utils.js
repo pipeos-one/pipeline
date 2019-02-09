@@ -14,30 +14,76 @@ export function pfunctionColorClass(gapi) {
     return colorClass;
 }
 
+export function linkReferencesSolcToEthPM(linkReferences={}) {
+    let lreferences = [];
+
+    Object.keys(linkReferences).forEach((fileName) => {
+        Object.entries(linkReferences[fileName]).forEach((entry) => {
+            let libName = entry[0];
+            let links = entry[1];
+            let offsets;
+            offsets = links.map(link => link.start);
+            lreferences.push({
+                offsets,
+                length: links[0].length,
+                name: libName,
+            });
+        });
+    });
+    return lreferences;
+}
+
 export function compiledContractProcess(compiled, callback) {
-    // let additional_solsources;
-    // if (Object.keys(compiled.source.sources).length > 1) {
-    //     additional_solsources = Object.assign({}, compiled.source.sources);
-    //     delete additional_solsources[target];
-    // }
+    let sources = [];
+
+    Object.keys(compiled.source.sources).forEach((key) => {
+        if (key == 'target') return;
+        sources.push({
+            relative_path: key,
+            source: compiled.source.sources[key].content,
+        });
+    });
     Object.entries(compiled.data.contracts).forEach((entryArray) => {
-        const target = entryArray[0];
-        const targetObj = entryArray[1];
-        Object.entries(targetObj).forEach((entry) => {
-            console.log(entry);
-            const name = entry[0];
-            const contract = entry[1];
+        const relative_path = entryArray[0];
+        const contractsAtPath = entryArray[1];
+        Object.entries(contractsAtPath).forEach((entry) => {
+            const contractName = entry[0];
+            const compiledContract = entry[1];
+            let metadataJson;
+            if (compiledContract.metadata) {
+                try {
+                    metadataJson = JSON.parse(compiledContract.metadata);
+                } catch (err) {
+                    console.log(
+                        `Error found when extracting metadata for ${contractName}, metadata: ${compiledContract.metadata}`,
+                        err
+                    );
+                }
+            }
+
             const data = {
-                name,
+                name: contractName,
                 pclass: {
-                    abi: contract.abi,
-                    devdoc: contract.devdoc,
-                    userdoc: contract.userdoc,
-                    solsource: compiled.source.sources[target].content,
-                    // additional_solsources,
-                    bytecode: contract.evm.bytecode,
-                    deployedBytecode: contract.evm.deployedBytecode,
-                    metadata: contract.metadata,
+                    gapi: compiledContract.abi,
+                    natspec: getNatspec(compiledContract.devdoc, compiledContract.userdoc),
+                    // linked bytecode
+                    // deployment_bytecode: ,
+                    // unlinked bytecode
+                    runtime_bytecode: {
+                        bytecode: '0x' + compiledContract.evm.bytecode.object,
+                        link_references: linkReferencesSolcToEthPM(compiledContract.evm.bytecode.linkReferences),
+                        // link_dependencies: [],
+                    },
+                    metadata: compiledContract.metadata,
+                    compiler: {
+                        name: 'solc',
+                        version: metadataJson ? metadataJson.compiler.version : undefined,
+                        settings: metadataJson ? metadataJson.settings : undefined,
+                    },
+                    sources,
+                    // TODO:
+                    // flatsource: ,
+                    // flatsource_hash: ,
                 },
                 tags: [],
             };
@@ -49,3 +95,16 @@ export function compiledContractProcess(compiled, callback) {
         });
     });
 }
+
+const EMPTY_NATSPEC = {methods: {}};
+
+export const getNatspec = (devdoc=EMPTY_NATSPEC, userdoc=EMPTY_NATSPEC) => {
+        let natspec = Object.assign({}, userdoc, devdoc);
+        Object.keys(userdoc.methods).forEach((methodName) => {
+            natspec.methods[methodName] = Object.assign(
+                userdoc.methods[methodName],
+                natspec.methods[methodName],
+            );
+        });
+        return  natspec;
+    }
