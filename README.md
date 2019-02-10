@@ -1,4 +1,4 @@
-# pipeos-server [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/pipeos-one/pipeline)
+# Pipeline [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/pipeos-one/pipeline)
 
 The project is in development. Not safe for production use.
 
@@ -10,9 +10,5 @@ Use on https://remix.ethereum.org : Settings -> Plugin -> click on Pipeline
 
 ## Development
 
-```
-npm install
-npm start
-```
-
-- run https://github.com/pipeos-one/pipeos-client
+- run https://github.com/pipeos-one/pipeline/tree/master/server
+- run https://github.com/pipeos-one/pipeline/tree/master/client
