@@ -68,7 +68,6 @@ export default {
     },
     methods: {
         ethaddressInput() {
-            console.log(this);
             return this.$refs['addr_input'];
         },
         setNetworkInfo() {

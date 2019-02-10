@@ -194,7 +194,6 @@ const containers = [
             natspec: { methods: {}, title: 'PipeOS Utils.' },
             bytecode: '',
             flatsource: ' ',
-            jssource: '',
         },
         timestamp: '2018-10-16T08:10:33.614Z',
     },
