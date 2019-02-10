@@ -109,17 +109,17 @@ export default {
         },
         loadFromRemix(contractName) {
             let input = this.ethaddressInput();
-            let ethaddress = input.internalValue;
+            let address = input.internalValue;
             let deployment_info;
 
-            if (!ethaddress || !input.valid) {
+            if (!address || !input.valid) {
                 throw new Error('Ethereum address not valid.');
             }
 
             deployment_info = {
-                deployed: {
-                    ethaddress,
-                    chainid: this.chain,
+                pclassi: {
+                    address,
+                    chain_id: this.chain,
                 }
             };
 

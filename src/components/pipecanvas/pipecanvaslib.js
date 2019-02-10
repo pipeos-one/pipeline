@@ -25,166 +25,177 @@ function getParamNames(func) {
 const ports = [
     {
         _id: '5bc59e192817116e84bdd830',
-        containerid: '5bc59d5d2817116e84bdd82e',
-        container: { name: 'PipeOS' },
-        abiObj: {
-            constant: true,
-            inputs: [
-                {
-                    name: 'in',
-                    type: '*',
-                },
-            ],
-            name: 'PortOut',
-            outputs: [],
-            payable: false,
-            stateMutability: 'view',
-            type: 'port',
+        pclassid: '5bc59d5d2817116e84bdd82e',
+        pclass: { name: 'PipeOS' },
+        pfunction: {
+            gapi: {
+                constant: true,
+                inputs: [
+                    {
+                        name: 'in',
+                        type: '*',
+                    },
+                ],
+                name: 'PortOut',
+                outputs: [],
+                payable: false,
+                stateMutability: 'view',
+                type: 'port',
+            },
+            signature: 'PortOut(*)',
         },
-        signature: 'PortOut(*)',
         timestamp: '2018-10-16T08:10:33.614Z',
     },
     {
         _id: '5bc59e192817116e84bdd831',
-        containerid: '5bc59d5d2817116e84bdd82e',
-        container: { name: 'PipeOS' },
-        abiObj: {
-            constant: true,
-            inputs: [],
-            name: 'PortIn',
-            outputs: [
-                {
-                    name: 'out',
-                    type: '*',
-                },
-            ],
-            payable: false,
-            stateMutability: 'view',
-            type: 'port',
+        pclassid: '5bc59d5d2817116e84bdd82e',
+        pclass: { name: 'PipeOS' },
+        pfunction: {
+            gapi: {
+                constant: true,
+                inputs: [],
+                name: 'PortIn',
+                outputs: [
+                    {
+                        name: 'out',
+                        type: '*',
+                    },
+                ],
+                payable: false,
+                stateMutability: 'view',
+                type: 'port',
+            },
+            signature: 'PortIn()',
         },
-        signature: 'PortIn()',
         timestamp: '2018-10-16T08:10:33.614Z',
     },
     {
         _id: '5bc59e192817116e84bdd832',
-        containerid: '5bc59d5d2817116e84bdd82e',
-        container: { name: 'PipeOS' },
-        abiObj: {
-            constant: true,
-            inputs: [],
-            name: 'MsgData',
-            outputs: [
-                {
-                    name: 'data',
-                    type: 'bytes',
-                },
-                {
-                    name: 'sender',
-                    type: 'address',
-                },
-                {
-                    name: 'sig',
-                    type: 'bytes4',
-                },
-                {
-                    name: 'value',
-                    type: 'uint256',
-                },
-            ],
-            payable: false,
-            stateMutability: 'view',
-            type: 'data',
+        pclassid: '5bc59d5d2817116e84bdd82e',
+        pclass: { name: 'PipeOS' },
+        pfunction: {
+            gapi: {
+                constant: true,
+                inputs: [],
+                name: 'MsgData',
+                outputs: [
+                    {
+                        name: 'data',
+                        type: 'bytes',
+                    },
+                    {
+                        name: 'sender',
+                        type: 'address',
+                    },
+                    {
+                        name: 'sig',
+                        type: 'bytes4',
+                    },
+                    {
+                        name: 'value',
+                        type: 'uint256',
+                    },
+                ],
+                payable: false,
+                stateMutability: 'view',
+                type: 'data',
+            },
+            signature: 'MsgData()',
         },
-        signature: 'MsgData()',
         timestamp: '2018-10-16T08:10:33.614Z',
     },
     {
         _id: '5bc59e192817116e84bdd833',
-        containerid: '5bc59d5d2817116e84bdd82e',
-        container: { name: 'PipeOS' },
-        abiObj: {
-            constant: true,
-            inputs: [],
-            name: 'BlockData',
-            outputs: [
-                {
-                    name: 'coinbase',
-                    type: 'address',
-                },
-                {
-                    name: 'dificulty',
-                    type: 'uint256',
-                },
-                {
-                    name: 'gaslimit',
-                    type: 'uint256',
-                },
-                {
-                    name: 'number',
-                    type: 'uint256',
-                },
-                {
-                    name: 'timestamp',
-                    type: 'uint256',
-                },
-            ],
-            payable: false,
-            stateMutability: 'view',
-            type: 'data',
+        pclassid: '5bc59d5d2817116e84bdd82e',
+        pclass: { name: 'PipeOS' },
+        pfunction: {
+            gapi: {
+                constant: true,
+                inputs: [],
+                name: 'BlockData',
+                outputs: [
+                    {
+                        name: 'coinbase',
+                        type: 'address',
+                    },
+                    {
+                        name: 'dificulty',
+                        type: 'uint256',
+                    },
+                    {
+                        name: 'gaslimit',
+                        type: 'uint256',
+                    },
+                    {
+                        name: 'number',
+                        type: 'uint256',
+                    },
+                    {
+                        name: 'timestamp',
+                        type: 'uint256',
+                    },
+                ],
+                payable: false,
+                stateMutability: 'view',
+                type: 'data',
+            },
+            signature: 'BlockData()',
         },
-        signature: 'BlockData()',
         timestamp: '2018-10-16T08:10:33.614Z',
     },
     {
         _id: '5bc59e192817116e84bdd834',
-        containerid: '5bc59d5d2817116e84bdd82e',
-        container: { name: 'PipeOS' },
-        abiObj: {
-            constant: true,
-            inputs: [],
-            name: 'MiscData',
-            outputs: [
-                {
-                    name: 'gasleft',
-                    type: 'uint256',
-                },
-                {
-                    name: 'now',
-                    type: 'uint256',
-                },
-                {
-                    name: 'tx.gasprice',
-                    type: 'uint256',
-                },
-                {
-                    name: 'tx.origin',
-                    type: 'address',
-                },
-            ],
-            payable: false,
-            stateMutability: 'view',
-            type: 'data',
+        pclassid: '5bc59d5d2817116e84bdd82e',
+        pclass: { name: 'PipeOS' },
+        pfunction: {
+            gapi: {
+                constant: true,
+                inputs: [],
+                name: 'MiscData',
+                outputs: [
+                    {
+                        name: 'gasleft',
+                        type: 'uint256',
+                    },
+                    {
+                        name: 'now',
+                        type: 'uint256',
+                    },
+                    {
+                        name: 'tx.gasprice',
+                        type: 'uint256',
+                    },
+                    {
+                        name: 'tx.origin',
+                        type: 'address',
+                    },
+                ],
+                payable: false,
+                stateMutability: 'view',
+                type: 'data',
+            },
+            signature: 'MiscData()',
         },
-        signature: 'MiscData()',
         timestamp: '2018-10-16T08:10:33.614Z',
     },
-    
+
 ];
 
 const containers = [
     {
         _id: '5bc59d5d2817116e84bdd82e',
         name: 'PipeOS',
-        abi: [{
-            constant: true, inputs: [{ name: 'in', type: '*' }], name: 'PortOut', outputs: [], payable: false, stateMutability: 'view', type: 'port',
-        }, {
-            constant: true, inputs: [], name: 'PortIn', outputs: [{ name: 'out', type: '*' }], payable: false, stateMutability: 'view', type: 'port',
-        }],
-        devdoc: { methods: {}, title: 'PipeOS Utils.' },
-        userdoc: { methods: {} },
-        bytecode: '',
-        solsource: ' ',
-        jssource: '',
+        pclass: {
+            gapi: [{
+                constant: true, inputs: [{ name: 'in', type: '*' }], name: 'PortOut', outputs: [], payable: false, stateMutability: 'view', type: 'port',
+            }, {
+                constant: true, inputs: [], name: 'PortIn', outputs: [{ name: 'out', type: '*' }], payable: false, stateMutability: 'view', type: 'port',
+            }],
+            natspec: { methods: {}, title: 'PipeOS Utils.' },
+            bytecode: '',
+            flatsource: ' ',
+            jssource: '',
+        },
         timestamp: '2018-10-16T08:10:33.614Z',
     },
 ];
@@ -244,7 +255,7 @@ export default class Graphs {
     }
 
     addFunction( funcData, grIndex1){
-        // console.log("add", funcData, grIndex1)
+        console.log("add", funcData, grIndex1)
         // console.log("gr", pipe2)
         grIndex = grIndex1
         pipe2.functions.push(funcData)
@@ -253,7 +264,7 @@ export default class Graphs {
             id: funcData._id
         }
         this.idGen++
-        
+
 
         proc1()
 
@@ -280,7 +291,7 @@ export default class Graphs {
 
 
 
-// Expects functions as an array of pipefunction objects, each with a `container` key for the pipecontainer.
+// Expects functions as an array of pfunction objects, each with a `container` key for the pclass.
 const loadAll = function loadAll(domids, functions, graphs) {
     pipe2.functions = functions.concat(ports.map(port => {
         port.container = containers[0];
@@ -415,19 +426,18 @@ function proc1() {
 
     // events reverse i/o
     R.mapObjIndexed((x, key, all) => {
-        if (x.func.abiObj.type == "event"){
-            console.log(x)
-            if (x.func.abiObj.outputs === undefined) {
-                x.func.abiObj.outputs = []
+        if (x.func.pfunction.gapi.type == "event"){
+            if (x.func.pfunction.gapi.outputs === undefined) {
+                x.func.pfunction.gapi.outputs = []
             }
-            let ins = JSON.parse(JSON.stringify(x.func.abiObj.inputs))
-            let outs = JSON.parse(JSON.stringify(x.func.abiObj.outputs))
-            x.func.abiObj.outputs = ins
-            x.func.abiObj.inputs = outs
+            let ins = JSON.parse(JSON.stringify(x.func.pfunction.gapi.inputs))
+            let outs = JSON.parse(JSON.stringify(x.func.pfunction.gapi.outputs))
+            x.func.pfunction.gapi.outputs = ins
+            x.func.pfunction.gapi.inputs = outs
         }
     }, pipe2.cgraphs[grIndex].n);
 
-    
+
 
 
 
@@ -444,7 +454,7 @@ function proc1() {
     console.log("gr after proc4", pipe2.cgraphs[grIndex].n)
 
     // gr is the nodes + function data
-    
+
 
     // console.log(pipe2.cgraphs[grIndex])
 
@@ -473,7 +483,7 @@ function proc1() {
 
     proc2(pipe2.cgraphs[grIndex].n);
 
-    
+
 
 
     // console.log(funcs)
@@ -502,21 +512,21 @@ function proc2(gr) {
     // draw nodes
     R.mapObjIndexed((x, key, all) => {
     //console.log("grrrrra",JSON.stringify(x))
-    // graph.nodes[x.i] ={ render:new FuncBox( x ), links: { in: R.repeat("", x.func.abiObj.inputs.length), out:R.repeat("", "outputs" in x.func.abiObj? x.func.abiObj.outputs.length: [])}}
+    // graph.nodes[x.i] ={ render:new FuncBox( x ), links: { in: R.repeat("", x.func.pfunction.gapi.inputs.length), out:R.repeat("", "outputs" in x.func.pfunction.gapi? x.func.pfunction.gapi.outputs.length: [])}}
         //x.state = {}
         // console.log(JSON.stringify(x))
         pipe2.rgraphs[grIndex][x.i] = new FuncBox(x);
         //gra[x.i] = x;
         let outl = 0;
-        if (x.func.abiObj.outputs !== undefined) {
-            outl = x.func.abiObj.outputs.length;
+        if (x.func.pfunction.gapi.outputs !== undefined) {
+            outl = x.func.pfunction.gapi.outputs.length;
         }
-        //const w = Math.max(x.func.abiObj.inputs.length, outl);
+        //const w = Math.max(x.func.pfunction.gapi.inputs.length, outl);
         //g.setNode(x.i, { label: x.i, width: w * xr, height: xr });
     // gra[x.i] = {links: x.links, func: x.func}
     }, gr);
 
-    
+
 
     //console.log("grrrrr",JSON.stringify(gr))
 
@@ -528,7 +538,7 @@ function proc2(gr) {
 
     proc_e(gr);
 
-    
+
 
     pipe2.cgraphs[grIndex].n = gr
 
@@ -543,8 +553,8 @@ function proc2(gr) {
     // redraw from dagre
     // proc3()
 
-    let visitors = [ 
-        new GraphVisitor(visOptions.graphRender), 
+    let visitors = [
+        new GraphVisitor(visOptions.graphRender),
         new GraphVisitor(visOptions.solidity),
         new GraphVisitor(visOptions.js),
     ]
@@ -561,13 +571,13 @@ function proc2(gr) {
         let pg = x.n
         let n={}
 
-        
 
-        
+
+
 
         R.mapObjIndexed((x1, key1, all1) => {
-            if (x1.func.abiObj.name == 'PortIn') n[key1] = true;
-            if (x1.func.abiObj.inputs.length === 0) n[key1] = true;
+            if (x1.func.pfunction.gapi.name == 'PortIn') n[key1] = true;
+            if (x1.func.pfunction.gapi.inputs.length === 0) n[key1] = true;
         }, pg)
         console.log("pg",pg)
         grIndex = parseInt(key)
@@ -592,7 +602,7 @@ function proc2(gr) {
 
     grIndex = ndx
 
-    
+
 
 
 /*
@@ -601,12 +611,12 @@ function proc2(gr) {
     let n={}
 
     R.mapObjIndexed((x, key, all) => {
-        if (x.func.abiObj.name == 'PortIn') n[key] = true;
+        if (x.func.pfunction.gapi.name == 'PortIn') n[key] = true;
     }, pg)
 
     let visitors = [ new GraphVisitor(visOptions.graphRender), new GraphVisitor(visOptions.solidity)]
 
-    
+
 
     //console.log(n)
     proc_d(pg, [{}], 0, {}, n, visitors);
@@ -615,7 +625,7 @@ function proc2(gr) {
         if (x.ops.type == "source") {
             // console.log(x.getGen())
             langs[x.ops.lang] = x.getGen()
-        } 
+        }
         if (x.ops.type == "visual") {
             langs["graphs"] = pipe2.graphs
         }
@@ -696,14 +706,14 @@ function proc_d(grf, tabl, row, known, next, vis) {
             //const n1 = Object.keys(x1)[0];
             //console.log( key,x1, Object.keys(x1),n1)
             R.mapObjIndexed((x2, key2, all2) => {
-                
+
                 const n1 = Object.keys(x2)[0];
                 console.log( "n1",n1)
                 if ((known[n1] === undefined || known[n1] === false) && parseInt(key1) > 0){
                     runnable = false;
                 }
             }, x1)
-            
+
         }, grf[parseInt(key)].links.in);
 
         if (runnable) {
@@ -714,7 +724,7 @@ function proc_d(grf, tabl, row, known, next, vis) {
                 if (x.ops.type == "visual") {
                     x.renderFunc(grf[parseInt(key)], row)
                 }
-  
+
             },vis)
             known1[key] = true
 
@@ -723,13 +733,13 @@ function proc_d(grf, tabl, row, known, next, vis) {
                 R.mapObjIndexed((x3, key3, all3) => {
                     next1[Object.keys(x3)[0]] = true;
                 }, x2)
-                
+
             }, grf[parseInt(key)].links.out);
 
         }
         delete next[parseInt(key)]
 
-        
+
     }, next);
 
     next1 = Object.assign(next,next1)
@@ -766,9 +776,9 @@ function addPortFunc(i, o1, state1){
 
     // JSON.parse(JSON.stringify(
     console.log('addPortFunc', out2)
-    // out2.func.abiObj.outputs[0] = {name: "Lore", type:"olt"}
+    // out2.func.pfunction.gapi.outputs[0] = {name: "Lore", type:"olt"}
     // JSON.parse(JSON.stringify(state1))
-    out2.func.abiObj.outputs[0] = {name: state1.name, type: state1.type}
+    out2.func.pfunction.gapi.outputs[0] = {name: state1.name, type: state1.type}
     // console.log('addPortFunc', out.state)
     // console.log('addPortFunc', JSON.stringify(out2))
     return out2
@@ -787,14 +797,14 @@ function proc4(gr) {
 
     R.mapObjIndexed((x, key, all) => {
         // console.log("pp",JSON.stringify(x))
-        if (x.func.abiObj.type == "port" && x.i <3000) {
+        if (x.func.pfunction.gapi.type == "port" && x.i <3000) {
             let o1 = {}
             o1[x.i] = parseInt(key) + 1
             let link = x.links.out[1][0]
             let kkey = Object.keys(link)[0]
             console.log(kkey, link, pipe2.cgraphs[grIndex].n[kkey])
-            let port = pipe2.cgraphs[grIndex].n[kkey].func.abiObj.inputs[link[parseInt(kkey)]-1]
-            console.log("p",port, pipe2.cgraphs[grIndex].n[kkey].func.abiObj.inputs, link[parseInt(kkey)])
+            let port = pipe2.cgraphs[grIndex].n[kkey].func.pfunction.gapi.inputs[link[parseInt(kkey)]-1]
+            console.log("p",port, pipe2.cgraphs[grIndex].n[kkey].func.pfunction.gapi.inputs, link[parseInt(kkey)])
             let name = (port.name !== undefined)? port.name : ""
             let state1 = {name: "i_"+name+"_"+kkey, type: port.type, value: undefined}
             x.state = state1;
@@ -806,14 +816,14 @@ function proc4(gr) {
 
     }, gr);
 
-    
+
     // console.log(pipe2.graph.e)
     // return true
     // console.log(gr)
     let incr = 3000;
     R.map((x) => {
         let x_incr = incr;
-        //if (x.func.abiObj.type == "port") return
+        //if (x.func.pfunction.gapi.type == "port") return
         R.mapObjIndexed((x1, key, all) => {
             // console.log(x1)
             // console.log(x.links.in[parseInt(key) + 1], key)
@@ -822,7 +832,7 @@ function proc4(gr) {
                 // console.log(key)
                 let o1 = {}
                 o1[x.i] = parseInt(key) + 1
-                // let t = {i: inc, func: {abiObj: {inputs:[],outputs:[{ name: "out", type:x1.type}], name:"PortIn"}, container:{name:"PipeOS"}}, links:{in:{},out:{0:x.i}}}
+                // let t = {i: inc, func: {gapi: {inputs:[],outputs:[{ name: "out", type:x1.type}], name:"PortIn"}, container:{name:"PipeOS"}}, links:{in:{},out:{0:x.i}}}
                 let name = (x1.name !== undefined)? x1.name : ""
                 let state1 = {name: "i_"+name+"_"+x.i, type: x1.type, value: undefined}
                 const t = addPortFunc(incr, o1, state1)
@@ -831,7 +841,7 @@ function proc4(gr) {
                 x.state[incr-x_incr] = state1;
                 /*
 
-                graph.nodes[inc] ={ render:new FuncBox( t ), links: { in: R.repeat("", t.func.abiObj.inputs.length), out:R.repeat("", "outputs" in t.func.abiObj? t.func.abiObj.outputs.length: [])}}
+                graph.nodes[inc] ={ render:new FuncBox( t ), links: { in: R.repeat("", t.func.pfunction.gapi.inputs.length), out:R.repeat("", "outputs" in t.func.pfunction.gapi? t.func.pfunction.gapi.outputs.length: [])}}
 
 */
                 //const int = {};
@@ -845,14 +855,14 @@ function proc4(gr) {
                 pipe2.cgraphs[grIndex].e.push([incr, 1, x.i, parseInt(key) + 1]);
                 // alert(key)
             }
-        }, x.func.abiObj.inputs);
+        }, x.func.pfunction.gapi.inputs);
 
         R.mapObjIndexed((x2, key, all) => {
             // console.log(x.links.out[parseInt(key) + 1], key)
             if (x.links.out[parseInt(key) + 1] === undefined) {
                 incr++;
                 // console.log(key)
-                // t ={i: inc, func: {abiObj: {inputs:[{ name: "in", type:x2.type}],outputs:[], name:"PortOut"}, container:{name:"PipeOS"}}, links:{in:{0:x.i},out:{}}}
+                // t ={i: inc, func: {gapi: {inputs:[{ name: "in", type:x2.type}],outputs:[], name:"PortOut"}, container:{name:"PipeOS"}}, links:{in:{0:x.i},out:{}}}
                 let o1 = {}
                 o1[x.i] = parseInt(key) + 1
                 let name = (x2.name !== undefined)? x2.name : ""
@@ -874,7 +884,7 @@ function proc4(gr) {
                 pipe2.cgraphs[grIndex].e.push([x.i, parseInt(key) + 1, incr, 1]);
                 // alert(key)
             }
-        }, x.func.abiObj.outputs);
+        }, x.func.pfunction.gapi.outputs);
     }, gr);
 
     // add optionaal data
@@ -916,12 +926,12 @@ class Smooth {
         this.port1 = diff1;
         this.port2 = diff2;
         // console.log(point1, point2)
-        let state1 = {name: "o_"+point1.obj.func.abiObj.outputs[diff1-1].name+"_"+point1.obj.i, type: point1.obj.func.abiObj.outputs[diff1-1].type, value: undefined}
+        let state1 = {name: "o_"+point1.obj.func.pfunction.gapi.outputs[diff1-1].name+"_"+point1.obj.i, type: point1.obj.func.pfunction.gapi.outputs[diff1-1].type, value: undefined}
         // console.log(point1.obj.state, diff1, JSON.stringify(point1.obj.state[diff1]))
         let state = point1.obj.state[diff1] ? point1.obj.state[diff1] : point1.obj.state;
         // console.log('smooth state', JSON.stringify(state))
         // console.log('smooth state1', JSON.stringify(state1))
-        if (point1.obj.func.abiObj.type === 'port') {
+        if (point1.obj.func.pfunction.gapi.type === 'port') {
             point2.obj.state[diff2] = state
         } else {
             point2.obj.state[diff2] = state1
@@ -1028,15 +1038,15 @@ class FuncBox {
         const self = this;
         this.el = pipe2.draws[grIndex].group();
         this.el.attr('id', obj.i);
-        
+
         // console.log(this.obj);
-        const i = 'inputs' in this.obj.func.abiObj ? this.obj.func.abiObj.inputs.length : 0;
-        const o = 'outputs' in this.obj.func.abiObj ? this.obj.func.abiObj.outputs.length : 0;
+        const i = 'inputs' in this.obj.func.pfunction.gapi ? this.obj.func.pfunction.gapi.inputs.length : 0;
+        const o = 'outputs' in this.obj.func.pfunction.gapi ? this.obj.func.pfunction.gapi.outputs.length : 0;
         const w = Math.max(i, o);
 
         const h = xr;
         const clas = 's_content';
-        const txt = `${this.obj.func.container.name}\n${this.obj.func.abiObj.name}`;
+        const txt = `${this.obj.func.pclass.name}\n${this.obj.func.pfunction.gapi.name}`;
         this.el.rect(xr * w, xr).attr({
             rx: this.r,
             ry: this.r,
@@ -1074,14 +1084,14 @@ class FuncBox {
             R.map((x)=>{
                 delete pipe2.graphs[grIndex].e[parseInt(x)];
             }, keys2)
-            
+
 
             return proc1();
         });
 
         this.el.draggable();
 
-        if (self.obj.func.abiObj.type != 'port') {
+        if (self.obj.func.pfunction.gapi.type != 'port') {
             let point = getPort(self.obj, 'in', 0);
             const port_i = self.el.circle(10).center(point.x, point.y).attr({opacity:0.08});
             port_i.mouseover(() => {
@@ -1142,7 +1152,7 @@ class FuncBox {
             // console.log(x, key)
             let point = { x: 0, y: 0 };
 /*
-            if (self.obj.func.abiObj.type === 'port') {
+            if (self.obj.func.pfunction.gapi.type === 'port') {
                 point = getPort(self.obj, 'in', parseInt(key));
             } else {
 
@@ -1151,7 +1161,7 @@ class FuncBox {
             point = getPort(self.obj, 'in', 1 + parseInt(key));
 
             // let point = getPort(self.obj, "in", 1+parseInt(key))
-           
+
 
             let port = self.el.circle(10).center(point.x, point.y).attr({"fill-opacity":0.5});
             self.el.text(x.name).attr({ 'text-anchor': 'middle', 'font-size': 8, 'font-family': 'Roboto' }).move(point.x - 8, point.y - 12).transform({ rotation: -30 });
@@ -1159,11 +1169,11 @@ class FuncBox {
 
             if (types[x.type] === undefined){
                 types[x.type] = []
-                
+
             }
-            
+
             types[x.type].push(port)
-            
+
 
 
 
@@ -1176,13 +1186,13 @@ class FuncBox {
                 self.note.text('');
                 endDrop = false;
             });
-        }, this.obj.func.abiObj.inputs);
+        }, this.obj.func.pfunction.gapi.inputs);
 
         R.mapObjIndexed((x, key, all) => {
-            // console.log(x,self.obj,self.obj.func.abiObj.type,"outputs", key)
+            // console.log(x,self.obj,self.obj.func.pfunction.gapi.type,"outputs", key)
             let point = { x: 0, y: 0 };
 /*
-            if (self.obj.func.abiObj.type === 'port') {
+            if (self.obj.func.pfunction.gapi.type === 'port') {
                 point = getPort(self.obj, 'out', parseInt(key));
             } else {
                 point = getPort(self.obj, 'out', 1 + parseInt(key));
@@ -1235,7 +1245,7 @@ class FuncBox {
                 if (endDrop !== false && endDrop !== undefined) {
                     // console.log(startDrop, endDrop);
                     let edge = startDrop.concat(endDrop);
-                    
+
                     // console.log(edge);
                     if (startDrop[0] > 2999) {
                         console.log("pipe2.graphs",pipe2.graphs);
@@ -1247,9 +1257,9 @@ class FuncBox {
                         }, pipe2.cgraphs[grIndex].n[startDrop[0]].links.out[1])
                         edge[0] = edge[0]-1000
                     }
-                    
+
                     pipe2.graphs[grIndex].e.push(edge);
-                    
+
                     return proc1();
                 }
             });
@@ -1261,7 +1271,7 @@ class FuncBox {
                 self.objDrag.center(p.offsetX, p.offsetY);
                 self.objDrag3 = smoothDrag(self.objDrag3, self.objDrag2, {x: p.offsetX, y: p.offsetY})
             });
-        }, this.obj.func.abiObj.outputs);
+        }, this.obj.func.pfunction.gapi.outputs);
 
 
         /*
@@ -1340,7 +1350,7 @@ function smoothDrag(obj,init, target){
         });
     } else {
         out = obj
-        
+
     }
     out.plot([
         ['M', init.x, init.y],
@@ -1377,7 +1387,7 @@ class GraphVisitor{
     renderFunc(funcObj, row){
         let startLineY = xr/2
         let startLineX = xr/2
-        let w = Math.max(pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.inputs.length, pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.outputs.length)
+        let w = Math.max(pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.pfunction.gapi.inputs.length, pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.pfunction.gapi.outputs.length)
         if (this.row < row){
             this.row = row
             this.pointer = startLineX
@@ -1388,12 +1398,12 @@ class GraphVisitor{
             let anchor = pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].links.in["1"]
             if (Object.keys(anchor).length > 0){
                 console.log(pipe2.rgraphs[grIndex][Object.keys(anchor[0])[0]].x  + xr*w -2, "<", this.minX[row], "pointer",this.pointer)
-                
+
                 let x = pipe2.rgraphs[grIndex][Object.keys(anchor[0])[0]].x
 
                 /*
                 if (x  + xr*w -2 < this.minX[row]) {
-                    
+
                     pipe2.rgraphs[grIndex][parseInt(funcObj.i)].redraw(x, placeY);
                     this.minX[row] = x
                     this.pointer += (1 + w) * xr;
@@ -1409,15 +1419,15 @@ class GraphVisitor{
         this.minX[row] = Math.min(this.minX[row], this.pointer)
         let placeY = 2*(row + 1) * xr
 
-        if (pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.name == "PortIn"){
+        if (pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.pfunction.gapi.name == "PortIn"){
             placeY = startLineY
         }
 
-        
+
 
         pipe2.rgraphs[grIndex][parseInt(funcObj.i)].redraw(this.pointer, placeY);
 
-        if (pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.abiObj.name == "PortOut"){
+        if (pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.pfunction.gapi.name == "PortOut"){
             this.outports.push(pipe2.rgraphs[grIndex][parseInt(funcObj.i)])
             this.maxY = Math.max(this.maxY, placeY)
         }
@@ -1427,7 +1437,7 @@ class GraphVisitor{
         // console.log(pipe2.cgraphs[grIndex])
         this.pointer += (1 + w) * xr;
 
-        
+
 
 
     }
@@ -1463,10 +1473,10 @@ class GraphVisitor{
         }
 
 
-        
+
 
         this.genF[grIndex] = this.genF[grIndex] +  this.ops.function_p2 + ini
-        // this.genF1[grIndex] = 
+        // this.genF1[grIndex] =
 
         this.genF2[grIndex] = ""
         if (this.out.length >0){
@@ -1486,16 +1496,16 @@ class GraphVisitor{
 
     genFunc(funcObj, row){
         // console.log(funcObj)
-        if (funcObj.func.abiObj.type == "function") {
-            if (funcObj.func.abiObj.payable) {
+        if (funcObj.func.pfunction.gapi.type == "function") {
+            if (funcObj.func.pfunction.gapi.payable) {
                 this.isPayable = true
             }
-            this.genConstr1.push("address public "+ funcObj.func.abiObj.name+"_"+funcObj.i+ " ;")
-            this.genConstr2.push("address _"+funcObj.func.abiObj.name+"_"+funcObj.i)
-            this.genConstr3.push(funcObj.func.abiObj.name+"_"+funcObj.i+ " = _" + funcObj.func.abiObj.name+"_"+funcObj.i+ ";")
+            this.genConstr1.push("address public "+ funcObj.func.pfunction.gapi.name+"_"+funcObj.i+ " ;")
+            this.genConstr2.push("address _"+funcObj.func.pfunction.gapi.name+"_"+funcObj.i)
+            this.genConstr3.push(funcObj.func.pfunction.gapi.name+"_"+funcObj.i+ " = _" + funcObj.func.pfunction.gapi.name+"_"+funcObj.i+ ";")
             this.genConstr4.push(funcObj.func._id)
             let f = this.genF[grIndex]? this.genF[grIndex]: ""
-            this.genF[grIndex] = f+ "\n"+ this.ops.sigFunc1 + funcObj.func.signature + this.ops.sigFunc2 + "\n"
+            this.genF[grIndex] = f+ "\n"+ this.ops.sigFunc1 + funcObj.func.pfunction.signature + this.ops.sigFunc2 + "\n"
             let inputset = R.mapObjIndexed((x, key, all) => {
                 let o = "i_"+x.name+ "_"+funcObj.i
                 // console.log('*********', funcObj.state[parseInt(key)+1])
@@ -1503,51 +1513,51 @@ class GraphVisitor{
                     o = funcObj.state[parseInt(key)+1].name
                 }
                 return o
-            }, funcObj.func.abiObj.inputs
+            }, funcObj.func.pfunction.gapi.inputs
             )
-            if (funcObj.func.abiObj.payable) {
+            if (funcObj.func.pfunction.gapi.payable) {
                 console.log("inputset",inputset)
             }
 
             this.genF[grIndex] = this.genF[grIndex] + this.ops.inputSig1 + Object.values(inputset).join(",")+this.ops.inputSig2+"\n";
 
             let rest1 = ""
-            if (funcObj.func.abiObj.payable) {
+            if (funcObj.func.pfunction.gapi.payable) {
                 rest1 = ".value(wei_value)"
             }
-            this.genF[grIndex] = this.genF[grIndex] + this.ops.ansProxy1 +rest1 +"("+funcObj.func.abiObj.name +"_"+ funcObj.i+ this.ops.ansProxy2+"\n";
+            this.genF[grIndex] = this.genF[grIndex] + this.ops.ansProxy1 +rest1 +"("+funcObj.func.pfunction.gapi.name +"_"+ funcObj.i+ this.ops.ansProxy2+"\n";
             let outAssem = []
             let outputset = R.map((x)=>{
                 // console.log(x)
                 let name = (x.name !== undefined)? x.name: ""
                 outAssem.push("o_" + name + "_"+ funcObj.i+this.ops.assem)
                 return x.type+" o_" +   name + "_"+funcObj.i+ ";"
-            }, funcObj.func.abiObj.outputs)
+            }, funcObj.func.pfunction.gapi.outputs)
             let o = ""
-            if (funcObj.func.abiObj.outputs.length >0){
+            if (funcObj.func.pfunction.gapi.outputs.length >0){
                 o = outputset.join("\n") +this.ops.restFunc1+ outAssem.join("\n")+ this.ops.restFunc2
             }
 
             this.genF[grIndex] = this.genF[grIndex] + o + "\n";
         }
 
-        if (funcObj.func.abiObj.type == "port") {
-            if (funcObj.func.abiObj.name == "PortIn") {
+        if (funcObj.func.pfunction.gapi.type == "port") {
+            if (funcObj.func.pfunction.gapi.name == "PortIn") {
                 this.in.push(funcObj.state.type+" "+funcObj.state.name)
             }
 
-            if (funcObj.func.abiObj.name == "PortOut") {
+            if (funcObj.func.pfunction.gapi.name == "PortOut") {
                 this.out.push(funcObj.state.name)
             }
 
-            if (funcObj.func.abiObj.name == "PortOut") {
+            if (funcObj.func.pfunction.gapi.name == "PortOut") {
                 this.outtype.push(funcObj.state.type+" "+ funcObj.state.name)
                 this.returns.push(funcObj.state.type+" r_"+ funcObj.state.name)
             }
 
         }
 
-        // funcObj.func.abiObj.name
+        // funcObj.func.pfunction.gapi.name
 
     }
 
@@ -1567,7 +1577,7 @@ class GraphVisitor{
         langs["constructor"] = this.genConstr4
 
 
-        
+
 
         //out = out + this.outro
         out = out + this.ops.contract_p2
