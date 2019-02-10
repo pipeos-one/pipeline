@@ -49,6 +49,7 @@ export class OpenapiController {
 
     pclass = {
         name: gapi.natspec.title || 'unknown',
+        type: 'oapi',
         pclass: {
             gapi: gapi.gapi,
             natspec: gapi.natspec,
@@ -56,9 +57,9 @@ export class OpenapiController {
         },
         tags: ['openapi'],
     }
-    pclass = await pclassController.createFunctions(pclass).catch((e: Error) => {
-        this.openapiRepository.deleteById(openapi._id);
-        throw new Error('PClass was not created.');
+    pclass = await pclassController.createFunctions(pclass).catch((error: Error) => {
+        console.log('PClass was not created.');
+        throw error;
     });
     if (!pclass || !pclass._id) {
         this.openapiRepository.deleteById(openapi._id);
