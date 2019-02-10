@@ -41,6 +41,7 @@ export interface Optimizer {
 }
 
 export interface CompilerInputOutputJSONSettings {
+    compilationTarget: object;
     remappings: string[];
     optimizer: Optimizer;
     evmVersion: string;
@@ -48,18 +49,13 @@ export interface CompilerInputOutputJSONSettings {
     libraries: object;
 }
 
-export interface CompilerInputOutputJSON {
-    language: string;
-    sources: object;
-    settings: CompilerInputOutputJSONSettings;
-    optimize: boolean;
-    runs: number;
-}
-
 export interface Compiler {
     name: string;
     version: string;
-    settings: CompilerInputOutputJSON;
+    settings: CompilerInputOutputJSONSettings;
+    // solc
+    // language: string;
+    // sources: object;
 }
 
 export interface ContractType {

@@ -273,6 +273,20 @@ export class PackageController {
         let contractType: ContractType = entry[1];
         let pclass: any, pclassId: string;
         let chainids: string[] = [];
+        let compiler: any;
+
+        // We go with solc compiler format:
+        // http://solidity.readthedocs.io/en/latest/using-the-compiler.html#compiler-input-and-output-json-description
+        // EthPM schema only has compiler.settings = {optimize: boolean}
+        compiler = contractType.compiler;
+        if (compiler.settings) {
+            if (!compiler.settings.optimizer) {
+                compiler.settings.optimizer = {
+                    enabled: compiler.settings.optimize,
+                    runs: compiler.settings.runs,
+                };
+            }
+        }
 
         Object.entries(package_json.deployments).map((entry: any) => {
             let bip122_uri: string = entry[0];
@@ -298,7 +312,7 @@ export class PackageController {
                 deployment_bytecode: contractType.deployment_bytecode,
                 runtime_bytecode: contractType.runtime_bytecode,
                 // metadata: , // ?
-                compiler: contractType.compiler,
+                compiler,
             },
             tags: package_json.meta ? package_json.meta.keywords : [],
             chainids,

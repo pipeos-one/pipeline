@@ -61,5 +61,5 @@ export class LinkValue extends Model {
       type: 'string',
       required: true,
     })
-    value: string;  // (byte string / ?package:contract name)
+    value: string;  // (byte string 0x.. / ?package:contract name)
 }

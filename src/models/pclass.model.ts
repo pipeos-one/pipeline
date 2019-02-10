@@ -152,6 +152,7 @@ export class PClass extends Entity {
   name: string;  // contract_alias
 
   // TODO belongsTo Package
+  // We also have pclasses without packages
   @property({
     type: 'string',
   })
@@ -164,11 +165,13 @@ export class PClass extends Entity {
 
   @property({
     type: 'string',
+    required: true,
   })
   type: string;  // sol / js / oapi / py / html
 
   @property({
     type: 'object',
+    required: true,
   })
   pclass: SolClass | JsClass | OApiClass | PyClass;
 
