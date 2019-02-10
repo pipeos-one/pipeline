@@ -404,7 +404,7 @@ export default {
         container.tags.push('uncurated');
 
         Vue.axios.get(
-            `${containerApi}?filter[where][container.bytecode.object]=${container.pclass.bytecode.object}`
+            `${containerApi}?filter[where][pclass.runtime_bytecode.bytecode]=${container.pclass.runtime_bytecode.bytecode}`
         ).then((response) => {
             let existant = response.data[0];
             let chainid = deployment.pclassi.chain_id;

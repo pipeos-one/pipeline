@@ -49,10 +49,14 @@ export function compiledContractProcess(compiled, callback) {
         Object.entries(contractsAtPath).forEach((entry) => {
             const contractName = entry[0];
             const compiledContract = entry[1];
-            let metadataJson;
+            let metadataJson, compilationTarget;
             if (compiledContract.metadata) {
                 try {
                     metadataJson = JSON.parse(compiledContract.metadata);
+                    metadataJson.settings.compilationTarget = {
+                        filePath: Object.keys(metadataJson.settings.compilationTarget)[0],
+                        contractName: Object.values(metadataJson.settings.compilationTarget)[0],
+                    }
                 } catch (err) {
                     console.log(
                         `Error found when extracting metadata for ${contractName}, metadata: ${compiledContract.metadata}`,
@@ -63,6 +67,7 @@ export function compiledContractProcess(compiled, callback) {
 
             const data = {
                 name: contractName,
+                type: 'sol',
                 pclass: {
                     gapi: compiledContract.abi,
                     natspec: getNatspec(compiledContract.devdoc, compiledContract.userdoc),
