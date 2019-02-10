@@ -1,8 +1,12 @@
 import {OpenApiSpec} from '@loopback/openapi-v3-types';
 import {Entity, model, property, hasOne} from '@loopback/repository';
-import {PipeContainer} from './pipe-container.model';
+import {PClass} from './pclass.model';
 
-@model()
+@model({
+  settings: {
+    strictObjectIDCoercion: true,
+  },
+})
 export class Openapi extends Entity {
   @property({
     type: 'string',
@@ -27,10 +31,11 @@ export class Openapi extends Entity {
   })
   uri?: string;
 
+  // TODO hasOne?
   @property({
     type: 'string',
   })
-  containerid: string;
+  pclassid: string;
 
   @property({
     type: 'date',

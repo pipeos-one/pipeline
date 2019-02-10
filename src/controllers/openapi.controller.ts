@@ -15,10 +15,10 @@ import {
   del,
   requestBody,
 } from '@loopback/rest';
-import {Openapi, PipeContainer} from '../models';
+import {Openapi, PClass} from '../models';
 import {OpenapiRepository} from '../repositories';
-import {PipeContainerController, PipeDeployedController} from '../controllers';
-import {OpenapiToGabi} from '../utils/toGeneralizedAbi';
+import {PClassController, PClassIController} from '../controllers';
+import {OpenapiToGapi} from '../utils/toGeneralizedApi';
 
 
 export class OpenapiController {
@@ -36,57 +36,56 @@ export class OpenapiController {
     },
   })
   async create(@requestBody() openapi: Openapi): Promise<Openapi> {
-    let pipeContainer: any;
-    let pipeDeployed: any;
+    let pclass: any;
+    let pclassi: any;
 
-    let containerRepository = await this.openapiRepository.container;
-    let containerController = new PipeContainerController(containerRepository);
+    let pclassRepository = await this.openapiRepository.pclass;
+    let pclassController = new PClassController(pclassRepository);
 
-    let deployedRepository = await this.openapiRepository.deployed;
-    let deployedController = new PipeDeployedController(deployedRepository);
+    let pclassiRepository = await this.openapiRepository.pclassi;
+    let pclassiController = new PClassIController(pclassiRepository);
 
-    let gabi = new OpenapiToGabi(openapi.json);
+    let gapi = new OpenapiToGapi(openapi.json);
 
-    pipeContainer = {
-        name: gabi.devdoc.title || 'unknown',
-        container: {
-            abi: gabi.gabi,
-            devdoc: gabi.devdoc,
-            userdoc: gabi.userdoc,
+    pclass = {
+        name: gapi.natspec.title || 'unknown',
+        pclass: {
+            gapi: gapi.gapi,
+            natspec: gapi.natspec,
             openapiid: openapi._id,
         },
         tags: ['openapi'],
     }
-    pipeContainer = await containerController.createFunctions(pipeContainer).catch((e: Error) => {
+    pclass = await pclassController.createFunctions(pclass).catch((e: Error) => {
         this.openapiRepository.deleteById(openapi._id);
-        throw new Error('PipeContainer was not created.');
+        throw new Error('PClass was not created.');
     });
-    if (!pipeContainer || !pipeContainer._id) {
+    if (!pclass || !pclass._id) {
         this.openapiRepository.deleteById(openapi._id);
-        throw new Error('PipeContainer was not created.');
+        throw new Error('PClass was not created.');
     }
-    openapi.name = pipeContainer.name;
-    openapi.containerid = pipeContainer._id;
+    openapi.name = pclass.name;
+    openapi.pclassid = pclass._id;
     openapi = await this.openapiRepository.create(openapi);
 
-    pipeDeployed = {
-        containerid: pipeContainer._id,
-        deployed: {
+    pclassi = {
+        pclassid: pclass._id,
+        pclassi: {
             host: openapi.json.host,
             basePath: openapi.json.basePath,
             openapiid: openapi._id,
         }
     }
 
-    pipeDeployed = await deployedController.create(pipeDeployed).catch((e: Error) => {
-        containerController.deleteContainerFunctions(pipeContainer._id);
+    pclassi = await pclassiController.create(pclassi).catch((e: Error) => {
+        pclassController.deletePClassFunctions(pclass._id);
         this.openapiRepository.deleteById(openapi._id);
-        throw new Error('PipeDeployed was not created.');
+        throw new Error('PClassI was not created.');
     });
-    if (!pipeDeployed || !pipeDeployed._id) {
-        containerController.deleteContainerFunctions(pipeContainer._id);
+    if (!pclassi || !pclassi._id) {
+        pclassController.deletePClassFunctions(pclass._id);
         this.openapiRepository.deleteById(openapi._id);
-        throw new Error('PipeDeployed was not created.');
+        throw new Error('PClassI was not created.');
     }
 
     return openapi;
@@ -179,22 +178,22 @@ export class OpenapiController {
   @del('/openapi/{id}/all', {
     responses: {
         '200': {
-            description: 'Openapi, PipeContainer, PipeDeployed, PipeFunction DELETE success count',
+            description: 'Openapi, PClass, PClassI, PFunction DELETE success count',
             content: {'application/json': {schema: CountSchema}},
         },
     },
   })
-  async deleteContainerDeployedFunctions(@param.path.string('id') id: string): Promise<Count> {
-    let containerRepository = await this.openapiRepository.container;
-    let containerController = new PipeContainerController(containerRepository);
+  async deletePClassFunctionsPClassI(@param.path.string('id') id: string): Promise<Count> {
+    let pclassRepository = await this.openapiRepository.pclass;
+    let pclassController = new PClassController(pclassRepository);
 
-    let deployedRepository = await this.openapiRepository.deployed;
-    let deployedController = new PipeDeployedController(deployedRepository);
+    let pclassiRepository = await this.openapiRepository.pclassi;
+    let pclassiController = new PClassIController(pclassiRepository);
 
     let openapi: Openapi = await this.openapiRepository.findById(id);
 
-    await deployedController.delete({containerid: {like: openapi.containerid}});
+    await pclassiController.delete({pclassid: {like: openapi.pclassid}});
     await this.openapiRepository.deleteById(id);
-    return await containerController.deleteContainerFunctions(openapi.containerid);
+    return await pclassController.deletePClassFunctions(openapi.pclassid);
   }
 }

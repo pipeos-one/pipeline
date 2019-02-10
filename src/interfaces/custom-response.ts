@@ -1,7 +1,7 @@
-import {PipeFunction, PipeContainer, PipeDeployed} from '../models';
+import {PFunction, PClass, PClassI} from '../models';
 
-export interface GetContainerFunctionsDeployed {
-    pipecontainers: PipeContainer[];
-    pipedeployments: PipeDeployed[];
-    pipefunctions: PipeFunction[];
+export interface GetPClassFunctionsPClassI {
+    pclasses: PClass[];
+    pclassii: PClassI[];
+    pfunctions: PFunction[];
 }

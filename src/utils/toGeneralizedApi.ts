@@ -11,31 +11,28 @@ import {
     AbiFunctionOuput,
     AbiFunction,
     StateMutability,
-} from '../interfaces/abi';
+} from '../interfaces/gapi';
 import {
     DocParams,
-    Devdoc,
-    Userdoc,
-} from '../interfaces/soldocs';
-
-export class OpenapiToGabi {
+    Natspec,
+} from '../interfaces/natspec';
+// TODO: fix natspec
+export class OpenapiToGapi {
     openapi: OpenApiSpec;
-    gabi: AbiFunction[];
-    devdoc: Devdoc;
-    userdoc: Userdoc;
+    gapi: AbiFunction[];
+    natspec: Natspec;
     constructor(openapiSchema: OpenApiSpec) {
         this.openapi = openapiSchema;
-        this.gabi = [];
-        this.devdoc = {methods: {}};
-        this.userdoc = {methods: {}};
+        this.gapi = [];
+        this.natspec = {methods: {}};
 
         this.init();
     }
 
     init() {
-        this.devdoc.title = this.openapi.info.title;
+        this.natspec.title = this.openapi.info.title;
         if (this.openapi.info.contact) {
-            this.devdoc.author = `${this.openapi.info.contact.name} - ${this.openapi.info.contact.email} - ${this.openapi.info.contact.url}`;
+            this.natspec.author = `${this.openapi.info.contact.name} - ${this.openapi.info.contact.email} - ${this.openapi.info.contact.url}`;
         }
         Object.keys(this.openapi.paths).forEach((name: string) => {
             let path: PathItemObject = this.openapi.paths[name];
@@ -109,16 +106,18 @@ export class OpenapiToGabi {
             stateMutability: StateMutability.VIEW,
         };
 
-        this.gabi.push(abiFunction);
+        this.gapi.push(abiFunction);
 
         signature = this.getSignature(abiFunction.name, abiFunction.inputs.map(input => {
             return input.type;
         }));
 
-        this.userdoc.methods[signature] = {notice: content.description};
-        this.devdoc.methods[signature] = {params: devdocParameters};
+        this.natspec.methods[signature] = {
+            notice: content.description,
+            params: devdocParameters,
+        };
         if (content.responses['200']) {
-            this.devdoc.methods[signature].return = content.responses['200'].description;
+            this.natspec.methods[signature].return = content.responses['200'].description;
         }
     }
 }
