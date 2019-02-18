@@ -1,3 +1,5 @@
+// import {SignatureData} from './gapi';
+
 export interface DocParams {
     [key: string]: any;
 }
@@ -9,6 +11,7 @@ export interface NatspecMethod {
     notice?: string;
 }
 
+// TODO: use [key: SignatureData]
 export interface NatspecMethods {
     [key: string]: NatspecMethod;
 }

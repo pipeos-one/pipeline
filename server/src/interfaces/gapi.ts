@@ -1,5 +1,7 @@
 import {SolType} from './soltypes';
 
+export type SignatureData = string;
+
 export enum StateMutability {
     PURE = 'pure',
     VIEW = 'view',
