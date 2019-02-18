@@ -1,3 +1,5 @@
+import {SolType} from './soltypes';
+
 export enum StateMutability {
     PURE = 'pure',
     VIEW = 'view',
@@ -18,14 +20,14 @@ export interface AbiExtra {
 
 export interface AbiFunctionInput {
     name: string;
-    type: string;
+    type: SolType;
     indexed?: boolean;
     extra?: AbiExtra;
 }
 
 export interface AbiFunctionOutput {
     name: string;
-    type: string;
+    type: SolType;
     components?: AbiFunctionOutput;
     extra?: AbiExtra;
 }
