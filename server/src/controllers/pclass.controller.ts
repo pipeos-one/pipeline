@@ -19,7 +19,7 @@ import {
 import {PClass, SolClass, PFunction, PClassI, SolInstance} from '../models';
 import {PClassRepository} from '../repositories';
 import {PFunctionController, PClassIController} from '../controllers';
-import {AbiFunctionInput, AbiFunctionOuput, AbiFunction} from '../interfaces/gapi';
+import {AbiFunctionInput, AbiFunction} from '../interfaces/gapi';
 import {Natspec, EMPTY_NATSPEC} from '../interfaces/natspec';
 import {GetPClassFunctionsPClassI} from '../interfaces';
 

@@ -23,9 +23,10 @@ export interface AbiFunctionInput {
     extra?: AbiExtra;
 }
 
-export interface AbiFunctionOuput {
+export interface AbiFunctionOutput {
     name: string;
     type: string;
+    components?: AbiFunctionOutput;
     extra?: AbiExtra;
 }
 
@@ -37,6 +38,6 @@ export interface AbiFunction {
     type: string;
     anonymous?: boolean;
     inputs: AbiFunctionInput[];
-    outputs: AbiFunctionOuput[];
+    outputs: AbiFunctionOutput[];
     extra?: AbiExtra;
 }

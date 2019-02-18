@@ -8,7 +8,7 @@ import {
 } from 'openapi3-ts';
 import {
     AbiFunctionInput,
-    AbiFunctionOuput,
+    AbiFunctionOutput,
     AbiFunction,
     StateMutability,
 } from '../interfaces/gapi';
@@ -49,7 +49,7 @@ export class OpenapiToGapi {
 
     methodToAbiFunction(name: string, type: string, content: OperationObject) {
         let inputs: AbiFunctionInput[] = [];
-        let outputs: AbiFunctionOuput[] = [];
+        let outputs: AbiFunctionOutput[] = [];
         let abiFunction: AbiFunction;
         let signature;
         let devdocParameters: DocParams = {};
