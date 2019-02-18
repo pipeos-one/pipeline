@@ -20,19 +20,18 @@ export interface AbiExtra {
     [key: string]: any;
 }
 
-export interface AbiFunctionInput {
+export interface AbiFunctionIO {
     name: string;
     type: SolType;
-    indexed?: boolean;
+    components?: AbiFunctionIO[];
     extra?: AbiExtra;
 }
 
-export interface AbiFunctionOutput {
-    name: string;
-    type: SolType;
-    components?: AbiFunctionOutput;
-    extra?: AbiExtra;
+export interface AbiFunctionInput extends AbiFunctionIO {
+    indexed?: boolean;
 }
+
+export interface AbiFunctionOutput extends AbiFunctionIO {}
 
 export interface AbiFunction {
     constant: boolean;
