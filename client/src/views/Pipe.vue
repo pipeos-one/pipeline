@@ -485,7 +485,7 @@ export default {
         if (newContractName) {
             fileName = `browser/${newContractName}`;
             Pipeos.remix.call(
-                'editor',
+                'fileManager',
                 'setFile',
                 [fileName, source],
                 function (error, result) { console.log(error, result) }
@@ -629,10 +629,10 @@ export default {
 
         if (this.chain === 'JavaScriptVM') return;
 
-        Pipeos.remix.listen('txlistener', 'newTransaction', (data) => {
+        Pipeos.remix.listen('txListener', 'newTransaction', (data) => {
             console.log('txlistener newTransaction', data);
             Pipeos.remix.call(
-                'compiler',
+                'solidity',
                 'getCompilationResult',
                 [],
                 (error, result) => {

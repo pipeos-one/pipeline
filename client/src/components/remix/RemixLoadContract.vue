@@ -48,8 +48,8 @@ export default {
         this.setNetworkInfo();
         this.setContractsFromRemix();
 
-        Pipeos.remix.listen('compiler', 'compilationFinished', ([success, data, source]) => {
-            console.log('compiler compilationFinished', success, data, source);
+        Pipeos.remix.listen('solidity', 'compilationFinished', ([success, data, source]) => {
+            console.log('compiler compilationFinished', sourceTarget, source, version, data);
             this.setNetworkInfo();
             this.setContractsFromRemix();
         });
@@ -130,7 +130,7 @@ export default {
         },
         getDataFromRemix(callback) {
             Pipeos.remix.call(
-                'compiler',
+                'solidity',
                 'getCompilationResult',
                 [],
                 function(error, result) {
