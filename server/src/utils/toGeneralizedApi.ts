@@ -106,15 +106,13 @@ export class OpenapiToGapi {
     getComponentsFromSchemaProperties(properties: any): AbiFunctionIO[] {
         let props: any[] = [];
         Object.keys(properties).forEach((prop: string) => {
+            // If the format is properties: {'$ref': }
             if (properties[prop] === '$ref') {
                 props = props.concat(
                     this.getComponentsFromAllSchemaProperties(properties[prop])
                 );
             } else {
-                props.push({
-                    name: prop,
-                    type: this.getGapiType(properties[prop]),
-                });
+                props.push(this.getOutputFromResponseSchema(properties[prop], prop));
             }
         });
         return props;
@@ -146,18 +144,27 @@ export class OpenapiToGapi {
         return props;
     }
 
-    getOutputFromResponseSchema(schema: any): AbiFunctionOutput {
-        let type: any, components: AbiFunctionIO[];
+    getOutputFromResponseSchema(schema: any, name: string = ''): AbiFunctionOutput {
+        let type: any, components: AbiFunctionIO[] | undefined;
+
+        if (schema['$ref']) {
+            return this.getOutputFromResponseSchema(
+                this.getReference(schema['$ref']).schema,
+                name,
+            );
+        }
 
         if (schema.type === 'array') {
             type = 'tuple[]';
             components = this.getComponentsFromAllSchemaProperties(schema.items);
-        } else {
+        } else if (schema.type === 'object') {
             type = 'tuple';
             components = this.getComponentsFromAllSchemaProperties(schema);
+        } else {
+            type = this.getGapiType(schema);
         }
         return {
-            name: schema.name,
+            name: name || schema.name,
             type,
             components,
         }
@@ -289,7 +296,7 @@ export class OpenapiToGapi {
         );
 
         this.natspec.methods[signature] = {
-            notice: content.description,
+            notice: content.description || content.summary,
             params: devdocParameters,
         };
 
