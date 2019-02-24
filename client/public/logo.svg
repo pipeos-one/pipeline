@@ -1,0 +1,18 @@
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+ <g class="layer">
+  <title>Layer 1</title>
+  <circle cx="256" cy="256" fill="#ffffff" id="svg_23" r="256" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="round" stroke-width="0"/>
+  <line fill="none" fill-opacity="0" id="svg_15" marker-end="url(#se_marker_end_svg_15)" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="round" stroke-width="12" x1="256" x2="256" y1="185.03852" y2="284.0011"/>
+  <g id="svg_20">
+   <rect fill="#ffffff" fill-opacity="0" height="96.65408" id="svg_1" rx="20" ry="20" stroke="#000000" stroke-width="23" width="289.96223" x="111.01889" y="70.90744"/>
+   <rect fill="#ffffff" fill-opacity="0" height="96.65408" id="svg_4" rx="20" ry="20" stroke="#000000" stroke-width="23" width="289.96223" x="111.01889" y="344.43847"/>
+   <ellipse cx="256.00001" cy="165.77163" fill="#ffffff" id="svg_11" rx="21.68324" ry="21.68324" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="23"/>
+   <ellipse cx="256.00001" cy="343.30317" fill="#ffffff" id="svg_12" rx="21.68324" ry="21.68324" stroke="#000000" stroke-dasharray="null" stroke-linecap="null" stroke-linejoin="null" stroke-width="23"/>
+  </g>
+ </g>
+ <defs>
+  <marker id="se_marker_end_svg_15" markerHeight="5" markerUnits="strokeWidth" markerWidth="5" orient="auto" refX="50" refY="50" se_type="rightarrow" viewBox="0 0 100 100">
+   <path d="m100,50l-100,40l30,-40l-30,-40z" fill="#000000" stroke="#000000" stroke-width="10"/>
+  </marker>
+ </defs>
+</svg>
