@@ -1518,95 +1518,98 @@ class GraphVisitor{
         this.outtype = []
     }
 
-    genFunc(funcObj, row){
-        if (funcObj.func.pfunction.gapi.type == "function") {
-            if (funcObj.func.pfunction.gapi.payable) {
-                this.isPayable = true
-            }
-            let funcName = funcObj.func.pfunction.gapi.name + "_" + funcObj.i;
-            if (funcObj.func.pfunction.source) {
-                this.funcsources.push(`const ${funcName} = ${funcObj.func.pfunction.source}`);
-            }
-            // public variables from constructor arguments (contract addresses)
-            if (this.ops.genConstr1) {
-                this.genConstr1.push(this.ops.genConstr1 + funcName + " ;");
-            }
-            // code for constructor arguments (contract addresses)
-            if (this.ops.genConstr2) {
-                this.genConstr2.push(this.ops.genConstr2 + funcName);
-            }
-            // code for constructor function, setting the public variables from arguments
-            if (this.ops.genConstr3) {
-                this.genConstr3.push(funcName + this.ops.genConstr3 + funcName + ";")
-            }
-            // _ids for constructor arguments in order (pclass ids)
-            this.genConstr4.push(funcObj.func._id)
+    genFunc(funcObj, row) {
+        this.genF[grIndex] = this.genF[grIndex] || '';
 
-            let f = this.genF[grIndex] || "";
-            this.genF[grIndex] = f + "\n";
-            if (this.ops.sigFunc1) {
-                this.genF[grIndex] += this.ops.sigFunc1 + funcObj.func.pfunction.signature + this.ops.sigFunc2 + "\n";
-            }
+        if (funcObj.func.pfunction.gapi.type == "port") {
+            this.genFuncIO(funcObj);
+        } else if (
+            funcObj.func.pfunction.gapi.type == "function" &&
+            funcObj.func.pclass.type  === this.ops.pclassType
+        ) {
+            this.genFuncFunction(funcObj, row);
+        }
+    }
 
-            let inputset = R.mapObjIndexed((x, key, all) => {
-                let o = "i_"+x.name+ "_"+funcObj.i
-                // console.log('*********', funcObj.state[parseInt(key)+1])
-                if (funcObj.state[parseInt(key)+1]){
-                    o = funcObj.state[parseInt(key)+1].name
-                }
-                return o
-            }, funcObj.func.pfunction.gapi.inputs
-            )
-            if (funcObj.func.pfunction.gapi.payable) {
-                console.log("inputset",inputset)
-            }
-            if (this.ops.inputSig1) {
-                this.genF[grIndex] = this.genF[grIndex] + this.ops.inputSig1 + Object.values(inputset).join(",")+this.ops.inputSig2+"\n";
-            }
+    genFuncFunction(funcObj, row) {
+        if (funcObj.func.pfunction.gapi.payable) {
+            this.isPayable = true
+        }
+        let funcName = funcObj.func.pfunction.gapi.name + "_" + funcObj.i;
+        if (funcObj.func.pfunction.source) {
+            this.funcsources.push(`const ${funcName} = ${funcObj.func.pfunction.source}`);
+        }
+        // public variables from constructor arguments (contract addresses)
+        if (this.ops.genConstr1) {
+            this.genConstr1.push(this.ops.genConstr1 + funcName + " ;");
+        }
+        // code for constructor arguments (contract addresses)
+        if (this.ops.genConstr2) {
+            this.genConstr2.push(this.ops.genConstr2 + funcName);
+        }
+        // code for constructor function, setting the public variables from arguments
+        if (this.ops.genConstr3) {
+            this.genConstr3.push(funcName + this.ops.genConstr3 + funcName + ";")
+        }
+        // _ids for constructor arguments in order (pclass ids)
+        this.genConstr4.push(funcObj.func._id)
 
-            let rest1 = ""
-            if (funcObj.func.pfunction.gapi.payable) {
-                rest1 = ".value(wei_value)"
-            }
-            this.genF[grIndex] += this.ops.ansProxy(rest1, funcName, inputset);
-            let outAssem = []
-            let outputset = R.map((x)=>{
-                // console.log(x)
-                let name = (x.name !== undefined)? x.name: ""
-                outAssem.push("o_" + name + "_"+ funcObj.i+this.ops.assem)
-                return this.ops.outputset(x.type, name, funcObj.i);
-            }, funcObj.func.pfunction.gapi.outputs)
-            let o = ""
-            if (funcObj.func.pfunction.gapi.outputs.length > 0) {
-                o = this.ops.restFunc(outputset, outAssem, funcObj.func.pfunction.gapi.outputs);
-            }
-
-            this.genF[grIndex] = this.genF[grIndex] + o + "\n";
+        let f = this.genF[grIndex] || "";
+        this.genF[grIndex] = f + "\n";
+        if (this.ops.sigFunc1) {
+            this.genF[grIndex] += this.ops.sigFunc1 + funcObj.func.pfunction.signature + this.ops.sigFunc2 + "\n";
         }
 
-        this.genFuncIO(funcObj);
+        let inputset = R.mapObjIndexed((x, key, all) => {
+            let o = "i_"+x.name+ "_"+funcObj.i
+            // console.log('*********', funcObj.state[parseInt(key)+1])
+            if (funcObj.state[parseInt(key)+1]){
+                o = funcObj.state[parseInt(key)+1].name
+            }
+            return o
+        }, funcObj.func.pfunction.gapi.inputs
+        )
+        if (funcObj.func.pfunction.gapi.payable) {
+            console.log("inputset",inputset)
+        }
+        if (this.ops.inputSig1) {
+            this.genF[grIndex] = this.genF[grIndex] + this.ops.inputSig1 + Object.values(inputset).join(",")+this.ops.inputSig2+"\n";
+        }
+
+        let rest1 = ""
+        if (funcObj.func.pfunction.gapi.payable) {
+            rest1 = ".value(wei_value)"
+        }
+        this.genF[grIndex] += this.ops.ansProxy(rest1, funcName, inputset);
+        let outAssem = []
+        let outputset = R.map((x)=>{
+            // console.log(x)
+            let name = (x.name !== undefined)? x.name: ""
+            outAssem.push("o_" + name + "_"+ funcObj.i+this.ops.assem)
+            return this.ops.outputset(x.type, name, funcObj.i);
+        }, funcObj.func.pfunction.gapi.outputs)
+        let o = ""
+        if (funcObj.func.pfunction.gapi.outputs.length > 0) {
+            o = this.ops.restFunc(outputset, outAssem, funcObj.func.pfunction.gapi.outputs);
+        }
+
+        this.genF[grIndex] = this.genF[grIndex] + o + "\n";
     }
 
     genFuncIO(funcObj) {
 
-        if (funcObj.func.pfunction.gapi.type == "port") {
-            if (funcObj.func.pfunction.gapi.name == "PortIn") {
-                this.in.push(this.ops.function_in(funcObj.state.type, funcObj.state.name));
-            }
-
-            if (funcObj.func.pfunction.gapi.name == "PortOut") {
-                this.out.push(funcObj.state.name)
-            }
-
-            if (funcObj.func.pfunction.gapi.name == "PortOut") {
-                this.outtype.push(this.ops.function_outtype(funcObj.state.type, funcObj.state.name));
-                this.returns.push(this.ops.function_returns(funcObj.state.type, funcObj.state.name));
-            }
-
+        if (funcObj.func.pfunction.gapi.name == "PortIn") {
+            this.in.push(this.ops.function_in(funcObj.state.type, funcObj.state.name));
         }
 
-        // funcObj.func.pfunction.gapi.name
+        if (funcObj.func.pfunction.gapi.name == "PortOut") {
+            this.out.push(funcObj.state.name)
+        }
 
+        if (funcObj.func.pfunction.gapi.name == "PortOut") {
+            this.outtype.push(this.ops.function_outtype(funcObj.state.type, funcObj.state.name));
+            this.returns.push(this.ops.function_returns(funcObj.state.type, funcObj.state.name));
+        }
     }
 
     getGen(){
@@ -1686,6 +1689,7 @@ var visOptions={
     solidity: {
         type: "source",
         lang: "solidity",
+        pclassType: "sol",
         "file_p0" : `pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
@@ -1755,7 +1759,7 @@ interface PipeProxy {
     js: {
         type: "source",
         lang: "javascript",
-
+        pclassType: "js",
         "file_p0" : `
 const baseUrl = 'http://192.168.1.141:5000/api/v1';
 const httpClient = axios;
