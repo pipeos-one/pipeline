@@ -18,8 +18,7 @@ import {
 import {Openapi, PClass} from '../models';
 import {OpenapiRepository} from '../repositories';
 import {PClassController, PClassIController} from '../controllers';
-import {OpenapiToGapi} from '../utils/toGeneralizedApi';
-
+import {OpenapiToGapi} from '../utils/openapi_to_gapi';
 
 export class OpenapiController {
   constructor(
@@ -38,6 +37,7 @@ export class OpenapiController {
   async create(@requestBody() openapi: Openapi): Promise<Openapi> {
     let pclass: any;
     let pclassi: any;
+    let flatsource: string;
 
     let pclassRepository = await this.openapiRepository.pclass;
     let pclassController = new PClassController(pclassRepository);
@@ -46,14 +46,20 @@ export class OpenapiController {
     let pclassiController = new PClassIController(pclassiRepository);
 
     let gapi = new OpenapiToGapi(openapi.json);
+    flatsource = Object.keys(gapi.sourceByFunctionName).map((key: string) => {
+        return `
+const ${key} = ${gapi.sourceByFunctionName[key]}`;
+    }).join('');
 
     pclass = {
         name: gapi.natspec.title || 'unknown',
-        type: 'oapi',
+        type: 'js',
         pclass: {
             gapi: gapi.gapi,
             natspec: gapi.natspec,
             openapiid: openapi._id,
+            flatsource,
+            sourceByFunctionName: gapi.sourceByFunctionName,
         },
         tags: ['openapi'],
     }

@@ -1373,6 +1373,8 @@ class GraphVisitor{
         // _ids for constructor arguments in order (pclass ids)
         this.genConstr4 = []
         this.genG = []
+        // function sources that should be made available - js
+        this.funcsources = []
         // function definition + initial variable definition
         this.genF = []
         this.genF1 = []
@@ -1453,11 +1455,10 @@ class GraphVisitor{
     }
 
     genContainer(grs){
-        this.genC = this.genC + this.ops.file_p0
-        this.genC = this.genC + this.ops.proxy
-        this.genC = this.genC + this.ops.contract_p0
-        this.genC = this.genC + this.ops.contract_p1
-
+        this.genC += this.ops.file_p0
+        this.genC += this.ops.proxy
+        this.genC += this.ops.contract_p0
+        this.genC += this.ops.contract_p1
     }
 
     setGraph(g){
@@ -1477,10 +1478,11 @@ class GraphVisitor{
         // For js we temporarily define free inputs outside the function
         // TODO: replace with user inputs directly in diagram component
         if (this.ops.intro0) {
-            let freeIns = this.in.map((input) => {
-                return this.ops.intro0 + input + this.ops.intro01;
-            });
-            this.genF[grIndex] = freeIns.join('') + this.genF[grIndex];
+            this.genConstr1 = this.genConstr1.concat(
+                this.in.map((input) => {
+                    return this.ops.intro0 + input + this.ops.intro01;
+                })
+            );
         }
 
         // Generating pipeline function definition (returns)
@@ -1499,8 +1501,8 @@ class GraphVisitor{
         this.genF2[grIndex] = ""
         if (this.out.length >0){
             this.genF2[grIndex] = this.ops.function_ret2
-            this.genF2[grIndex] = this.genF2[grIndex] + this.out.join(", ")
-            this.genF2[grIndex] = this.genF2[grIndex]+ this.ops.function_ret3
+            this.genF2[grIndex] += this.ops.function_ret21(this.out)
+            this.genF2[grIndex] += this.ops.function_ret3
         }
 
         // Code generation ends here
@@ -1521,17 +1523,21 @@ class GraphVisitor{
             if (funcObj.func.pfunction.gapi.payable) {
                 this.isPayable = true
             }
+            let funcName = funcObj.func.pfunction.gapi.name + "_" + funcObj.i;
+            if (funcObj.func.pfunction.source) {
+                this.funcsources.push(`const ${funcName} = ${funcObj.func.pfunction.source}`);
+            }
             // public variables from constructor arguments (contract addresses)
             if (this.ops.genConstr1) {
-                this.genConstr1.push(this.ops.genConstr1+ funcObj.func.pfunction.gapi.name+"_"+funcObj.i+ " ;");
+                this.genConstr1.push(this.ops.genConstr1 + funcName + " ;");
             }
             // code for constructor arguments (contract addresses)
             if (this.ops.genConstr2) {
-                this.genConstr2.push(this.ops.genConstr2 + funcObj.func.pfunction.gapi.name + "_" + funcObj.i);
+                this.genConstr2.push(this.ops.genConstr2 + funcName);
             }
             // code for constructor function, setting the public variables from arguments
             if (this.ops.genConstr3) {
-                this.genConstr3.push(funcObj.func.pfunction.gapi.name + "_" + funcObj.i + this.ops.genConstr3 + funcObj.func.pfunction.gapi.name + "_" + funcObj.i + ";")
+                this.genConstr3.push(funcName + this.ops.genConstr3 + funcName + ";")
             }
             // _ids for constructor arguments in order (pclass ids)
             this.genConstr4.push(funcObj.func._id)
@@ -1562,13 +1568,7 @@ class GraphVisitor{
             if (funcObj.func.pfunction.gapi.payable) {
                 rest1 = ".value(wei_value)"
             }
-            this.genF[grIndex] += this.ops.ansProxy(
-                rest1,
-                funcObj.func.pfunction.gapi.name,
-                funcObj.i,
-                funcObj.func.pfunction.gapi.inputs,
-                inputset,
-            );
+            this.genF[grIndex] += this.ops.ansProxy(rest1, funcName, inputset);
             let outAssem = []
             let outputset = R.map((x)=>{
                 // console.log(x)
@@ -1578,7 +1578,7 @@ class GraphVisitor{
             }, funcObj.func.pfunction.gapi.outputs)
             let o = ""
             if (funcObj.func.pfunction.gapi.outputs.length > 0) {
-                o = this.ops.restFunc(outputset, outAssem);
+                o = this.ops.restFunc(outputset, outAssem, funcObj.func.pfunction.gapi.outputs);
             }
 
             this.genF[grIndex] = this.genF[grIndex] + o + "\n";
@@ -1615,12 +1615,21 @@ class GraphVisitor{
         //console.log(this.in)
         out = out + this.genC
 
+        if (this.ops.intro0) out += "\n\n";
         out = out + this.genConstr1.join("\n")+ "\n"
         out = out + this.ops.const1 +this.genConstr2.join(", ") + this.ops.const2
         out = out + this.genConstr3.join("\n") + "\n"
         out = out + this.ops.const3
         //out = out + this.intro2
-        out =  out + this.genF.join("\n")
+
+        // Add helper functions - js
+        if (this.funcsources.length) {
+            out += "\n" + this.funcsources.join(';\n') + ';';
+            this.funcsources = [];
+        }
+
+        // Add piped functions
+        out += this.genF.join("\n")
 
         // Constructor arguments in order
         langs["constructor"] = this.genConstr4
@@ -1637,8 +1646,8 @@ class GraphVisitor{
 
 }
 
-function callInternalFunctionSolidity(payable, functionName, index, inputs, inputset) {
-    return `    answer42 = pipe_proxy.proxy${payable}(${functionName}_${index}, input42, 400000);\n`;
+function callInternalFunctionSolidity(payable, funcName, inputset) {
+    return `    answer42 = pipe_proxy.proxy${payable}(${funcName}, input42, 400000);\n`;
 }
 
 // gapiInputs = gapi.inputs
@@ -1668,16 +1677,8 @@ function genOpenAPIArgs(path, gapiInputs, inputset) {
     return [url].concat(bodyName ? [bodyName] : []);
 }
 
-function callInternalFunctionOpenapi(payable, functionName, index, inputs, inputset) {
-    let separatorIndex, path, method, args;
-    separatorIndex = functionName.lastIndexOf('_');
-    path = functionName.substring(0, separatorIndex).split('/{')[0];
-    method = functionName.substring(separatorIndex + 1);
-    args = genOpenAPIArgs(path, inputs, inputset);
-
-    return `    result = (await httpClient.${method}(${args.join(', ')})
-        .catch((err) => error = err))
-        .data;
+function callInternalFunctionOpenapi(payable, functionName, inputset) {
+    return `    result = await ${functionName}(${Object.values(inputset).join(",")});
 `;
 }
 
@@ -1714,6 +1715,7 @@ interface PipeProxy {
         "function_ret1": ")",
         // actual function return
         "function_ret2": "return (",
+        "function_ret21": (outs) => outs.join(", "),
         "function_ret3": ");\n",
         // input format
         "function_in": (type, name) => `${type} ${name}`,
@@ -1752,7 +1754,7 @@ interface PipeProxy {
     },
     js: {
         type: "source",
-        lang: "openapi",
+        lang: "javascript",
 
         "file_p0" : `
 const baseUrl = 'http://192.168.1.141:5000/api/v1';
@@ -1768,8 +1770,9 @@ const web3 = undefined;`,
         "function_ret0": "",
         "function_ret1": "",
         // actual function return
-        "function_ret2": "return (",
-        "function_ret3": ");\n",
+        "function_ret2": "\n    return ",
+        "function_ret21": (outs) => `{${outs.join(", ")}}`,
+        "function_ret3": ";\n",
         // function end
         "function_ret4": `
 })`,
@@ -1783,7 +1786,6 @@ const web3 = undefined;`,
         // empty, we don't need to have common variables for openapi
         "function_p2": `
     let result;
-    let error;
 `,
 
 
@@ -1793,14 +1795,12 @@ const web3 = undefined;`,
         "inputSig2": "",
         "ansProxy": callInternalFunctionOpenapi,
         "outputset": (type, name, i) => `o_${name}_${i};`,
-        "restFunc": (outputset, outAssem) => `    const ${outputset[0]} = error;
-    const ${outputset[1]} = result.data;`,
+        "restFunc": (outputset, outAssem, outputs) => outAssem.map((out, i) => `    const ${out} = result.${outputs[i].name};`).join('\n'),
         "assem": "",
         "intro0": `let `,
-        "intro01": ` = null;
-`,
+        "intro01": ` = null;`,
         "intro1": `
-(async PipedFunction`,
+(async function PipedFunction`,
         "intro11": "(",
         "intro2": "",
         "const1": "",
