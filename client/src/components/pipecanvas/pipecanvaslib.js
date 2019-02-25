@@ -1637,9 +1637,6 @@ class GraphVisitor{
         // Constructor arguments in order
         langs["constructor"] = this.genConstr4
 
-
-
-
         //out = out + this.outro
         out = out + this.ops.contract_p2
 
@@ -1651,33 +1648,6 @@ class GraphVisitor{
 
 function callInternalFunctionSolidity(payable, funcName, inputset) {
     return `    answer42 = pipe_proxy.proxy${payable}(${funcName}, input42, 400000);\n`;
-}
-
-// gapiInputs = gapi.inputs
-// inputset = {0: trueInputName}
-function genOpenAPIArgs(path, gapiInputs, inputset) {
-    let url = '`';
-    let bodyName;
-    url += `\${baseUrl}${path}`;
-
-    gapiInputs.forEach((input, index) => {
-        let name = inputset[index];
-        if (input.extra.in === 'body') {
-            bodyName = name;
-        } else if (input.extra.in === 'path') {
-            url += `/\${${name}}`;
-        } else if (input.extra.in === 'query') {
-            if (url.indexOf('?') < 0) {
-                url += '?';
-            } else {
-                url += '&';
-            }
-            url += `${input.name}=\${${name}}`;
-        }
-    });
-    url += '`';
-
-    return [url].concat(bodyName ? [bodyName] : []);
 }
 
 function callInternalFunctionOpenapi(payable, functionName, inputset) {
