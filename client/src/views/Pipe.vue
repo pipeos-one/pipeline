@@ -75,6 +75,7 @@
             <PipeApp
                 :contractSource="contractSource"
                 :deploymentInfo="deploymentInfo"
+                :jsSource="jsSource"
                 :graphSource="graphSource"
                 v-on:load-remix="pipedLoadRemix"
             />
@@ -171,6 +172,7 @@ export default {
         pipeJs: {},
         contractSource: '',
         deploymentInfo: '',
+        jsSource: '',
         graphSource: '',
         graphInstance: null,
         pipedContracts: {},
@@ -246,6 +248,7 @@ export default {
                 onGraphChange: () => {
                     this.contractSource = this.graphInstance.getSource('solidity');
                     this.graphSource = JSON.stringify(this.graphInstance.getSource('graphs'));
+                    this.jsSource = this.graphInstance.getSource('openapi');
                     this.deploymentInfo = [Pipeos.contracts.PipeProxy.addresses[this.chain]]
                         .concat(this.graphInstance.getSource('constructor').map(function_id => {
                             let contract_address;
