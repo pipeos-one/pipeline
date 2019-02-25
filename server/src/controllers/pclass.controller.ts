@@ -16,7 +16,7 @@ import {
   requestBody,
   HttpErrors,
 } from '@loopback/rest';
-import {PClass, SolClass, PFunction, PClassI, SolInstance} from '../models';
+import {PClass, SolClass, JsClass, PFunction, PClassI, SolInstance} from '../models';
 import {PClassRepository} from '../repositories';
 import {PFunctionController, PClassIController} from '../controllers';
 import {AbiFunctionInput, AbiFunction} from '../interfaces/gapi';
@@ -237,18 +237,20 @@ export class PClassController {
 
     for (let i=0; i < gapi.length; i++) {
         let funcapi: AbiFunction = gapi[i];
-        let signature, functiondoc;
+        let signature, functiondoc, sourceByFunctionName: any;
 
         if (funcapi.inputs) {
             signature = funcapi.inputs.map((input: AbiFunctionInput) => input.type).join(',');
         }
         signature = funcapi.name ? `${funcapi.name}(${signature})` : undefined;
+        sourceByFunctionName = (<JsClass>pclass.pclass).sourceByFunctionName;
         functiondoc = {
             pfunction: {
                 signature,
                 gapi: funcapi,
                 natspec: signature ? natspec.methods[signature] : undefined,
                 chainids: pclass.chainids,
+                source: sourceByFunctionName ? sourceByFunctionName[funcapi.name] : undefined,
             },
             uri: pclass.uri,
             tags: pclass.tags,

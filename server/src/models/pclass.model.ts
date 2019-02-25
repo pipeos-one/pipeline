@@ -109,18 +109,15 @@ export class PyClass extends AbstractClass {
       type: 'string',
     })
     exported: string;
+
+    @property({
+      type: 'string',
+    })
+    openapiid: string;
 }
 
 @model()
 export class JsClass extends AbstractClass {
-    @property({
-      type: 'string',
-    })
-    exported: string;
-}
-
-@model()
-export class OApiClass extends AbstractClass {
     @property({
       type: 'string',
     })
@@ -130,6 +127,11 @@ export class OApiClass extends AbstractClass {
       type: 'string',
     })
     openapiid: string;
+
+    @property({
+      type: 'object',
+    })
+    sourceByFunctionName?: object;
 }
 
 @model({
@@ -167,13 +169,13 @@ export class PClass extends Entity {
     type: 'string',
     required: true,
   })
-  type: string;  // sol / js / oapi / py / html
+  type: string;  // sol / js / py / html
 
   @property({
     type: 'object',
     required: true,
   })
-  pclass: SolClass | JsClass | OApiClass | PyClass;
+  pclass: SolClass | JsClass | PyClass;
 
   // TODO: hasMany PFunction of other types
   @property({

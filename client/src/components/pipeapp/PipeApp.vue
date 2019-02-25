@@ -3,6 +3,7 @@
         <v-tabs fixed-tab left class="fullheight">
             <v-tab ripple key="solidity">Solidity</v-tab>
             <v-tab ripple key="deployment">Deployment</v-tab>
+            <v-tab ripple key="js">Js</v-tab>
             <v-tab ripple key="graph">Graph</v-tab>
             <v-tab-item
                 key="solidity"
@@ -53,6 +54,34 @@
                 <textarea ref='deploymentInfo' class='source-txtar'>{{deploymentInfo}}</textarea>
             </v-tab-item>
             <v-tab-item
+                key="js"
+                class="fullheight swiper-margin"
+            >
+                <v-toolbar flat color="#fff" height="47">
+                    <v-tooltip bottom>
+                        <v-btn
+                            small flat fab
+                            slot="activator"
+                            v-on:click="clipboardCopy('jsSource')"
+                        >
+                            <v-icon>fa-copy</v-icon>
+                        </v-btn>
+                        <span>Copy to clipboard</span>
+                    </v-tooltip>
+                    <v-tooltip bottom>
+                        <v-btn
+                            small flat fab
+                            slot="activator"
+                            v-on:click="runSource('jsSource')"
+                        >
+                            <v-icon>fa-play</v-icon>
+                        </v-btn>
+                        <span>Run source</span>
+                    </v-tooltip>
+                </v-toolbar>
+                <textarea ref='jsSource' class='source-txtar'>{{jsSource}}</textarea>
+            </v-tab-item>
+            <v-tab-item
                 key="graph"
                 class="fullheight swiper-margin"
             >
@@ -76,11 +105,14 @@
 
 <script>
 export default {
-    props: ['contractSource', 'graphSource', 'deploymentInfo'],
+    props: ['contractSource', 'graphSource', 'jsSource', 'deploymentInfo'],
     methods: {
         clipboardCopy: function(reference) {
             this.$refs[reference].select();
             document.execCommand("copy");
+        },
+        runSource: function(reference) {
+            eval(this.$refs[reference].value);
         }
     }
 }

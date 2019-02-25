@@ -14,12 +14,22 @@ import {
     StateMutability,
     SignatureData,
     AbiType,
-} from '../interfaces/gapi';
+    SourceByFunctionName,
+} from '../interfaces';
 import {
     DocParams,
     Natspec,
 } from '../interfaces/natspec';
 import {SolType} from '../interfaces/soltypes';
+
+export const OPENAPI_ERROR_DEFAULT: AbiFunctionOutput = {
+    name: 'Error',
+    type: 'tuple',
+    components: [
+        {name: 'code', type: 'int32'},
+        {name: 'message', type: 'string'},
+    ]
+};
 
 export const OapiToSolType: any = {
     integer: {
@@ -54,10 +64,12 @@ export class OpenapiToGapi {
     openapi: OpenApiSpec;
     gapi: AbiFunction[];
     natspec: Natspec;
+    sourceByFunctionName: SourceByFunctionName;
     constructor(openapiSchema: OpenApiSpec) {
         this.openapi = openapiSchema;
         this.gapi = [];
         this.natspec = {methods: {}};
+        this.sourceByFunctionName = {};
 
         this.init();
     }
@@ -77,6 +89,14 @@ export class OpenapiToGapi {
     }
 
     getGapiNameFromOapi(name: string, method: string): string {
+        // Transform "/stage/position/sm/{id}/{id2}"
+        // into "stagePositionSm_id_id2"
+        name = name.substring(1).replace(/\/{/g, '_').replace(/}/g, '');
+        let index = name.indexOf('/');
+        while (index >= 0) {
+            name = name.substring(0, index) + name.charAt(index + 1).toUpperCase() + name.substring(index + 2);
+            index = name.indexOf('/');
+        }
         return `${name}_${method}`;
     }
 
@@ -205,15 +225,49 @@ export class OpenapiToGapi {
         return this.getOutputFromResponseSchema(schema);
     }
 
-    methodToAbiFunction(name: string, method: string, content: OperationObject) {
+    gapiToSource(
+        name: string,
+        method: string,
+        path: string,
+        abiInputs: AbiFunctionInput[],
+        abiOutputs: AbiFunctionOutput[],
+    ) {
+        let queries: string[] = [], body: string = '', inputs: string[] = [];
+
+        const errorName = abiOutputs[0].name;
+        const resultName = abiOutputs[1] ? abiOutputs[1].name : undefined;
+
+        abiInputs.forEach((input: AbiFunctionInput, index: number) => {
+            if (!input.extra) return;
+            inputs.push(input.name);
+            if (input.extra.in === 'body') {
+                body = input.name;
+            } else if (input.extra.in === 'query') {
+                queries.push(input.name);
+            }
+        });
+
+        return `async function(${inputs.join(', ')}) {
+    const url = \`\${baseUrl}${path.replace('/{', '/${')}${queries.length ? `?${queries.map(query => `${query}=\${${query}}`).join('&')}` : ''}\`;
+    let ${errorName};
+    ${resultName ? `const ${resultName} = ` : ''}(await httpClient.${method}(url${body ? `, ${body}` : ''})
+        .catch((err) => ${errorName} = err))
+        .data
+    return {${errorName}${resultName ? `, ${resultName}` : ''}};
+}
+    `;
+    }
+
+    methodToAbiFunction(path: string, method: string, content: OperationObject) {
         let inputs: AbiFunctionInput[] = [];
         let outputs: AbiFunctionOutput[] = [];
         let abiFunction: AbiFunction;
         let signature: SignatureData;
         let devdocParameters: DocParams = {};
         let return_responses, return_response: any, return_errors;
+        let name;
 
-        name = this.getGapiNameFromOapi(name, method);
+        name = this.getGapiNameFromOapi(path, method);
 
         if (content.parameters) {
             content.parameters.forEach((parameter) => {
@@ -247,18 +301,21 @@ export class OpenapiToGapi {
 
         if (return_errors.length) {
             let output: any;
+
             output = this.getOutputFromResponse(content.responses[return_errors[0]]);
-            if (output) {
-                return_errors.shift();
-                if (return_errors.length) {
-                    output.extra = {
-                        values: return_errors.map((code) => {
-                            return {code, message: content.responses[code].description}
-                        })
-                    };
-                }
-                outputs.push(output);
+            if (!output) {
+                output = Object.assign({}, OPENAPI_ERROR_DEFAULT);
             }
+            output.extra = {
+                values: return_errors.map((code) => {
+                    return {code, message: content.responses[code].description || ''}
+                })
+            };
+            return_errors.shift();
+            outputs.push(output);
+
+        } else {
+            outputs.push(OPENAPI_ERROR_DEFAULT);
         }
 
         if (return_responses.length) {
@@ -305,5 +362,8 @@ export class OpenapiToGapi {
         if (return_response) {
             this.natspec.methods[signature].return = content.responses[return_response].description;
         }
+
+        // create js source
+        this.sourceByFunctionName[name] = this.gapiToSource(name, method, path, inputs, outputs);
     }
 }

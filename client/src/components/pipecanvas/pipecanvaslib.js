@@ -282,7 +282,6 @@ export default class Graphs {
     }
 
     getSource(lang) {
-        console.log('Sources: ', langs)
         return langs[lang]
     }
 }
@@ -368,7 +367,7 @@ function getPort(funcObj, io, ndx) {
 }
 
 function proc1() {
-    console.log(pipe2.graphs[grIndex]);
+    // console.log(pipe2.graphs[grIndex]);
     pipe2.cgraphs[grIndex]= R.clone(pipe2.graphs[grIndex]);
     //gre = R.clone(pipe2.graphs[grIndex].e);
 
@@ -389,7 +388,7 @@ function proc1() {
         //const o = findByI(x[0], pipe2.graphs[grIndex].n);
         if (x === undefined) return
         let o = pipe2.cgraphs[grIndex].n[x[0]]
-        console.log(o,x);
+        // console.log(o,x);
         let s = x[2];
         let s2 = {};
         s2[s] = x[3];
@@ -450,7 +449,7 @@ function proc1() {
 
 
 
-    console.log("gr after proc4", pipe2.cgraphs[grIndex].n)
+    // console.log("gr after proc4", pipe2.cgraphs[grIndex].n)
 
     // gr is the nodes + function data
 
@@ -466,12 +465,12 @@ function proc1() {
 
     pipe2.cgraphs[grIndex].n = gra
 
-    console.log("gr after proc4 1", pipe2.cgraphs[grIndex].n)
+    // console.log("gr after proc4 1", pipe2.cgraphs[grIndex].n)
 
 
     // pipe2.cgraphs[grIndex].n = R.mapObjIndexed((x, key, all) => R.merge(x, { func: findById(x.id, funcs) }), pipe2.cgraphs[grIndex].n);
 
-    console.log("gr after proc4 2", pipe2.cgraphs[grIndex].n)
+    // console.log("gr after proc4 2", pipe2.cgraphs[grIndex].n)
 
 
 
@@ -578,7 +577,7 @@ function proc2(gr) {
             if (x1.func.pfunction.gapi.name == 'PortIn') n[key1] = true;
             if (x1.func.pfunction.gapi.inputs.length === 0) n[key1] = true;
         }, pg)
-        console.log("pg",pg)
+        // console.log("pg",pg)
         grIndex = parseInt(key)
 
 
@@ -707,7 +706,7 @@ function proc_d(grf, tabl, row, known, next, vis) {
             R.mapObjIndexed((x2, key2, all2) => {
 
                 const n1 = Object.keys(x2)[0];
-                console.log( "n1",n1)
+                // console.log( "n1",n1)
                 if ((known[n1] === undefined || known[n1] === false) && parseInt(key1) > 0){
                     runnable = false;
                 }
@@ -774,7 +773,7 @@ function addPortFunc(i, o1, state1){
     // let out2 = out
 
     // JSON.parse(JSON.stringify(
-    console.log('addPortFunc', out2)
+    // console.log('addPortFunc', out2)
     // out2.func.pfunction.gapi.outputs[0] = {name: "Lore", type:"olt"}
     // JSON.parse(JSON.stringify(state1))
     out2.func.pfunction.gapi.outputs[0] = {name: state1.name, type: state1.type}
@@ -801,13 +800,13 @@ function proc4(gr) {
             o1[x.i] = parseInt(key) + 1
             let link = x.links.out[1][0]
             let kkey = Object.keys(link)[0]
-            console.log(kkey, link, pipe2.cgraphs[grIndex].n[kkey])
+            // console.log(kkey, link, pipe2.cgraphs[grIndex].n[kkey])
             let port = pipe2.cgraphs[grIndex].n[kkey].func.pfunction.gapi.inputs[link[parseInt(kkey)]-1]
-            console.log("p",port, pipe2.cgraphs[grIndex].n[kkey].func.pfunction.gapi.inputs, link[parseInt(kkey)])
+            // console.log("p",port, pipe2.cgraphs[grIndex].n[kkey].func.pfunction.gapi.inputs, link[parseInt(kkey)])
             let name = (port.name !== undefined)? port.name : ""
             let state1 = {name: "i_"+name+"_"+kkey, type: port.type, value: undefined}
             x.state = state1;
-            console.log("pp",x,"state",state1)
+            // console.log("pp",x,"state",state1)
 
 
         }
@@ -892,7 +891,7 @@ function proc4(gr) {
     //console.log(JSON.stringify(gr))
     //console.log(JSON.stringify(gre))
 
-    console.log('-----gr after addPort', gr)
+    // console.log('-----gr after addPort', gr)
 
     // proc_e()
 }
@@ -1361,21 +1360,35 @@ function smoothDrag(obj,init, target){
 
 class GraphVisitor{
     constructor(options){
+        // language specific templates
         this.ops = options
+        // generated source
         this.genC = ""
+        // public variables from constructor arguments (contract addresses)
         this.genConstr1 = []
+        // code for constructor arguments (contract addresses)
         this.genConstr2 = []
+        // code for constructor function, setting the public variables from arguments
         this.genConstr3 = []
+        // _ids for constructor arguments in order (pclass ids)
         this.genConstr4 = []
         this.genG = []
+        // function sources that should be made available - js
+        this.funcsources = []
+        // function definition + initial variable definition
         this.genF = []
         this.genF1 = []
+        // function returns
         this.genF2 = []
+        // inputs
         this.in = []
         this.pointer = xr;
         this.row = -1
+        // outputs
         this.out = []
+        // outputs
         this.outtype = []
+        // outpout code in function definition
         this.returns = []
         this.outports=[]
         this.maxY = 0
@@ -1396,7 +1409,7 @@ class GraphVisitor{
         if (row !== 0) {
             let anchor = pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].links.in["1"]
             if (Object.keys(anchor).length > 0){
-                console.log(pipe2.rgraphs[grIndex][Object.keys(anchor[0])[0]].x  + xr*w -2, "<", this.minX[row], "pointer",this.pointer)
+                // console.log(pipe2.rgraphs[grIndex][Object.keys(anchor[0])[0]].x  + xr*w -2, "<", this.minX[row], "pointer",this.pointer)
 
                 let x = pipe2.rgraphs[grIndex][Object.keys(anchor[0])[0]].x
 
@@ -1411,7 +1424,7 @@ class GraphVisitor{
                 */
 
                 this.pointer = Math.max(this.pointer,x)
-                console.log(this.pointer)
+                // console.log(this.pointer)
             }
         }
 
@@ -1442,11 +1455,10 @@ class GraphVisitor{
     }
 
     genContainer(grs){
-        this.genC = this.genC + this.ops.file_p0
-        this.genC = this.genC + this.ops.proxy
-        this.genC = this.genC + this.ops.contract_p0
-        this.genC = this.genC + this.ops.contract_p1
-
+        this.genC += this.ops.file_p0
+        this.genC += this.ops.proxy
+        this.genC += this.ops.contract_p0
+        this.genC += this.ops.contract_p1
     }
 
     setGraph(g){
@@ -1460,104 +1472,144 @@ class GraphVisitor{
     genGraph(g){
         let ini = this.genF[grIndex]
 
-        this.genF[grIndex] = this.ops.intro1 + grIndex+ this.ops.intro11 + this.in.join(",") + this.ops.function_pp1 + " public payable "
+        // Generating pipeline function definition (inputs + modifiers)
+        this.genF[grIndex] = this.ops.intro1 + grIndex+ this.ops.intro11 + this.in.join(", ") + this.ops.function_pp1
 
+        // For js we temporarily define free inputs outside the function
+        // TODO: replace with user inputs directly in diagram component
+        if (this.ops.intro0) {
+            this.genConstr1 = this.genConstr1.concat(
+                this.in.map((input) => {
+                    return this.ops.intro0 + input + this.ops.intro01;
+                })
+            );
+        }
 
-
-
-        if (this.outtype.length >0){
+        // Generating pipeline function definition (returns)
+        if (this.outtype.length > 0 && this.ops.function_ret0) {
             this.genF[grIndex] = this.genF[grIndex] + this.ops.function_ret0
             this.genF[grIndex] = this.genF[grIndex] + this.returns.join(",")
             this.genF[grIndex] = this.genF[grIndex] +  this.ops.function_ret1
         }
 
-
-
-
+        // Generating pipeline function common variables
+        // Attaching function body
         this.genF[grIndex] = this.genF[grIndex] +  this.ops.function_p2 + ini
         // this.genF1[grIndex] =
 
+        // Generating function return
         this.genF2[grIndex] = ""
         if (this.out.length >0){
-            this.genF2[grIndex] = "return ("
-            this.genF2[grIndex] = this.genF2[grIndex] + this.out.join(",")
-            this.genF2[grIndex] = this.genF2[grIndex]+ ");\n"
+            this.genF2[grIndex] = this.ops.function_ret2
+            this.genF2[grIndex] += this.ops.function_ret21(this.out)
+            this.genF2[grIndex] += this.ops.function_ret3
         }
 
-        this.genF[grIndex] = this.genF[grIndex] + this.genF2[grIndex] + "}"
+        // Code generation ends here
+        this.genF[grIndex] = this.genF[grIndex] + this.genF2[grIndex] + this.ops.function_ret4
+
+        // For js, we also call the function in place
+        if (this.ops.function_ret5) {
+            this.genF[grIndex] += this.ops.function_ret5 + this.in.join(", ") + this.ops.function_ret51
+        }
 
         this.in= []
         this.out = []
         this.outtype = []
-
-
     }
 
-    genFunc(funcObj, row){
-        // console.log(funcObj)
-        if (funcObj.func.pfunction.gapi.type == "function") {
-            if (funcObj.func.pfunction.gapi.payable) {
-                this.isPayable = true
-            }
-            this.genConstr1.push("address public "+ funcObj.func.pfunction.gapi.name+"_"+funcObj.i+ " ;")
-            this.genConstr2.push("address _"+funcObj.func.pfunction.gapi.name+"_"+funcObj.i)
-            this.genConstr3.push(funcObj.func.pfunction.gapi.name+"_"+funcObj.i+ " = _" + funcObj.func.pfunction.gapi.name+"_"+funcObj.i+ ";")
-            this.genConstr4.push(funcObj.func._id)
-            let f = this.genF[grIndex]? this.genF[grIndex]: ""
-            this.genF[grIndex] = f+ "\n"+ this.ops.sigFunc1 + funcObj.func.pfunction.signature + this.ops.sigFunc2 + "\n"
-            let inputset = R.mapObjIndexed((x, key, all) => {
-                let o = "i_"+x.name+ "_"+funcObj.i
-                // console.log('*********', funcObj.state[parseInt(key)+1])
-                if (funcObj.state[parseInt(key)+1]){
-                    o = funcObj.state[parseInt(key)+1].name
-                }
-                return o
-            }, funcObj.func.pfunction.gapi.inputs
-            )
-            if (funcObj.func.pfunction.gapi.payable) {
-                console.log("inputset",inputset)
-            }
-
-            this.genF[grIndex] = this.genF[grIndex] + this.ops.inputSig1 + Object.values(inputset).join(",")+this.ops.inputSig2+"\n";
-
-            let rest1 = ""
-            if (funcObj.func.pfunction.gapi.payable) {
-                rest1 = ".value(wei_value)"
-            }
-            this.genF[grIndex] = this.genF[grIndex] + this.ops.ansProxy1 +rest1 +"("+funcObj.func.pfunction.gapi.name +"_"+ funcObj.i+ this.ops.ansProxy2+"\n";
-            let outAssem = []
-            let outputset = R.map((x)=>{
-                // console.log(x)
-                let name = (x.name !== undefined)? x.name: ""
-                outAssem.push("o_" + name + "_"+ funcObj.i+this.ops.assem)
-                return x.type+" o_" +   name + "_"+funcObj.i+ ";"
-            }, funcObj.func.pfunction.gapi.outputs)
-            let o = ""
-            if (funcObj.func.pfunction.gapi.outputs.length >0){
-                o = outputset.join("\n") +this.ops.restFunc1+ outAssem.join("\n")+ this.ops.restFunc2
-            }
-
-            this.genF[grIndex] = this.genF[grIndex] + o + "\n";
-        }
+    genFunc(funcObj, row) {
+        this.genF[grIndex] = this.genF[grIndex] || '';
 
         if (funcObj.func.pfunction.gapi.type == "port") {
-            if (funcObj.func.pfunction.gapi.name == "PortIn") {
-                this.in.push(funcObj.state.type+" "+funcObj.state.name)
-            }
+            this.genFuncIO(funcObj);
+        } else if (
+            funcObj.func.pfunction.gapi.type == "function" &&
+            funcObj.func.pclass.type  === this.ops.pclassType
+        ) {
+            this.genFuncFunction(funcObj, row);
+        }
+    }
 
-            if (funcObj.func.pfunction.gapi.name == "PortOut") {
-                this.out.push(funcObj.state.name)
-            }
+    genFuncFunction(funcObj, row) {
+        if (funcObj.func.pfunction.gapi.payable) {
+            this.isPayable = true
+        }
+        let funcName = funcObj.func.pfunction.gapi.name + "_" + funcObj.i;
+        if (funcObj.func.pfunction.source) {
+            this.funcsources.push(`const ${funcName} = ${funcObj.func.pfunction.source}`);
+        }
+        // public variables from constructor arguments (contract addresses)
+        if (this.ops.genConstr1) {
+            this.genConstr1.push(this.ops.genConstr1 + funcName + " ;");
+        }
+        // code for constructor arguments (contract addresses)
+        if (this.ops.genConstr2) {
+            this.genConstr2.push(this.ops.genConstr2 + funcName);
+        }
+        // code for constructor function, setting the public variables from arguments
+        if (this.ops.genConstr3) {
+            this.genConstr3.push(funcName + this.ops.genConstr3 + funcName + ";")
+        }
+        // _ids for constructor arguments in order (pclass ids)
+        this.genConstr4.push(funcObj.func._id)
 
-            if (funcObj.func.pfunction.gapi.name == "PortOut") {
-                this.outtype.push(funcObj.state.type+" "+ funcObj.state.name)
-                this.returns.push(funcObj.state.type+" r_"+ funcObj.state.name)
-            }
-
+        let f = this.genF[grIndex] || "";
+        this.genF[grIndex] = f + "\n";
+        if (this.ops.sigFunc1) {
+            this.genF[grIndex] += this.ops.sigFunc1 + funcObj.func.pfunction.signature + this.ops.sigFunc2 + "\n";
         }
 
-        // funcObj.func.pfunction.gapi.name
+        let inputset = R.mapObjIndexed((x, key, all) => {
+            let o = "i_"+x.name+ "_"+funcObj.i
+            // console.log('*********', funcObj.state[parseInt(key)+1])
+            if (funcObj.state[parseInt(key)+1]){
+                o = funcObj.state[parseInt(key)+1].name
+            }
+            return o
+        }, funcObj.func.pfunction.gapi.inputs
+        )
+        if (funcObj.func.pfunction.gapi.payable) {
+            console.log("inputset",inputset)
+        }
+        if (this.ops.inputSig1) {
+            this.genF[grIndex] = this.genF[grIndex] + this.ops.inputSig1 + Object.values(inputset).join(",")+this.ops.inputSig2+"\n";
+        }
 
+        let rest1 = ""
+        if (funcObj.func.pfunction.gapi.payable) {
+            rest1 = ".value(wei_value)"
+        }
+        this.genF[grIndex] += this.ops.ansProxy(rest1, funcName, inputset);
+        let outAssem = []
+        let outputset = R.map((x)=>{
+            // console.log(x)
+            let name = (x.name !== undefined)? x.name: ""
+            outAssem.push("o_" + name + "_"+ funcObj.i+this.ops.assem)
+            return this.ops.outputset(x.type, name, funcObj.i);
+        }, funcObj.func.pfunction.gapi.outputs)
+        let o = ""
+        if (funcObj.func.pfunction.gapi.outputs.length > 0) {
+            o = this.ops.restFunc(outputset, outAssem, funcObj.func.pfunction.gapi.outputs);
+        }
+
+        this.genF[grIndex] = this.genF[grIndex] + o + "\n";
+    }
+
+    genFuncIO(funcObj) {
+
+        if (funcObj.func.pfunction.gapi.name == "PortIn") {
+            this.in.push(this.ops.function_in(funcObj.state.type, funcObj.state.name));
+        }
+
+        if (funcObj.func.pfunction.gapi.name == "PortOut") {
+            this.out.push(funcObj.state.name)
+        }
+
+        if (funcObj.func.pfunction.gapi.name == "PortOut") {
+            this.outtype.push(this.ops.function_outtype(funcObj.state.type, funcObj.state.name));
+            this.returns.push(this.ops.function_returns(funcObj.state.type, funcObj.state.name));
+        }
     }
 
     getGen(){
@@ -1566,17 +1618,24 @@ class GraphVisitor{
         //console.log(this.in)
         out = out + this.genC
 
+        if (this.ops.intro0) out += "\n\n";
         out = out + this.genConstr1.join("\n")+ "\n"
         out = out + this.ops.const1 +this.genConstr2.join(", ") + this.ops.const2
         out = out + this.genConstr3.join("\n") + "\n"
         out = out + this.ops.const3
         //out = out + this.intro2
-        out =  out + this.genF.join("\n")
 
+        // Add helper functions - js
+        if (this.funcsources.length) {
+            out += "\n" + this.funcsources.join(';\n') + ';';
+            this.funcsources = [];
+        }
+
+        // Add piped functions
+        out += this.genF.join("\n")
+
+        // Constructor arguments in order
         langs["constructor"] = this.genConstr4
-
-
-
 
         //out = out + this.outro
         out = out + this.ops.contract_p2
@@ -1587,10 +1646,20 @@ class GraphVisitor{
 
 }
 
+function callInternalFunctionSolidity(payable, funcName, inputset) {
+    return `    answer42 = pipe_proxy.proxy${payable}(${funcName}, input42, 400000);\n`;
+}
+
+function callInternalFunctionOpenapi(payable, functionName, inputset) {
+    return `    result = await ${functionName}(${Object.values(inputset).join(",")});
+`;
+}
+
 var visOptions={
     solidity: {
         type: "source",
         lang: "solidity",
+        pclassType: "sol",
         "file_p0" : `pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
@@ -1611,21 +1680,33 @@ interface PipeProxy {
         "contract_p0": "\ncontract PipedContract",
         "contract_p1": " {\n    PipeProxy public pipe_proxy;\n",
         "contract_p2": "}\n",
-
-        "function_pp1": ")",
-
+        "genConstr1": "    address public ",
+        "genConstr2": "address _",
+        "genConstr3": " = _",
+        "function_pp1": ") public payable ",
+        // function returns from definition
         "function_ret0": " returns (",
         "function_ret1": ")",
+        // actual function return
+        "function_ret2": "return (",
+        "function_ret21": (outs) => outs.join(", "),
+        "function_ret3": ");\n",
+        // input format
+        "function_in": (type, name) => `${type} ${name}`,
+        // outputs format
+        "function_outtype": (type, name) => `${type} ${name}`,
+        "function_returns": (type, name) => `${type} r_${name}`,
+        // function end
+        "function_ret4": "}",
         "function_p2": " {\n    bytes4 signature42;\n    bytes memory input42;\n    bytes memory answer42;\n    uint wei_value = msg.value;\n    address tx_sender = msg.sender;\n",
 
         "sigFunc1": "signature42 = bytes4(keccak256(\"",
         "sigFunc2": "\"));",
         "inputSig1": "input42 = abi.encodeWithSelector(signature42,",
         "inputSig2": ");",
-        "ansProxy1": "answer42 = pipe_proxy.proxy",
-        "ansProxy2": ", input42, 400000);",
-        "restFunc1": "\nassembly {\n",
-        "restFunc2": "\n}\n",
+        "ansProxy": callInternalFunctionSolidity,
+        "outputset": (type, name, i) => `${type} o_${name}_${i};`,
+        "restFunc": (outputset, outAssem) => `${outputset.join("\n")}\nassembly {\n${outAssem.join("\n")}\n}\n`,
         "assem": " := mload(add(answer42, 32))",
         "intro1": "\n\nfunction PipedFunction",
         "intro11": "(",
@@ -1648,35 +1729,57 @@ interface PipeProxy {
     js: {
         type: "source",
         lang: "javascript",
+        pclassType: "js",
+        "file_p0" : `
+const baseUrl = 'http://192.168.1.141:5000/api/v1';
+const httpClient = axios;
+const web3 = undefined;`,
+        "proxy": ``,
+        "contract_p0": "",
+        "contract_p1": ``,
+        "contract_p2": "",
 
-        "file_p0" : `{1}`,
-        "proxy": `{2}`,
-        "contract_p0": "{5}",
-        "contract_p1": "{6}",
-        "contract_p2": "{7}",
+        "function_pp1": ") {\n",
+        // empty, we don't need to have returns in function definition
+        "function_ret0": "",
+        "function_ret1": "",
+        // actual function return
+        "function_ret2": "\n    return ",
+        "function_ret21": (outs) => `{${outs.join(", ")}}`,
+        "function_ret3": ";\n",
+        // function end
+        "function_ret4": `
+})`,
+        "function_ret5": "(",
+        "function_ret51": ");",
+        // input format
+        "function_in": (type, name) => `${name}`,
+        // outputs format
+        "function_outtype": (type, name) => `${name}`,
+        "function_returns": (type, name) => ` r_${name}`,
+        // empty, we don't need to have common variables for openapi
+        "function_p2": `
+    let result;
+`,
 
-        "function_pp1": "{11}",
 
-        "function_ret0": "{14}",
-        "function_ret1": "{15}",
-        "function_p2": "{16}",
-
-
-        "sigFunc1": "{18}",
-        "sigFunc2": "{19}",
-        "inputSig1": "{20}",
-        "inputSig2": "{21}",
-        "ansProxy1": "{22}",
-        "ansProxy2": "{23}",
-        "restFunc1": "{24}",
-        "restFunc2": "{25}",
-        "assem": "{26}",
-        "intro1": "{27}",
-        "intro11": "{28}",
-        "intro2": `{29}`,
-        "const1": "{30}",
-        "const2": `{31}`,
-        "const3": "{32}",
+        "sigFunc1": "",
+        "sigFunc2": "",
+        "inputSig1": "",
+        "inputSig2": "",
+        "ansProxy": callInternalFunctionOpenapi,
+        "outputset": (type, name, i) => `o_${name}_${i};`,
+        "restFunc": (outputset, outAssem, outputs) => outAssem.map((out, i) => `    const ${out} = result.${outputs[i].name};`).join('\n'),
+        "assem": "",
+        "intro0": `let `,
+        "intro01": ` = null;`,
+        "intro1": `
+(async function PipedFunction`,
+        "intro11": "(",
+        "intro2": "",
+        "const1": "",
+        "const2": ``,
+        "const3": "",
 
 
 
