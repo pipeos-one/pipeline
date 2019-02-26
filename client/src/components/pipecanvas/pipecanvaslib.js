@@ -11,6 +11,8 @@ const R = require('ramda');
 
 const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 const ARGUMENT_NAMES = /([^\s,]+)/g;
+const UNNAMED_INPUT = 'i_unnamed';
+const UNNAMED_OUTPUT = 'o_unnamed';
 
 function getParamNames(func) {
     const fnStr = func.toString().replace(STRIP_COMMENTS, '');
@@ -1470,6 +1472,22 @@ class GraphVisitor{
     }
 
     genGraph(g){
+        let cannotBeGenerated = Object.values(g).find((funcObject) => {
+            if (!funcObject.func.pclass.type) return false;
+            return (
+                funcObject.func.pclass.type != this.ops.pclassType &&
+                this.ops.pclassType === visOptions.solidity.pclassType
+            );
+        });
+        if (cannotBeGenerated) {
+            this.genF[grIndex] = '';
+            this.in = [];
+            this.out = [];
+            this.genConstr1 = [];
+            this.genConstr2 = [];
+            this.genConstr3 = [];
+            return;
+        }
         let ini = this.genF[grIndex]
 
         // Generating pipeline function definition (inputs + modifiers)
@@ -1500,9 +1518,7 @@ class GraphVisitor{
         // Generating function return
         this.genF2[grIndex] = ""
         if (this.out.length >0){
-            this.genF2[grIndex] = this.ops.function_ret2
-            this.genF2[grIndex] += this.ops.function_ret21(this.out)
-            this.genF2[grIndex] += this.ops.function_ret3
+            this.genF2[grIndex] += this.ops.function_ret2(this.out);
         }
 
         // Code generation ends here
@@ -1523,10 +1539,8 @@ class GraphVisitor{
 
         if (funcObj.func.pfunction.gapi.type == "port") {
             this.genFuncIO(funcObj);
-        } else if (
-            funcObj.func.pfunction.gapi.type == "function" &&
-            funcObj.func.pclass.type  === this.ops.pclassType
-        ) {
+        } else if (funcObj.func.pfunction.gapi.type == "function") {
+            if (!this.ops.validateFunc(funcObj.func.pclass.type, this.ops.pclassType)) return;
             this.genFuncFunction(funcObj, row);
         }
     }
@@ -1536,8 +1550,13 @@ class GraphVisitor{
             this.isPayable = true
         }
         let funcName = funcObj.func.pfunction.gapi.name + "_" + funcObj.i;
-        if (funcObj.func.pfunction.source) {
-            this.funcsources.push(`const ${funcName} = ${funcObj.func.pfunction.source}`);
+
+        let source = funcObj.func.pfunction.source;
+        if (!source && this.ops.addSource) {
+            source = this.ops.addSource(funcName, funcObj);
+        }
+        if (source) {
+            this.funcsources.push(`const ${funcName} = ${source}`);
         }
         // public variables from constructor arguments (contract addresses)
         if (this.ops.genConstr1) {
@@ -1549,7 +1568,7 @@ class GraphVisitor{
         }
         // code for constructor function, setting the public variables from arguments
         if (this.ops.genConstr3) {
-            this.genConstr3.push(funcName + this.ops.genConstr3 + funcName + ";")
+            this.genConstr3.push(this.ops.genConstr3(funcName, funcObj));
         }
         // _ids for constructor arguments in order (pclass ids)
         this.genConstr4.push(funcObj.func._id)
@@ -1580,7 +1599,7 @@ class GraphVisitor{
         if (funcObj.func.pfunction.gapi.payable) {
             rest1 = ".value(wei_value)"
         }
-        this.genF[grIndex] += this.ops.ansProxy(rest1, funcName, inputset);
+        this.genF[grIndex] += this.ops.ansProxy(rest1, funcName, inputset, funcObj);
         let outAssem = []
         let outputset = R.map((x)=>{
             // console.log(x)
@@ -1646,12 +1665,51 @@ class GraphVisitor{
 
 }
 
-function callInternalFunctionSolidity(payable, funcName, inputset) {
+function callInternalFunctionSolidity(payable, funcName, inputset, funcObj) {
     return `    answer42 = pipe_proxy.proxy${payable}(${funcName}, input42, 400000);\n`;
 }
 
-function callInternalFunctionOpenapi(payable, functionName, inputset) {
-    return `    result = await ${functionName}(${Object.values(inputset).join(",")});
+function callInternalFunctionJs(payable, funcName, inputset, funcObj) {
+    let result = '';
+    if (funcObj.func.pclass.deployment.pclassi.openapiid) {
+        result += `
+    baseUrl = baseUrl_${funcName};
+`
+    }
+    result += `    result = await ${funcName}(${Object.values(inputset).join(",")});
+`;
+    return result;
+}
+
+function addSourceJsFromSolidity(funcName, funcObj) {
+    if (funcObj.func.pclass.type  != visOptions.solidity.pclassType) {
+        return;
+    }
+    let gapi = funcObj.func.pfunction.gapi;
+    let inputs = gapi.inputs.map((input, i) => input.name || `${UNNAMED_INPUT}_i`);
+    let outputs = gapi.outputs.map((output, i) => output.name || `${UNNAMED_OUTPUT}_i`);
+    let returnValue = '';
+    if (outputs.length === 1) {
+        returnValue = ` {${outputs[0]}: output}`;
+    } else if (outputs.length > 1) {
+        returnValue = ` output`;
+    }
+    return `async function(${inputs.join(', ')}) {
+    const output = await contract_${funcName}.${gapi.name}(${inputs.join(', ')});
+    return${returnValue};
+}`;
+}
+
+function buildPClassVarsJs(funcName, funcObj) {
+    let pclassi = funcObj.func.pclass.deployment.pclassi;
+    if (pclassi.openapiid) {
+        return `const baseUrl_${funcName} = "http://${pclassi.host}${pclassi.basePath}";\n`;
+    }
+    const abi = funcObj.func.pclass.pclass.gapi;
+    return `
+const abi_${funcName} = ${JSON.stringify(abi)};
+const contractAddress_${funcName} = "${pclassi.address}";
+const contract_${funcName} = new ethers.Contract(contractAddress_${funcName}, abi_${funcName}, signer);
 `;
 }
 
@@ -1660,6 +1718,8 @@ var visOptions={
         type: "source",
         lang: "solidity",
         pclassType: "sol",
+        validateFunc: (type, pclassType) => type === pclassType,
+        addSource: null,
         "file_p0" : `pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
 
@@ -1676,21 +1736,18 @@ interface PipeProxy {
         returns (bytes);
 }
 `,
-
         "contract_p0": "\ncontract PipedContract",
         "contract_p1": " {\n    PipeProxy public pipe_proxy;\n",
         "contract_p2": "}\n",
         "genConstr1": "    address public ",
         "genConstr2": "address _",
-        "genConstr3": " = _",
+        "genConstr3": (funcName, funcObj) => `${funcName} = _${funcName};`,
         "function_pp1": ") public payable ",
         // function returns from definition
         "function_ret0": " returns (",
         "function_ret1": ")",
         // actual function return
-        "function_ret2": "return (",
-        "function_ret21": (outs) => outs.join(", "),
-        "function_ret3": ");\n",
+        "function_ret2": (outs) => `return (${outs.join(", ")});\n`,
         // input format
         "function_in": (type, name) => `${type} ${name}`,
         // outputs format
@@ -1699,7 +1756,6 @@ interface PipeProxy {
         // function end
         "function_ret4": "}",
         "function_p2": " {\n    bytes4 signature42;\n    bytes memory input42;\n    bytes memory answer42;\n    uint wei_value = msg.value;\n    address tx_sender = msg.sender;\n",
-
         "sigFunc1": "signature42 = bytes4(keccak256(\"",
         "sigFunc2": "\"));",
         "inputSig1": "input42 = abi.encodeWithSelector(signature42,",
@@ -1723,30 +1779,35 @@ interface PipeProxy {
             pipe_proxy = PipeProxy(_pipe_proxy);
         `,
         "const3": "}\n",
-
-
     },
     js: {
         type: "source",
         lang: "javascript",
         pclassType: "js",
+        validateFunc: (type, pclassType) => type === pclassType || type === visOptions.solidity.pclassType,
+        addSource: addSourceJsFromSolidity,
         "file_p0" : `
-const baseUrl = 'http://192.168.1.141:5000/api/v1';
+let baseUrl;
 const httpClient = axios;
-const web3 = undefined;`,
+
+// Metamask
+const provider = new ethers.providers.Web3Provider(web3.currentProvider);
+const signer = provider.getSigner();
+`,
         "proxy": ``,
         "contract_p0": "",
         "contract_p1": ``,
         "contract_p2": "",
-
+        "genConstr3": buildPClassVarsJs,
         "function_pp1": ") {\n",
         // empty, we don't need to have returns in function definition
         "function_ret0": "",
         "function_ret1": "",
         // actual function return
-        "function_ret2": "\n    return ",
-        "function_ret21": (outs) => `{${outs.join(", ")}}`,
-        "function_ret3": ";\n",
+        "function_ret2": (outs) => `
+    console.log(${outs.join(", ")});
+    return {${outs.join(", ")}};
+`,
         // function end
         "function_ret4": `
 })`,
@@ -1761,15 +1822,13 @@ const web3 = undefined;`,
         "function_p2": `
     let result;
 `,
-
-
         "sigFunc1": "",
         "sigFunc2": "",
         "inputSig1": "",
         "inputSig2": "",
-        "ansProxy": callInternalFunctionOpenapi,
+        "ansProxy": callInternalFunctionJs,
         "outputset": (type, name, i) => `o_${name}_${i};`,
-        "restFunc": (outputset, outAssem, outputs) => outAssem.map((out, i) => `    const ${out} = result.${outputs[i].name};`).join('\n'),
+        "restFunc": (outputset, outAssem, outputs) => outAssem.map((out, i) => `    const ${out} = result.${outputs[i].name || `${UNNAMED_OUTPUT}_i`};`).join('\n'),
         "assem": "",
         "intro0": `let `,
         "intro01": ` = null;`,
@@ -1780,14 +1839,7 @@ const web3 = undefined;`,
         "const1": "",
         "const2": ``,
         "const3": "",
-
-
-
-
-
-
     },
-
     graphRender: {
         type: "visual"
     }
