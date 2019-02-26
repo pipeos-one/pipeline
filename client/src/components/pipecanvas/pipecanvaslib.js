@@ -1674,7 +1674,6 @@ interface PipeProxy {
         returns (bytes);
 }
 `,
-
         "contract_p0": "\ncontract PipedContract",
         "contract_p1": " {\n    PipeProxy public pipe_proxy;\n",
         "contract_p2": "}\n",
@@ -1695,7 +1694,6 @@ interface PipeProxy {
         // function end
         "function_ret4": "}",
         "function_p2": " {\n    bytes4 signature42;\n    bytes memory input42;\n    bytes memory answer42;\n    uint wei_value = msg.value;\n    address tx_sender = msg.sender;\n",
-
         "sigFunc1": "signature42 = bytes4(keccak256(\"",
         "sigFunc2": "\"));",
         "inputSig1": "input42 = abi.encodeWithSelector(signature42,",
@@ -1719,8 +1717,6 @@ interface PipeProxy {
             pipe_proxy = PipeProxy(_pipe_proxy);
         `,
         "const3": "}\n",
-
-
     },
     js: {
         type: "source",
@@ -1758,8 +1754,6 @@ const web3 = undefined;`,
         "function_p2": `
     let result;
 `,
-
-
         "sigFunc1": "",
         "sigFunc2": "",
         "inputSig1": "",
@@ -1777,14 +1771,7 @@ const web3 = undefined;`,
         "const1": "",
         "const2": ``,
         "const3": "",
-
-
-
-
-
-
     },
-
     graphRender: {
         type: "visual"
     }
