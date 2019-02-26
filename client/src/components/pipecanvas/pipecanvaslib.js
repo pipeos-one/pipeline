@@ -1477,9 +1477,13 @@ class GraphVisitor{
     genGraph(g){
         let cannotBeGenerated = Object.values(g).find((funcObject) => {
             if (!funcObject.func.pclass.type) return false;
+            let isSolidity = this.ops.pclassType === visOptions.solidity.pclassType;
+
             return (
-                funcObject.func.pclass.type != this.ops.pclassType &&
-                this.ops.pclassType === visOptions.solidity.pclassType
+                isSolidity && (
+                    funcObject.func.pclass.type != this.ops.pclassType ||
+                    funcObject.func.pfunction.gapi.type === 'event'
+                )
             );
         });
         if (cannotBeGenerated) {
