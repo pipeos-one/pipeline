@@ -1500,9 +1500,7 @@ class GraphVisitor{
         // Generating function return
         this.genF2[grIndex] = ""
         if (this.out.length >0){
-            this.genF2[grIndex] = this.ops.function_ret2
-            this.genF2[grIndex] += this.ops.function_ret21(this.out)
-            this.genF2[grIndex] += this.ops.function_ret3
+            this.genF2[grIndex] += this.ops.function_ret2(this.out);
         }
 
         // Code generation ends here
@@ -1688,9 +1686,7 @@ interface PipeProxy {
         "function_ret0": " returns (",
         "function_ret1": ")",
         // actual function return
-        "function_ret2": "return (",
-        "function_ret21": (outs) => outs.join(", "),
-        "function_ret3": ");\n",
+        "function_ret2": (outs) => `return (${outs.join(", ")});\n`,
         // input format
         "function_in": (type, name) => `${type} ${name}`,
         // outputs format
@@ -1744,9 +1740,10 @@ const web3 = undefined;`,
         "function_ret0": "",
         "function_ret1": "",
         // actual function return
-        "function_ret2": "\n    return ",
-        "function_ret21": (outs) => `{${outs.join(", ")}}`,
-        "function_ret3": ";\n",
+        "function_ret2": (outs) => `
+    console.log(${outs.join(", ")});
+    return {${outs.join(", ")}};
+`,
         // function end
         "function_ret4": `
 })`,
