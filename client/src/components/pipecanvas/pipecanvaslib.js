@@ -430,10 +430,13 @@ function proc1() {
             if (x.func.pfunction.gapi.outputs === undefined) {
                 x.func.pfunction.gapi.outputs = []
             }
-            let ins = JSON.parse(JSON.stringify(x.func.pfunction.gapi.inputs))
-            let outs = JSON.parse(JSON.stringify(x.func.pfunction.gapi.outputs))
-            x.func.pfunction.gapi.outputs = ins
-            x.func.pfunction.gapi.inputs = outs
+            if (!x.func.pfunction.reversed) {
+                let ins = JSON.parse(JSON.stringify(x.func.pfunction.gapi.inputs))
+                let outs = JSON.parse(JSON.stringify(x.func.pfunction.gapi.outputs))
+                x.func.pfunction.gapi.outputs = ins
+                x.func.pfunction.gapi.inputs = outs
+                x.func.pfunction.reversed = true;
+            }
         }
     }, pipe2.cgraphs[grIndex].n);
 
