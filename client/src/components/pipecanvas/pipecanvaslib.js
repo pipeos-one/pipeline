@@ -1595,7 +1595,11 @@ class GraphVisitor{
             console.log("inputset",inputset)
         }
         if (this.ops.inputSig1) {
-            this.genF[grIndex] = this.genF[grIndex] + this.ops.inputSig1 + Object.values(inputset).join(",")+this.ops.inputSig2+"\n";
+            this.genF[grIndex] = this.genF[grIndex] + this.ops.inputSig1
+            if (Object.values(inputset).length > 0) {
+                this.genF[grIndex] += ', ';
+            }
+            this.genF[grIndex] +=  Object.values(inputset).join(", ") + this.ops.inputSig2 + "\n";
         }
 
         let rest1 = ""
@@ -1761,7 +1765,7 @@ interface PipeProxy {
         "function_p2": " {\n    bytes4 signature42;\n    bytes memory input42;\n    bytes memory answer42;\n    uint wei_value = msg.value;\n    address tx_sender = msg.sender;\n",
         "sigFunc1": "signature42 = bytes4(keccak256(\"",
         "sigFunc2": "\"));",
-        "inputSig1": "input42 = abi.encodeWithSelector(signature42,",
+        "inputSig1": "input42 = abi.encodeWithSelector(signature42",
         "inputSig2": ");",
         "ansProxy": callInternalFunctionSolidity,
         "outputset": (type, name, i) => `${type} o_${name}_${i};`,
