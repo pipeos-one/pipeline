@@ -1472,6 +1472,22 @@ class GraphVisitor{
     }
 
     genGraph(g){
+        let cannotBeGenerated = Object.values(g).find((funcObject) => {
+            if (!funcObject.func.pclass.type) return false;
+            return (
+                funcObject.func.pclass.type != this.ops.pclassType &&
+                this.ops.pclassType === visOptions.solidity.pclassType
+            );
+        });
+        if (cannotBeGenerated) {
+            this.genF[grIndex] = '';
+            this.in = [];
+            this.out = [];
+            this.genConstr1 = [];
+            this.genConstr2 = [];
+            this.genConstr3 = [];
+            return;
+        }
         let ini = this.genF[grIndex]
 
         // Generating pipeline function definition (inputs + modifiers)
