@@ -1622,7 +1622,7 @@ class GraphVisitor{
         )
 
         if (this.ops.inputSig) {
-            this.genF[grIndex] += this.ops.inputSig(inputset);
+            this.genF[grIndex] += this.ops.inputSig(inputset, funcObj);
         }
 
         this.genF[grIndex] += this.ops.ansProxy(funcName, inputset, funcObj);
@@ -1699,13 +1699,17 @@ function callInternalFunctionSolidity(funcName, inputset, funcObj) {
     return `    answer42 = pipe_proxy.proxy${payable}(${funcName}, input42, 400000);\n`;
 }
 
-function setCallFuncSignature(inputset) {
+function setCallFuncSignature(inputset, funcObj) {
 
     let inputs = '';
     if (Object.values(inputset).length > 0) {
         inputs += ', ';
     }
-    inputs += Object.values(inputset).filter(input => input.indexOf(WEI_VALUE) < 0).join(", ");
+    if (funcObj.func.pfunction.gapi.payable) {
+        inputs += Object.values(inputset).filter(input => input.indexOf(WEI_VALUE) < 0).join(", ");
+    } else {
+        inputs += Object.values(inputset).join(", ");
+    }
     return `input42 = abi.encodeWithSelector(signature42${inputs});\n`;
 }
 
