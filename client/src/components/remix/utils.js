@@ -16,7 +16,7 @@ export function deployOnJVM(bytecode, gasLimit, callback) {
                 value: '0',
                 useCall: false,
             };
-            console.log('transaction', transaction)
+            console.log('transaction', transaction);
             Pipeos.remix.call(
                 'udapp',
                 'runTx',

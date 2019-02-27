@@ -234,6 +234,7 @@ export default class Graphs {
         this.idGen = 0
         pipe2.callbacks = {
             onGraphChange: callbacks.onGraphChange,
+            onGraphFunctionRemove: callbacks.onGraphFunctionRemove,
         };
     }
 
@@ -430,10 +431,13 @@ function proc1() {
             if (x.func.pfunction.gapi.outputs === undefined) {
                 x.func.pfunction.gapi.outputs = []
             }
-            let ins = JSON.parse(JSON.stringify(x.func.pfunction.gapi.inputs))
-            let outs = JSON.parse(JSON.stringify(x.func.pfunction.gapi.outputs))
-            x.func.pfunction.gapi.outputs = ins
-            x.func.pfunction.gapi.inputs = outs
+            if (!x.func.pfunction.reversed) {
+                let ins = JSON.parse(JSON.stringify(x.func.pfunction.gapi.inputs))
+                let outs = JSON.parse(JSON.stringify(x.func.pfunction.gapi.outputs))
+                x.func.pfunction.gapi.outputs = ins
+                x.func.pfunction.gapi.inputs = outs
+                x.func.pfunction.reversed = true;
+            }
         }
     }, pipe2.cgraphs[grIndex].n);
 
@@ -1017,12 +1021,6 @@ class Smooth {
         if (key1 !== undefined) {
             delete pipe2.graphs[grIndex].e[key1]
         }
-
-
-
-
-        // console.log(pipe2.graph.e);
-
     }
 }
 
@@ -1066,16 +1064,17 @@ class FuncBox {
 
         this.el.dblclick(() => {
             self.el.remove();
-
+            let removedNodes = [];
             let keys1 = R.mapObjIndexed((x, key, all) => {
                 if (x.i == self.obj.i) return key
             }, pipe2.graphs[grIndex].n);
 
             R.map((x)=>{
+                if (x) {
+                    removedNodes.push(pipe2.graphs[grIndex].n[parseInt(x)]);
+                }
                 delete pipe2.graphs[grIndex].n[parseInt(x)];
             }, keys1)
-
-            //
 
             let keys2 = R.mapObjIndexed((x, key, all) => {
                 if (x[0] == self.obj.i || x[2] == self.obj.i) return key
@@ -1085,6 +1084,7 @@ class FuncBox {
                 delete pipe2.graphs[grIndex].e[parseInt(x)];
             }, keys2)
 
+            pipe2.callbacks.onGraphFunctionRemove(grIndex, removedNodes);
 
             return proc1();
         });
@@ -1396,6 +1396,7 @@ class GraphVisitor{
         this.maxY = 0
         this.minX = {}
         this.isPayable = false
+        this.containsEvent = false
     }
 
     renderFunc(funcObj, row){
@@ -1474,9 +1475,13 @@ class GraphVisitor{
     genGraph(g){
         let cannotBeGenerated = Object.values(g).find((funcObject) => {
             if (!funcObject.func.pclass.type) return false;
+            let isSolidity = this.ops.pclassType === visOptions.solidity.pclassType;
+
             return (
-                funcObject.func.pclass.type != this.ops.pclassType &&
-                this.ops.pclassType === visOptions.solidity.pclassType
+                isSolidity && (
+                    funcObject.func.pclass.type != this.ops.pclassType ||
+                    funcObject.func.pfunction.gapi.type === 'event'
+                )
             );
         });
         if (cannotBeGenerated) {
@@ -1522,7 +1527,16 @@ class GraphVisitor{
         }
 
         // Code generation ends here
-        this.genF[grIndex] = this.genF[grIndex] + this.genF2[grIndex] + this.ops.function_ret4
+        // Adding function returns
+        this.genF[grIndex] += this.genF2[grIndex]
+
+        // Ending event promise if present
+        if (this.containsEvent && this.ops.function_ret3) {
+            this.genF[grIndex] += this.ops.function_ret3;
+        }
+
+        // Function end
+        this.genF[grIndex] += this.ops.function_ret4
 
         // For js, we also call the function in place
         if (this.ops.function_ret5) {
@@ -1539,10 +1553,20 @@ class GraphVisitor{
 
         if (funcObj.func.pfunction.gapi.type == "port") {
             this.genFuncIO(funcObj);
-        } else if (funcObj.func.pfunction.gapi.type == "function") {
-            if (!this.ops.validateFunc(funcObj.func.pclass.type, this.ops.pclassType)) return;
-            this.genFuncFunction(funcObj, row);
+            return;
         }
+        if (
+            ["function", "event"].indexOf(funcObj.func.pfunction.gapi.type) < 0 &&
+            !this.ops.validateFunc(funcObj.func.pclass.type, this.ops.pclassType)
+        ) {
+            return;
+        }
+
+        if (funcObj.func.pfunction.gapi.type === 'event') {
+            if (this.containsEvent) return;
+            this.containsEvent = true;
+        }
+        this.genFuncFunction(funcObj, row);
     }
 
     genFuncFunction(funcObj, row) {
@@ -1592,7 +1616,11 @@ class GraphVisitor{
             console.log("inputset",inputset)
         }
         if (this.ops.inputSig1) {
-            this.genF[grIndex] = this.genF[grIndex] + this.ops.inputSig1 + Object.values(inputset).join(",")+this.ops.inputSig2+"\n";
+            this.genF[grIndex] = this.genF[grIndex] + this.ops.inputSig1
+            if (Object.values(inputset).length > 0) {
+                this.genF[grIndex] += ', ';
+            }
+            this.genF[grIndex] +=  Object.values(inputset).join(", ") + this.ops.inputSig2 + "\n";
         }
 
         let rest1 = ""
@@ -1609,7 +1637,7 @@ class GraphVisitor{
         }, funcObj.func.pfunction.gapi.outputs)
         let o = ""
         if (funcObj.func.pfunction.gapi.outputs.length > 0) {
-            o = this.ops.restFunc(outputset, outAssem, funcObj.func.pfunction.gapi.outputs);
+            o = this.ops.restFunc(outputset, outAssem, funcName, funcObj);
         }
 
         this.genF[grIndex] = this.genF[grIndex] + o + "\n";
@@ -1671,6 +1699,9 @@ function callInternalFunctionSolidity(payable, funcName, inputset, funcObj) {
 
 function callInternalFunctionJs(payable, funcName, inputset, funcObj) {
     let result = '';
+    if (funcObj.func.pfunction.gapi.type === 'event') {
+        return result;
+    }
     if (funcObj.func.pclass.deployment.pclassi.openapiid) {
         result += `
     baseUrl = baseUrl_${funcName};
@@ -1681,8 +1712,24 @@ function callInternalFunctionJs(payable, funcName, inputset, funcObj) {
     return result;
 }
 
+function genFuncReturnDestructuring(outputset, outAssem, funcName, funcObj) {
+    let outputs = funcObj.func.pfunction.gapi.outputs;
+    if (funcObj.func.pfunction.gapi.type === 'function') {
+        return outAssem.map((out, i) => `    const ${out} = result.${outputs[i].name || `${UNNAMED_OUTPUT}_i`};`).join('\n');
+    }
+    if (funcObj.func.pfunction.gapi.type === 'event') {
+        let eventName = funcObj.func.pfunction.gapi.name;
+        return `
+contract_${funcName}.on("${eventName}", async (${Object.values(outAssem).join(",")}, filterObject) => {
+`
+    }
+}
+
 function addSourceJsFromSolidity(funcName, funcObj) {
     if (funcObj.func.pclass.type  != visOptions.solidity.pclassType) {
+        return;
+    }
+    if (funcObj.func.pfunction.gapi.type === 'event') {
         return;
     }
     let gapi = funcObj.func.pfunction.gapi;
@@ -1758,7 +1805,7 @@ interface PipeProxy {
         "function_p2": " {\n    bytes4 signature42;\n    bytes memory input42;\n    bytes memory answer42;\n    uint wei_value = msg.value;\n    address tx_sender = msg.sender;\n",
         "sigFunc1": "signature42 = bytes4(keccak256(\"",
         "sigFunc2": "\"));",
-        "inputSig1": "input42 = abi.encodeWithSelector(signature42,",
+        "inputSig1": "input42 = abi.encodeWithSelector(signature42",
         "inputSig2": ");",
         "ansProxy": callInternalFunctionSolidity,
         "outputset": (type, name, i) => `${type} o_${name}_${i};`,
@@ -1808,6 +1855,8 @@ const signer = provider.getSigner();
     console.log(${outs.join(", ")});
     return {${outs.join(", ")}};
 `,
+        // if an event is present, then we need to close it
+        "function_ret3": '});',
         // function end
         "function_ret4": `
 })`,
@@ -1828,7 +1877,7 @@ const signer = provider.getSigner();
         "inputSig2": "",
         "ansProxy": callInternalFunctionJs,
         "outputset": (type, name, i) => `o_${name}_${i};`,
-        "restFunc": (outputset, outAssem, outputs) => outAssem.map((out, i) => `    const ${out} = result.${outputs[i].name || `${UNNAMED_OUTPUT}_i`};`).join('\n'),
+        "restFunc": genFuncReturnDestructuring,
         "assem": "",
         "intro0": `let `,
         "intro01": ` = null;`,

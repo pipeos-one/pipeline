@@ -261,7 +261,17 @@ export default {
                             return contract_address;
                         })).map(address => `"${address}"`).join(',');
                     console.log('this.deploymentInfo', this.deploymentInfo);
-                }
+                },
+                onGraphFunctionRemove: (grIndex, nodes) => {
+                    console.log('onGraphFunctionRemove', grIndex, nodes);
+                    // nodes.map(node => {
+                    //     console.log('node', node, this.selectedFunctions[grIndex][node.i]._id);
+                    //     if (this.selectedFunctions[grIndex][node.i]._id === node.id) {
+                    //         this.selectedFunctions[grIndex][node.i].removed = true;
+                    //         console.log('removed');
+                    //     }
+                    // });
+                },
             }
         );
         this.graphInstance.addGraph(`draw_${this.activeCanvas + 1}`);
@@ -312,19 +322,20 @@ export default {
         this.loadData();
     },
     onFunctionToggle: function (pfunction) {
-        console.log('activeCanvas', this.activeCanvas);
-        console.log('selectedFunctions', this.selectedFunctions);
-        let index = this.selectedFunctions[this.activeCanvas].findIndex(func => {
-            func._id == pfunction._id
-        });
-        if (index > -1) {
-          this.selectedFunctions[this.activeCanvas].splice(index, 1);
+        if (pfunction.pfunction.gapi.type === 'event') {
+            let index = this.selectedFunctions[this.activeCanvas].findIndex(func => {
+                return func.pfunction.gapi.type === 'event';
+            });
+            if (index > -1) {
+                alert('There can only be one event per graph/tab. You can add another graph/tab by clicking the + button.');
+                return;
+            }
         }
-        else {
-          this.selectedFunctions[this.activeCanvas].push(pfunction);
-        }
-        console.log('this.selectedFunctions', this.selectedFunctions);
+
+        this.selectedFunctions[this.activeCanvas].push(pfunction);
         this.addToCanvas(pfunction, this.activeCanvas);
+        console.log('activeCanvas', this.activeCanvas);
+        console.log('this.selectedFunctions', this.selectedFunctions);
     },
     onTreeToggle: function (pclass) {
         let index = this.selectedTreeContainers.findIndex(container => container._id == pclass._id);
