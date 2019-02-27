@@ -26,7 +26,7 @@
                         v-on:item-toggle="onTreeToggle"
                         v-on:subitem-toggle=""
                         v-on:change-page="changePage"
-                        v-on:load-remix="loadRemix"
+                        v-on:load-remix="loadToRemix"
                     />
                     </v-flex>
                 </v-layout>
@@ -77,7 +77,7 @@
                 :deploymentInfo="deploymentInfo"
                 :jsSource="jsSource"
                 :graphSource="graphSource"
-                v-on:load-remix="pipedLoadRemix"
+                v-on:load-remix="pipedLoadToRemix"
             />
         </swiper-slide>
 
@@ -389,11 +389,20 @@ export default {
         console.log('this.selectedFunctions', this.selectedFunctions)
         this.canvases += 1;
     },
-    loadRemix: function(item) {
-        this.loadRemixCall(item.name, item.pclass.solsource);
+    loadToRemix: function(item) {
+        item.pclass.sources.map((source, i) => {
+            let fileName;
+            if (source.relative_path) {
+                fileName = source.relative_path.substring(
+                    source.relative_path.lastIndexOf('/') + 1
+                );
+            }
+            fileName = fileName || `${item.name}_${i}.sol`;
+            this.loadToRemixCall(fileName, source.source);
+        });
     },
-    loadRemixCall: function(name, source) {
-        let fileName = `browser/Pipeos_${name}.sol`;
+    loadToRemixCall: function(name, source) {
+        let fileName = `browser/${name}`;
         if (confirm(`Click "OK" if you want to load the "${fileName}" contract in Remix.`)) {
             Pipeos.remix.call(
                 'editor',
@@ -488,9 +497,9 @@ export default {
             this.loadFromRemix(compiled_contract, deployment_info);
         }
     },
-    pipedLoadRemix: function() {
-        let name = `PipedContract_${randomId()}`;
-        this.loadRemixCall(name, this.contractSource);
+    pipedLoadToRemix: function() {
+        let name = `PipedContract_${randomId()}.sol`;
+        this.loadToRemixCall(name, this.contractSource);
         this.pipedContracts[name] = null;
 
         if (this.chain === 'JavaScriptVM') return;
