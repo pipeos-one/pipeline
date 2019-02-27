@@ -498,6 +498,7 @@ export default {
         }
     },
     pipedLoadToRemix: function() {
+        let self = this;
         let name = `PipedContract_${randomId()}.sol`;
         this.loadToRemixCall(name, this.contractSource);
         this.pipedContracts[name] = null;
@@ -519,12 +520,12 @@ export default {
                     compiledContractProcess(result[0], function(contract) {
                         contract.tags.push('piped');
                         console.log('contract', contract);
-                        if (this.pipedContracts[contract.name]) {
+                        if (self.pipedContracts[contract.name]) {
                             if (confirm(`
                                 You have deployed ${contract.name}.
                                 Click "OK" if you want to save it on the Pipeos server.`)
                             ) {
-                                this.saveFromRemix(contract, {
+                                self.saveFromRemix(contract, {
                                     deployed: {
                                         address: data[0].contractAddress,
                                         chain_id: this.chain,

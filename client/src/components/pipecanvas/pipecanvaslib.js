@@ -13,6 +13,7 @@ const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
 const ARGUMENT_NAMES = /([^\s,]+)/g;
 const UNNAMED_INPUT = 'i_unnamed';
 const UNNAMED_OUTPUT = 'o_unnamed';
+const WEI_VALUE  = 'wei_value';
 
 function getParamNames(func) {
     const fnStr = func.toString().replace(STRIP_COMMENTS, '');
@@ -259,6 +260,12 @@ export default class Graphs {
     addFunction( funcData, grIndex1){
         console.log("add", funcData, grIndex1)
         // console.log("gr", pipe2)
+        if (funcData.pfunction.gapi.payable) {
+            funcData.pfunction.gapi.inputs.push({
+                name: `${funcData.pfunction.gapi.name}_${this.idGen}_${WEI_VALUE}`,
+                type: 'uint256'
+            });
+        }
         grIndex = grIndex1
         pipe2.functions.push(funcData)
         pipe2.graphs[grIndex].n[this.idGen] = {
@@ -1570,10 +1577,11 @@ class GraphVisitor{
     }
 
     genFuncFunction(funcObj, row) {
+        let funcName = funcObj.func.pfunction.gapi.name + "_" + funcObj.i;
+
         if (funcObj.func.pfunction.gapi.payable) {
             this.isPayable = true
         }
-        let funcName = funcObj.func.pfunction.gapi.name + "_" + funcObj.i;
 
         let source = funcObj.func.pfunction.source;
         if (!source && this.ops.addSource) {
@@ -1612,22 +1620,12 @@ class GraphVisitor{
             return o
         }, funcObj.func.pfunction.gapi.inputs
         )
-        if (funcObj.func.pfunction.gapi.payable) {
-            console.log("inputset",inputset)
-        }
-        if (this.ops.inputSig1) {
-            this.genF[grIndex] = this.genF[grIndex] + this.ops.inputSig1
-            if (Object.values(inputset).length > 0) {
-                this.genF[grIndex] += ', ';
-            }
-            this.genF[grIndex] +=  Object.values(inputset).join(", ") + this.ops.inputSig2 + "\n";
+
+        if (this.ops.inputSig) {
+            this.genF[grIndex] += this.ops.inputSig(inputset, funcObj);
         }
 
-        let rest1 = ""
-        if (funcObj.func.pfunction.gapi.payable) {
-            rest1 = ".value(wei_value)"
-        }
-        this.genF[grIndex] += this.ops.ansProxy(rest1, funcName, inputset, funcObj);
+        this.genF[grIndex] += this.ops.ansProxy(funcName, inputset, funcObj);
         let outAssem = []
         let outputset = R.map((x)=>{
             // console.log(x)
@@ -1670,7 +1668,6 @@ class GraphVisitor{
         out = out + this.ops.const1 +this.genConstr2.join(", ") + this.ops.const2
         out = out + this.genConstr3.join("\n") + "\n"
         out = out + this.ops.const3
-        //out = out + this.intro2
 
         // Add helper functions - js
         if (this.funcsources.length) {
@@ -1693,11 +1690,30 @@ class GraphVisitor{
 
 }
 
-function callInternalFunctionSolidity(payable, funcName, inputset, funcObj) {
+function callInternalFunctionSolidity(funcName, inputset, funcObj) {
+    let payable = '';
+    if (funcObj.func.pfunction.gapi.payable) {
+        let weiInput = Object.values(inputset).find(input => input.indexOf(WEI_VALUE) > -1);
+        payable = `.value(${weiInput})`;
+    }
     return `    answer42 = pipe_proxy.proxy${payable}(${funcName}, input42, 400000);\n`;
 }
 
-function callInternalFunctionJs(payable, funcName, inputset, funcObj) {
+function setCallFuncSignature(inputset, funcObj) {
+
+    let inputs = '';
+    if (Object.values(inputset).length > 0) {
+        inputs += ', ';
+    }
+    if (funcObj.func.pfunction.gapi.payable) {
+        inputs += Object.values(inputset).filter(input => input.indexOf(WEI_VALUE) < 0).join(", ");
+    } else {
+        inputs += Object.values(inputset).join(", ");
+    }
+    return `input42 = abi.encodeWithSelector(signature42${inputs});\n`;
+}
+
+function callInternalFunctionJs(funcName, inputset, funcObj) {
     let result = '';
     if (funcObj.func.pfunction.gapi.type === 'event') {
         return result;
@@ -1732,6 +1748,7 @@ function addSourceJsFromSolidity(funcName, funcObj) {
     if (funcObj.func.pfunction.gapi.type === 'event') {
         return;
     }
+    let payable = '', functionInputs;
     let gapi = funcObj.func.pfunction.gapi;
     let inputs = gapi.inputs.map((input, i) => input.name || `${UNNAMED_INPUT}_i`);
     let outputs = gapi.outputs.map((output, i) => output.name || `${UNNAMED_OUTPUT}_i`);
@@ -1741,8 +1758,14 @@ function addSourceJsFromSolidity(funcName, funcObj) {
     } else if (outputs.length > 1) {
         returnValue = ` output`;
     }
-    return `async function(${inputs.join(', ')}) {
-    const output = await contract_${funcName}.${gapi.name}(${inputs.join(', ')});
+    functionInputs = inputs.join(', ');
+    if (gapi.payable) {
+        let index = inputs.findIndex(input => input.indexOf(WEI_VALUE) > -1);
+        payable = `, {value: ${inputs[index]}}`;
+        inputs.splice(index, 1);
+    }
+    return `async function(${functionInputs}) {
+    const output = await contract_${funcName}.${gapi.name}(${inputs.join(', ')}${payable});
     return${returnValue};
 }`;
 }
@@ -1802,24 +1825,16 @@ interface PipeProxy {
         "function_returns": (type, name) => `${type} r_${name}`,
         // function end
         "function_ret4": "}",
-        "function_p2": " {\n    bytes4 signature42;\n    bytes memory input42;\n    bytes memory answer42;\n    uint wei_value = msg.value;\n    address tx_sender = msg.sender;\n",
+        "function_p2": ` {\n    bytes4 signature42;\n    bytes memory input42;\n    bytes memory answer42;\n    address tx_sender = msg.sender;\n`,
         "sigFunc1": "signature42 = bytes4(keccak256(\"",
         "sigFunc2": "\"));",
-        "inputSig1": "input42 = abi.encodeWithSelector(signature42",
-        "inputSig2": ");",
+        "inputSig": setCallFuncSignature,
         "ansProxy": callInternalFunctionSolidity,
         "outputset": (type, name, i) => `${type} o_${name}_${i};`,
         "restFunc": (outputset, outAssem) => `${outputset.join("\n")}\nassembly {\n${outAssem.join("\n")}\n}\n`,
         "assem": " := mload(add(answer42, 32))",
         "intro1": "\n\nfunction PipedFunction",
         "intro11": "(",
-        "intro2": `) payable public {
-        bytes4 signature42;
-        bytes memory input42;
-        bytes memory answer42;
-        uint wei_value = msg.value;
-        address tx_sender = msg.sender;
-        `,
         "const1": "constructor(address _pipe_proxy, ",
         "const2": `
         ) public {
@@ -1884,7 +1899,6 @@ const signer = provider.getSigner();
         "intro1": `
 (async function PipedFunction`,
         "intro11": "(",
-        "intro2": "",
         "const1": "",
         "const2": ``,
         "const3": "",
