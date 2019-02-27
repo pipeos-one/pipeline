@@ -1720,7 +1720,7 @@ function genFuncReturnDestructuring(outputset, outAssem, funcName, funcObj) {
     if (funcObj.func.pfunction.gapi.type === 'event') {
         let eventName = funcObj.func.pfunction.gapi.name;
         return `
-contract_${funcName}.on("${eventName}", (${Object.values(outAssem).join(",")}, filterObject) => {
+contract_${funcName}.on("${eventName}", async (${Object.values(outAssem).join(",")}, filterObject) => {
 `
     }
 }
