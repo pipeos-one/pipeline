@@ -234,6 +234,7 @@ export default class Graphs {
         this.idGen = 0
         pipe2.callbacks = {
             onGraphChange: callbacks.onGraphChange,
+            onGraphFunctionRemove: callbacks.onGraphFunctionRemove,
         };
     }
 
@@ -1063,12 +1064,15 @@ class FuncBox {
 
         this.el.dblclick(() => {
             self.el.remove();
-
+            let removedNodes = [];
             let keys1 = R.mapObjIndexed((x, key, all) => {
                 if (x.i == self.obj.i) return key
             }, pipe2.graphs[grIndex].n);
 
             R.map((x)=>{
+                if (x) {
+                    removedNodes.push(pipe2.graphs[grIndex].n[parseInt(x)]);
+                }
                 delete pipe2.graphs[grIndex].n[parseInt(x)];
             }, keys1)
 
@@ -1080,6 +1084,7 @@ class FuncBox {
                 delete pipe2.graphs[grIndex].e[parseInt(x)];
             }, keys2)
 
+            pipe2.callbacks.onGraphFunctionRemove(grIndex, removedNodes);
 
             return proc1();
         });

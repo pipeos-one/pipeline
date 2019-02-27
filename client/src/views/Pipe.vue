@@ -261,7 +261,17 @@ export default {
                             return contract_address;
                         })).map(address => `"${address}"`).join(',');
                     console.log('this.deploymentInfo', this.deploymentInfo);
-                }
+                },
+                onGraphFunctionRemove: (grIndex, nodes) => {
+                    console.log('onGraphFunctionRemove', grIndex, nodes);
+                    // nodes.map(node => {
+                    //     console.log('node', node, this.selectedFunctions[grIndex][node.i]._id);
+                    //     if (this.selectedFunctions[grIndex][node.i]._id === node.id) {
+                    //         this.selectedFunctions[grIndex][node.i].removed = true;
+                    //         console.log('removed');
+                    //     }
+                    // });
+                },
             }
         );
         this.graphInstance.addGraph(`draw_${this.activeCanvas + 1}`);
