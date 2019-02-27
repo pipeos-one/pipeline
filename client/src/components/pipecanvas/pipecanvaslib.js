@@ -1693,7 +1693,8 @@ class GraphVisitor{
 function callInternalFunctionSolidity(funcName, inputset, funcObj) {
     let payable = '';
     if (funcObj.func.pfunction.gapi.payable) {
-        payable = `.value(${funcName}_${WEI_VALUE}_${funcObj.i})`;
+        let weiInput = Object.values(inputset).find(input => input.indexOf(WEI_VALUE) > -1);
+        payable = `.value(${weiInput})`;
     }
     return `    answer42 = pipe_proxy.proxy${payable}(${funcName}, input42, 400000);\n`;
 }
