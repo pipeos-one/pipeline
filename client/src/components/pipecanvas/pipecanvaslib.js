@@ -1020,12 +1020,6 @@ class Smooth {
         if (key1 !== undefined) {
             delete pipe2.graphs[grIndex].e[key1]
         }
-
-
-
-
-        // console.log(pipe2.graph.e);
-
     }
 }
 
@@ -1077,8 +1071,6 @@ class FuncBox {
             R.map((x)=>{
                 delete pipe2.graphs[grIndex].n[parseInt(x)];
             }, keys1)
-
-            //
 
             let keys2 = R.mapObjIndexed((x, key, all) => {
                 if (x[0] == self.obj.i || x[2] == self.obj.i) return key
