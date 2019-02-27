@@ -1668,7 +1668,6 @@ class GraphVisitor{
         out = out + this.ops.const1 +this.genConstr2.join(", ") + this.ops.const2
         out = out + this.genConstr3.join("\n") + "\n"
         out = out + this.ops.const3
-        //out = out + this.intro2
 
         // Add helper functions - js
         if (this.funcsources.length) {
@@ -1831,13 +1830,6 @@ interface PipeProxy {
         "assem": " := mload(add(answer42, 32))",
         "intro1": "\n\nfunction PipedFunction",
         "intro11": "(",
-        "intro2": `) payable public {
-        bytes4 signature42;
-        bytes memory input42;
-        bytes memory answer42;
-        uint wei_value = msg.value;
-        address tx_sender = msg.sender;
-        `,
         "const1": "constructor(address _pipe_proxy, ",
         "const2": `
         ) public {
@@ -1902,7 +1894,6 @@ const signer = provider.getSigner();
         "intro1": `
 (async function PipedFunction`,
         "intro11": "(",
-        "intro2": "",
         "const1": "",
         "const2": ``,
         "const3": "",
