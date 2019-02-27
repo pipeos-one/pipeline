@@ -1399,6 +1399,7 @@ class GraphVisitor{
         this.maxY = 0
         this.minX = {}
         this.isPayable = false
+        this.containsEvent = false
     }
 
     renderFunc(funcObj, row){
@@ -1529,7 +1530,16 @@ class GraphVisitor{
         }
 
         // Code generation ends here
-        this.genF[grIndex] = this.genF[grIndex] + this.genF2[grIndex] + this.ops.function_ret4
+        // Adding function returns
+        this.genF[grIndex] += this.genF2[grIndex]
+
+        // Ending event promise if present
+        if (this.containsEvent && this.ops.function_ret3) {
+            this.genF[grIndex] += this.ops.function_ret3;
+        }
+
+        // Function end
+        this.genF[grIndex] += this.ops.function_ret4
 
         // For js, we also call the function in place
         if (this.ops.function_ret5) {
@@ -1546,10 +1556,20 @@ class GraphVisitor{
 
         if (funcObj.func.pfunction.gapi.type == "port") {
             this.genFuncIO(funcObj);
-        } else if (funcObj.func.pfunction.gapi.type == "function") {
-            if (!this.ops.validateFunc(funcObj.func.pclass.type, this.ops.pclassType)) return;
-            this.genFuncFunction(funcObj, row);
+            return;
         }
+        if (
+            ["function", "event"].indexOf(funcObj.func.pfunction.gapi.type) < 0 &&
+            !this.ops.validateFunc(funcObj.func.pclass.type, this.ops.pclassType)
+        ) {
+            return;
+        }
+
+        if (funcObj.func.pfunction.gapi.type === 'event') {
+            if (this.containsEvent) return;
+            this.containsEvent = true;
+        }
+        this.genFuncFunction(funcObj, row);
     }
 
     genFuncFunction(funcObj, row) {
@@ -1620,7 +1640,7 @@ class GraphVisitor{
         }, funcObj.func.pfunction.gapi.outputs)
         let o = ""
         if (funcObj.func.pfunction.gapi.outputs.length > 0) {
-            o = this.ops.restFunc(outputset, outAssem, funcObj.func.pfunction.gapi.outputs);
+            o = this.ops.restFunc(outputset, outAssem, funcName, funcObj);
         }
 
         this.genF[grIndex] = this.genF[grIndex] + o + "\n";
@@ -1682,6 +1702,9 @@ function callInternalFunctionSolidity(payable, funcName, inputset, funcObj) {
 
 function callInternalFunctionJs(payable, funcName, inputset, funcObj) {
     let result = '';
+    if (funcObj.func.pfunction.gapi.type === 'event') {
+        return result;
+    }
     if (funcObj.func.pclass.deployment.pclassi.openapiid) {
         result += `
     baseUrl = baseUrl_${funcName};
@@ -1692,8 +1715,24 @@ function callInternalFunctionJs(payable, funcName, inputset, funcObj) {
     return result;
 }
 
+function genFuncReturnDestructuring(outputset, outAssem, funcName, funcObj) {
+    let outputs = funcObj.func.pfunction.gapi.outputs;
+    if (funcObj.func.pfunction.gapi.type === 'function') {
+        return outAssem.map((out, i) => `    const ${out} = result.${outputs[i].name || `${UNNAMED_OUTPUT}_i`};`).join('\n');
+    }
+    if (funcObj.func.pfunction.gapi.type === 'event') {
+        let eventName = funcObj.func.pfunction.gapi.name;
+        return `
+contract_${funcName}.on("${eventName}", (${Object.values(outAssem).join(",")}, filterObject) => {
+`
+    }
+}
+
 function addSourceJsFromSolidity(funcName, funcObj) {
     if (funcObj.func.pclass.type  != visOptions.solidity.pclassType) {
+        return;
+    }
+    if (funcObj.func.pfunction.gapi.type === 'event') {
         return;
     }
     let gapi = funcObj.func.pfunction.gapi;
@@ -1819,6 +1858,8 @@ const signer = provider.getSigner();
     console.log(${outs.join(", ")});
     return {${outs.join(", ")}};
 `,
+        // if an event is present, then we need to close it
+        "function_ret3": '});',
         // function end
         "function_ret4": `
 })`,
@@ -1839,7 +1880,7 @@ const signer = provider.getSigner();
         "inputSig2": "",
         "ansProxy": callInternalFunctionJs,
         "outputset": (type, name, i) => `o_${name}_${i};`,
-        "restFunc": (outputset, outAssem, outputs) => outAssem.map((out, i) => `    const ${out} = result.${outputs[i].name || `${UNNAMED_OUTPUT}_i`};`).join('\n'),
+        "restFunc": genFuncReturnDestructuring,
         "assem": "",
         "intro0": `let `,
         "intro01": ` = null;`,
