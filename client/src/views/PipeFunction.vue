@@ -1,16 +1,16 @@
 <template>
-    <AbiFunction :abi="abi"/>
+    <AbiFunctionForm :abi="abi"/>
 </template>
 
 <script>
 import Vue from 'vue';
 import Pipeos from '../namespace/namespace';
-import AbiFunction from '../components/abi/AbiFunction';
+import AbiFunctionForm from '../components/abi/AbiFunctionForm';
 
 const api = Pipeos.pipeserver.api.function;
 
 export default {
-    components: {AbiFunction},
+    components: {AbiFunctionForm},
     data() {
         return {
             abi: {},

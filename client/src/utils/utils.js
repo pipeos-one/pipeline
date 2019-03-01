@@ -6,7 +6,7 @@ export function pfunctionColorClass(gapi) {
     let colorClass = '';
     if (gapi.type === 'event') {
         colorClass = 'event';
-    } else if (gapi.type === 'payable') {
+    } else if (gapi.payable) {
         colorClass = 'payable';
     } else if (!gapi.constant) {
         colorClass = 'nonconstant';
@@ -31,6 +31,15 @@ export function linkReferencesSolcToEthPM(linkReferences={}) {
         });
     });
     return lreferences;
+}
+
+export const JsonArrayToString = function (json) {
+    let functionArgs = JSON.stringify(json);
+    functionArgs = functionArgs.substring(
+        1,
+        functionArgs.length - 1,
+    ).replace(/\\"/g, '"');
+    return functionArgs;
 }
 
 export function compiledContractProcess(compiled, callback) {
