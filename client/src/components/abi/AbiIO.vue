@@ -115,6 +115,7 @@ export default {
                 value,
                 this.components[index].type,
                 this.components[index].components,
+                this,
             );
             this.setInputValue();
             this.$emit('value-changed', this.getObjectFromComponents());

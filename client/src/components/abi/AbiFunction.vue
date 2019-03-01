@@ -109,20 +109,14 @@ export default {
         inputsStr: function(inputs) {
             return inputs.map(input => `${input.type} ${input.name}`).join(',');
         },
-        validateArg(value, type, components=[]) {
+        validateArg(value, type, components=[], self) {
             if (type.indexOf('int') > -1) {
                 value = parseInt(value);
                 if (value === NaN) {
                     this.errorMessages.push(`Argument number ${i} should be ${input.type}`);
-                }
-                return value;
-            }
-
-            if (['string', 'address'].indexOf(type) > -1) {
-                if (
-                    value.indexOf('"') != 0 || value.lastIndexOf('"') != (value.length - 1)
-                ) {
-                    this.errorMessages.push(`Use quotes around strings and addresses`);
+                    if (self) {
+                        self.errorMessages = this.errorMessages;
+                    }
                 }
                 return value;
             }
@@ -138,6 +132,9 @@ export default {
                 }
                 catch(e) {
                     this.errorMessages.push(`Value does not have a valid JSON format`);
+                }
+                if (self) {
+                    self.errorMessages = this.errorMessages;
                 }
             }
             return value;
