@@ -1559,7 +1559,9 @@ class GraphVisitor{
                 let name = `i_${input.name}_${funcObject.i}`;
                 this.abi.inputs.forEach((pipedin, i) => {
                     if (pipedin.name === name) {
-                        this.abi.inputs[i] = Object.assign(input, this.abi.inputs[i]);
+                        this.abi.inputs[i] = Object.assign(
+                            JSON.parse(JSON.stringify(input)), this.abi.inputs[i]
+                        );
                     }
                 });
 
