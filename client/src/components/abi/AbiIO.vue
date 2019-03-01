@@ -89,6 +89,8 @@ export default {
                 );
             } else if (typeof this.abi.value === 'object') {
                 this.inputValue = JsonArrayToString([this.abi.value]);
+            } else if (typeof this.abi.value === 'string') {
+                this.inputValue = `"${this.abi.value}"`;
             } else {
                 this.inputValue = this.abi.value;
             }

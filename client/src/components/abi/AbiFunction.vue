@@ -183,8 +183,11 @@ export default {
             if (this.errorMessages.length == 0) {
                 let args = [];
                 this.inputs.forEach(input => {
-                    if (typeof input.value == 'object') {
+                    if (typeof input.value === 'object') {
                         input.value = JsonArrayToString([input.value]);
+                    }
+                    if (typeof input.value === 'string') {
+                        input.value = `"${input.value}"`;
                     }
                     args.push(input);
                 });
