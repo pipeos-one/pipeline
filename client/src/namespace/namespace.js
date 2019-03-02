@@ -12,6 +12,7 @@ const Pipeos = {
             pclassi: `${pipeserverIp}/pclassi`,
             tag: `${pipeserverIp}/tag`,
             project: `${pipeserverIp}/project`,
+            package: `${pipeserverIp}/package`,
         },
     },
     contracts: {

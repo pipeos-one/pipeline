@@ -5,18 +5,19 @@
         </swiper-slide>
         <swiper-slide class="swiper-margin no-swipe">
                 <v-layout row wrap>
-                    <v-flex xs3 style="margin-top: 70px;">
+                    <v-flex xs4 style="margin-top: 70px;">
                         <Search
                             v-on:select="onSearchSelect"
                             v-on:search="onSearchQuery"
                             v-on:remove="onSearchRemove"
                         />
+                        <LoadFromEthpm v-on:change="onLoadFromEthpm"/>
                         <RemixLoadContract
                             v-on:load-from-remix="loadFromRemixWrap"
                             v-on:provider-changed="setNetworkInfo"
                         />
                     </v-flex>
-                    <v-flex xs9>
+                    <v-flex xs8>
                     <PaginatedList
                         :items="selectedContainers"
                         :pages="pages"
@@ -108,6 +109,7 @@ import PipeCanvas from '../components/pipecanvas/PipeCanvas';
 import PipeApp from '../components/pipeapp/PipeApp';
 import PipeAbout from '../components/about/PipeAbout';
 import RemixLoadContract from '../components/remix/RemixLoadContract';
+import LoadFromEthpm from '../components/LoadFromEthpm';
 import Search from '../components/Search';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
@@ -126,6 +128,7 @@ const containerApi = Pipeos.pipeserver.api.pclass;
 const containerFunctionsApi = Pipeos.pipeserver.api.pclass + '/pfunctions';
 const containerDeployedApi = Pipeos.pipeserver.api.pclass + '/pclassi';
 const deployedApi = Pipeos.pipeserver.api.pclassi;
+const packageApi = Pipeos.pipeserver.api.package;
 
 let filterOptions = {
     offset: 0,
@@ -142,6 +145,7 @@ export default {
     PipeCanvas,
     PipeApp,
     RemixLoadContract,
+    LoadFromEthpm,
   },
   data() {
     return {
@@ -196,8 +200,7 @@ export default {
             }
         }, 3000);
     },
-    buildContainersQuery() {
-        let query = {};
+    buildContainersQuery(query = {}) {
         if (this.selectedTags.length > 0) {
             query.tags = {inq: this.selectedTags};
         }
@@ -215,12 +218,12 @@ export default {
 
         return query;
     },
-    loadData: function() {
+    loadData: function(whereQuery = {}) {
         let query, containersQuery;
         this.countPClasses();
 
         let filter = this.filterOptions;
-        filter.where = this.buildContainersQuery();
+        filter.where = this.buildContainersQuery(whereQuery);
         filter = '?filter=' + JSON.stringify(filter);
         console.log('filter', filter);
 
@@ -454,6 +457,14 @@ export default {
             console.log(error);
         });
     },
+    onLoadFromEthpm: function(type, hash) {
+        Vue.axios.get(`${packageApi}/storage/${type}/${hash}`).then((response) => {
+            let ppackage = response.data;
+            this.loadData({packageid: ppackage._id});
+        }).catch(error => {
+            alert(`Could not import package: ${error}`);
+        });
+    },
     buildFunctionsFromContainer: function(container) {
         let abi = container.pclass.gapi;
         let natspec = container.pclass.natspec;
@@ -559,10 +570,10 @@ body {
     width: 100%!important;
 }
 .swiper-slide:nth-child(2n), .swiper-slide:nth-child(4n) {
-    width: 70%!important;
+    width: 60%!important;
 }
 .swiper-slide:nth-child(3n), .swiper-slide:nth-child(5n) {
-    width: 30%!important;
+    width: 40%!important;
     overflow-y: scroll;
 }
 .fullheight, .v-window, .v-window__container {
