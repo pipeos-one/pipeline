@@ -149,6 +149,28 @@ export class PackageController {
     await this.packageRepository.deleteById(id);
   }
 
+  @del('/package/{id}/all', {
+    responses: {
+        '200': {
+            description: 'Package, PClass, PClassI, PFunction DELETE success count',
+            content: {'application/json': {schema: CountSchema}},
+        },
+    },
+  })
+  async deleteEntirePackageComponents(@param.path.string('id') id: string): Promise<any> {
+    let ppackage, pclasses, count: Count = {count: 0};
+    let pclassController = new PClassController(await this.packageRepository.pclass);
+
+    ppackage = await this.findById(id);
+
+    pclasses = await pclassController.find({where: {packageid: id}});
+    for (let i = 0; i < pclasses.length; i++) {
+        count.count += (await pclassController.deletePClassFunctions(pclasses[i]._id)).count;
+    };
+    await this.deleteById(id);
+    return count;
+  }
+
   @get('/package/storage/{type}/{hash}', {
     responses: {
       '200': {
