@@ -231,7 +231,7 @@ export class PackageController {
     responses: {
       '200': {
         description: 'Package model instance',
-        // content: {'application/json': {schema: {'x-ts-type': Package}}},
+        content: {'application/json': {schema: {'x-ts-type': Package}}},
       },
     },
   })
@@ -403,10 +403,11 @@ export class PackageController {
         // build_dependencies,
     }
 
-    return this.updateById(ppackage._id, {
+    await this.updateById(ppackage._id, {
         package: package_update,
         modules,
     });
+    return await this.findById(ppackage._id);
   }
 
   @get('/package/export/{id}', {
