@@ -186,7 +186,7 @@ export default {
                     if (typeof input.value === 'object') {
                         input.value = JsonArrayToString([input.value]);
                     }
-                    if (typeof input.value === 'string') {
+                    if (typeof input.value === 'string' && input.type != 'tuple') {
                         input.value = `"${input.value}"`;
                     }
                     args.push(input);
