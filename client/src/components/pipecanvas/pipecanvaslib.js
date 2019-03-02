@@ -205,6 +205,7 @@ const containers = [
 let pipe2 = {};
 let grIndex = 0
 let langs ={}
+langs['abi'] = [];
 let types = {}
 
 let funcs; let gra = {}; let gre;
@@ -215,6 +216,7 @@ let edges;
 let g;
 const xr = 32;
 let startDrop; let endDrop;
+let containsEvent = {};
 
 const graph = {"n": [], "e": []};
 
@@ -293,6 +295,10 @@ export default class Graphs {
 
     getSource(lang) {
         return langs[lang]
+    }
+
+    containsEvent(index) {
+        return containsEvent[index];
     }
 }
 
@@ -431,10 +437,11 @@ function proc1() {
     //console.log(Object.assign({},pipe2.cgraphs[grIndex].n))
 
     //console.log(JSON.stringify(pipe2.cgraphs[grIndex].n))
-
+    delete containsEvent[grIndex];
     // events reverse i/o
     R.mapObjIndexed((x, key, all) => {
         if (x.func.pfunction.gapi.type == "event"){
+            containsEvent[grIndex] = true;
             if (x.func.pfunction.gapi.outputs === undefined) {
                 x.func.pfunction.gapi.outputs = []
             }
@@ -785,10 +792,6 @@ function addPortFunc(i, o1, state1){
     let out2 = JSON.parse(JSON.stringify(out))
     // let out2 = out
 
-    // JSON.parse(JSON.stringify(
-    // console.log('addPortFunc', out2)
-    // out2.func.pfunction.gapi.outputs[0] = {name: "Lore", type:"olt"}
-    // JSON.parse(JSON.stringify(state1))
     out2.func.pfunction.gapi.outputs[0] = {name: state1.name, type: state1.type}
     // console.log('addPortFunc', out.state)
     // console.log('addPortFunc', JSON.stringify(out2))
@@ -1391,6 +1394,7 @@ class GraphVisitor{
         this.genF2 = []
         // inputs
         this.in = []
+        this.abi = {inputs: [], outputs: []}
         this.pointer = xr;
         this.row = -1
         // outputs
@@ -1403,7 +1407,7 @@ class GraphVisitor{
         this.maxY = 0
         this.minX = {}
         this.isPayable = false
-        this.containsEvent = false
+        this.isNotConstant = false
     }
 
     renderFunc(funcObj, row){
@@ -1530,7 +1534,7 @@ class GraphVisitor{
         // Generating function return
         this.genF2[grIndex] = ""
         if (this.out.length >0){
-            this.genF2[grIndex] += this.ops.function_ret2(this.out);
+            this.genF2[grIndex] += this.ops.function_ret2(this.out, grIndex);
         }
 
         // Code generation ends here
@@ -1538,7 +1542,7 @@ class GraphVisitor{
         this.genF[grIndex] += this.genF2[grIndex]
 
         // Ending event promise if present
-        if (this.containsEvent && this.ops.function_ret3) {
+        if (containsEvent[grIndex] && this.ops.function_ret3) {
             this.genF[grIndex] += this.ops.function_ret3;
         }
 
@@ -1548,6 +1552,32 @@ class GraphVisitor{
         // For js, we also call the function in place
         if (this.ops.function_ret5) {
             this.genF[grIndex] += this.ops.function_ret5 + this.in.join(", ") + this.ops.function_ret51
+        }
+
+        // Fill the abi with other fields from the original abis
+        Object.values(g).forEach((funcObject) => {
+            funcObject.func.pfunction.gapi.inputs.forEach((input) => {
+                let name = `i_${input.name}_${funcObject.i}`;
+                this.abi.inputs.forEach((pipedin, i) => {
+                    if (pipedin.name === name) {
+                        this.abi.inputs[i] = Object.assign(
+                            JSON.parse(JSON.stringify(input)), this.abi.inputs[i]
+                        );
+                    }
+                });
+
+            });
+
+        });
+
+        langs['abi'][grIndex] = {
+            name: `PipedFunction${grIndex}`,
+            type: 'function',
+            constant: !this.isNotConstant,
+            payable: this.isPayable,
+            stateMutability: this.isPayable ? 'payable' : (this.isNotConstant ? 'nonpayable' : 'view'),
+            inputs: this.abi.inputs,
+            outputs:this.abi.outputs,
         }
 
         this.in= []
@@ -1569,10 +1599,6 @@ class GraphVisitor{
             return;
         }
 
-        if (funcObj.func.pfunction.gapi.type === 'event') {
-            if (this.containsEvent) return;
-            this.containsEvent = true;
-        }
         this.genFuncFunction(funcObj, row);
     }
 
@@ -1580,7 +1606,11 @@ class GraphVisitor{
         let funcName = funcObj.func.pfunction.gapi.name + "_" + funcObj.i;
 
         if (funcObj.func.pfunction.gapi.payable) {
-            this.isPayable = true
+            this.isPayable = true;
+        }
+
+        if (!funcObj.func.pfunction.gapi.constant) {
+            this.isNotConstant = true;
         }
 
         let source = funcObj.func.pfunction.source;
@@ -1642,18 +1672,17 @@ class GraphVisitor{
     }
 
     genFuncIO(funcObj) {
-
         if (funcObj.func.pfunction.gapi.name == "PortIn") {
-            this.in.push(this.ops.function_in(funcObj.state.type, funcObj.state.name));
+            let input = this.ops.function_in(funcObj.state.type, funcObj.state.name);
+            this.in.push(input);
+            this.abi.inputs.push({type: funcObj.state.type, name: input});
         }
 
         if (funcObj.func.pfunction.gapi.name == "PortOut") {
             this.out.push(funcObj.state.name)
-        }
-
-        if (funcObj.func.pfunction.gapi.name == "PortOut") {
             this.outtype.push(this.ops.function_outtype(funcObj.state.type, funcObj.state.name));
             this.returns.push(this.ops.function_returns(funcObj.state.type, funcObj.state.name));
+            this.abi.outputs.push({type: funcObj.state.type, name: funcObj.state.name});
         }
     }
 
@@ -1851,6 +1880,7 @@ interface PipeProxy {
         "file_p0" : `
 let baseUrl;
 const httpClient = axios;
+const callback = PipedScriptCallback;
 
 // Metamask
 const provider = new ethers.providers.Web3Provider(web3.currentProvider);
@@ -1866,9 +1896,9 @@ const signer = provider.getSigner();
         "function_ret0": "",
         "function_ret1": "",
         // actual function return
-        "function_ret2": (outs) => `
+        "function_ret2": (outs, i) => `
     console.log(${outs.join(", ")});
-    return {${outs.join(", ")}};
+    PipedScriptCallback('PipedFunction${i}', {${outs.join(", ")}});
 `,
         // if an event is present, then we need to close it
         "function_ret3": '});',

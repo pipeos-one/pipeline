@@ -77,6 +77,7 @@
                 :deploymentInfo="deploymentInfo"
                 :jsSource="jsSource"
                 :graphSource="graphSource"
+                :graphsAbi="graphsAbi"
                 v-on:load-remix="pipedLoadToRemix"
             />
         </swiper-slide>
@@ -174,6 +175,7 @@ export default {
         deploymentInfo: '',
         jsSource: '',
         graphSource: '',
+        graphsAbi: null,
         graphInstance: null,
         pipedContracts: {},
     };
@@ -249,6 +251,7 @@ export default {
                     this.contractSource = this.graphInstance.getSource('solidity');
                     this.graphSource = JSON.stringify(this.graphInstance.getSource('graphs'));
                     this.jsSource = this.graphInstance.getSource('javascript');
+                    this.graphsAbi = this.graphInstance.getSource('abi');
                     this.deploymentInfo = [Pipeos.contracts.PipeProxy.addresses[this.chain]]
                         .concat(this.graphInstance.getSource('constructor').map(function_id => {
                             let contract_address;
@@ -323,10 +326,7 @@ export default {
     },
     onFunctionToggle: function (pfunction) {
         if (pfunction.pfunction.gapi.type === 'event') {
-            let index = this.selectedFunctions[this.activeCanvas].findIndex(func => {
-                return func.pfunction.gapi.type === 'event';
-            });
-            if (index > -1) {
+            if (this.graphInstance.containsEvent(this.activeCanvas)) {
                 alert('There can only be one event per graph/tab. You can add another graph/tab by clicking the + button.');
                 return;
             }

@@ -33,7 +33,7 @@
                         <p>With the deployment info provided.</p>
                     </v-tooltip>
                 </v-toolbar>
-                <textarea ref='contractSource' class='source-txtar'>{{contractSource}}</textarea>
+                <textarea ref='contractSource' class='source-txtar'>{{contractSourceLast}}</textarea>
             </v-tab-item>
             <v-tab-item
                 key="deployment"
@@ -51,7 +51,7 @@
                         <span>Copy constructor arguments to clipboard</span>
                     </v-tooltip>
                 </v-toolbar>
-                <textarea ref='deploymentInfo' class='source-txtar'>{{deploymentInfo}}</textarea>
+                <textarea ref='deploymentInfo' class='source-txtar'>{{deploymentInfoLast}}</textarea>
             </v-tab-item>
             <v-tab-item
                 key="js"
@@ -78,8 +78,28 @@
                         </v-btn>
                         <span>Run source</span>
                     </v-tooltip>
+                    <v-dialog v-model="dialog" hide-overlay max-width="600px">
+                        <!-- <v-tooltip bottom> -->
+                            <v-btn
+                                small flat fab
+                                slot="activator"
+                            >
+                                <v-icon>fa-play-circle</v-icon>
+                            </v-btn>
+                            <!-- <span>Run source</span>
+                        </v-tooltip> -->
+                        <v-card>
+                            <AbiFunction
+                                v-if="graphsAbi.length"
+                                v-for="(funcAbi, i) in graphsAbi"
+                                :key="i"
+                                :abi="funcAbi"
+                                v-on:value-changed="jsArgumentsChange"
+                            />
+                        </v-card>
+                    </v-dialog>
                 </v-toolbar>
-                <textarea ref='jsSource' class='source-txtar'>{{jsSource}}</textarea>
+                <textarea ref='jsSource' class='source-txtar'>{{jsSourceLast}}</textarea>
             </v-tab-item>
             <v-tab-item
                 key="graph"
@@ -97,25 +117,87 @@
                         <span>Copy to clipboard</span>
                     </v-tooltip>
                 </v-toolbar>
-                <textarea ref='graphSource' class='source-txtar'>{{graphSource}}</textarea>
+                <textarea ref='graphSource' class='source-txtar'>{{graphSourceLast}}</textarea>
             </v-tab-item>
         </v-tabs>
     </div>
 </template>
 
 <script>
+import AbiFunction from '../abi/AbiFunction';
 import { ethers } from 'ethers';
 window.ethers = ethers;
+
 export default {
-    props: ['contractSource', 'graphSource', 'jsSource', 'deploymentInfo'],
+    components: {
+        AbiFunction,
+    },
+    props: ['contractSource', 'graphSource', 'jsSource', 'deploymentInfo', 'graphsAbi'],
+    data: () => ({
+        contractSourceLast: '',
+        graphSourceLast: '',
+        jsSourceLast: '',
+        deploymentInfoLast: '',
+        dialog: false,
+    }),
+    created: function() {
+        this.setInitialData();
+    },
+    watch: {
+        contractSource: function() {
+            this.contractSourceLast = this.contractSource;
+        },
+        graphSource: function() {
+            this.graphSourceLast = this.graphSource;
+        },
+        jsSource: function() {
+            this.jsSourceLast = this.jsSource;
+        },
+        deploymentInfo: function() {
+            this.deploymentInfoLast = this.deploymentInfo;
+        },
+    },
     methods: {
+        setInitialData: function() {
+            this.contractSourceLast = this.contractSource;
+            this.graphSourceLast = this.graphSource;
+            this.jsSourceLast = this.jsSource;
+            this.deploymentInfoLast = this.deploymentInfo;
+            let self = this;
+
+            this.PipedScriptCallback = window.PipedScriptCallback = (funcName, returnValues) => {
+                console.log('PipedScriptCallback', funcName, JSON.stringify(returnValues));
+
+                let element = document.getElementById(`output_${funcName}`);
+                element.innerHTML = '';
+
+                Object.keys(returnValues).forEach((name) => {
+                    element.insertAdjacentHTML('beforeend', `<p>${name}: ${this.prepareOutput(returnValues[name])}</p>`);
+                });
+            }
+        },
+        prepareOutput: function(value) {
+            if (typeof value === 'object') {
+                return JSON.stringify(value);
+            }
+            return value;
+        },
         clipboardCopy: function(reference) {
             this.$refs[reference].select();
             document.execCommand("copy");
         },
         runSource: function(reference) {
             eval(this.$refs[reference].value);
-        }
+        },
+        jsArgumentsChange: function(args)  {
+            args.forEach((arg, i) => {
+                let pattern1 = `let ${arg.name} = `;
+                let regex = new RegExp(pattern1 + '.*;');
+                let replacement = `let ${arg.name} = ${arg.value};`;
+                this.jsSourceLast = this.jsSourceLast.replace(regex, replacement);
+            });
+            setTimeout(() => this.runSource('jsSource'), 1000);
+        },
     }
 }
 </script>
