@@ -216,6 +216,7 @@ let edges;
 let g;
 const xr = 32;
 let startDrop; let endDrop;
+let containsEvent = {};
 
 const graph = {"n": [], "e": []};
 
@@ -294,6 +295,10 @@ export default class Graphs {
 
     getSource(lang) {
         return langs[lang]
+    }
+
+    containsEvent(index) {
+        return containsEvent[index];
     }
 }
 
@@ -432,10 +437,11 @@ function proc1() {
     //console.log(Object.assign({},pipe2.cgraphs[grIndex].n))
 
     //console.log(JSON.stringify(pipe2.cgraphs[grIndex].n))
-
+    delete containsEvent[grIndex];
     // events reverse i/o
     R.mapObjIndexed((x, key, all) => {
         if (x.func.pfunction.gapi.type == "event"){
+            containsEvent[grIndex] = true;
             if (x.func.pfunction.gapi.outputs === undefined) {
                 x.func.pfunction.gapi.outputs = []
             }
@@ -1406,7 +1412,6 @@ class GraphVisitor{
         this.minX = {}
         this.isPayable = false
         this.isNotConstant = false
-        this.containsEvent = false
     }
 
     renderFunc(funcObj, row){
@@ -1541,7 +1546,7 @@ class GraphVisitor{
         this.genF[grIndex] += this.genF2[grIndex]
 
         // Ending event promise if present
-        if (this.containsEvent && this.ops.function_ret3) {
+        if (containsEvent[grIndex] && this.ops.function_ret3) {
             this.genF[grIndex] += this.ops.function_ret3;
         }
 
@@ -1598,10 +1603,6 @@ class GraphVisitor{
             return;
         }
 
-        if (funcObj.func.pfunction.gapi.type === 'event') {
-            if (this.containsEvent) return;
-            this.containsEvent = true;
-        }
         this.genFuncFunction(funcObj, row);
     }
 

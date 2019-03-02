@@ -326,10 +326,7 @@ export default {
     },
     onFunctionToggle: function (pfunction) {
         if (pfunction.pfunction.gapi.type === 'event') {
-            let index = this.selectedFunctions[this.activeCanvas].findIndex(func => {
-                return func.pfunction.gapi.type === 'event';
-            });
-            if (index > -1) {
+            if (this.graphInstance.containsEvent(this.activeCanvas)) {
                 alert('There can only be one event per graph/tab. You can add another graph/tab by clicking the + button.');
                 return;
             }
