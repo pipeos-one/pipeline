@@ -14,15 +14,14 @@ export function pfunctionColorClass(gapi) {
     return colorClass;
 }
 
-export function linkReferencesSolcToEthPM(linkReferences={}) {
-    let lreferences = [];
+export function linkReferencesSolcToEthPM(linkReferences = {}) {
+    const lreferences = [];
 
     Object.keys(linkReferences).forEach((fileName) => {
         Object.entries(linkReferences[fileName]).forEach((entry) => {
-            let libName = entry[0];
-            let links = entry[1];
-            let offsets;
-            offsets = links.map(link => link.start);
+            const libName = entry[0];
+            const links = entry[1];
+            const offsets = links.map(link => link.start);
             lreferences.push({
                 offsets,
                 length: links[0].length,
@@ -40,36 +39,49 @@ export const JsonArrayToString = function (json) {
         functionArgs.length - 1,
     ).replace(/\\"/g, '"');
     return functionArgs;
-}
+};
+
+const EMPTY_NATSPEC = {methods: {}};
+
+export const getNatspec = (devdoc = EMPTY_NATSPEC, userdoc = EMPTY_NATSPEC) => {
+    const natspec = Object.assign({}, userdoc, devdoc);
+    Object.keys(userdoc.methods).forEach((methodName) => {
+        natspec.methods[methodName] = Object.assign(
+            userdoc.methods[methodName],
+            natspec.methods[methodName],
+        );
+    });
+    return natspec;
+};
 
 export function compiledContractProcess(compiled, callback) {
-    let sources = [];
+    const sources = [];
 
     Object.keys(compiled.source.sources).forEach((key) => {
-        if (key == 'target') return;
+        if (key === 'target') return;
         sources.push({
             relative_path: key,
             source: compiled.source.sources[key].content,
         });
     });
     Object.entries(compiled.data.contracts).forEach((entryArray) => {
-        const relative_path = entryArray[0];
         const contractsAtPath = entryArray[1];
         Object.entries(contractsAtPath).forEach((entry) => {
             const contractName = entry[0];
             const compiledContract = entry[1];
-            let metadataJson, compilationTarget;
+            let metadataJson;
+
             if (compiledContract.metadata) {
                 try {
                     metadataJson = JSON.parse(compiledContract.metadata);
                     metadataJson.settings.compilationTarget = {
                         filePath: Object.keys(metadataJson.settings.compilationTarget)[0],
                         contractName: Object.values(metadataJson.settings.compilationTarget)[0],
-                    }
+                    };
                 } catch (err) {
                     console.log(
                         `Error found when extracting metadata for ${contractName}, metadata: ${compiledContract.metadata}`,
-                        err
+                        err,
                     );
                 }
             }
@@ -84,8 +96,10 @@ export function compiledContractProcess(compiled, callback) {
                     // deployment_bytecode: ,
                     // unlinked bytecode
                     runtime_bytecode: {
-                        bytecode: '0x' + compiledContract.evm.bytecode.object,
-                        link_references: linkReferencesSolcToEthPM(compiledContract.evm.bytecode.linkReferences),
+                        bytecode: `0x${compiledContract.evm.bytecode.object}`,
+                        link_references: linkReferencesSolcToEthPM(
+                            compiledContract.evm.bytecode.linkReferences,
+                        ),
                         // link_dependencies: [],
                     },
                     metadata: compiledContract.metadata,
@@ -109,16 +123,3 @@ export function compiledContractProcess(compiled, callback) {
         });
     });
 }
-
-const EMPTY_NATSPEC = {methods: {}};
-
-export const getNatspec = (devdoc=EMPTY_NATSPEC, userdoc=EMPTY_NATSPEC) => {
-        let natspec = Object.assign({}, userdoc, devdoc);
-        Object.keys(userdoc.methods).forEach((methodName) => {
-            natspec.methods[methodName] = Object.assign(
-                userdoc.methods[methodName],
-                natspec.methods[methodName],
-            );
-        });
-        return  natspec;
-    }

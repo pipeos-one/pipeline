@@ -176,7 +176,7 @@ export default {
         filterOptions,
         pipeJs: {},
         contractSource: '',
-        deploymentInfo: '',
+        deploymentInfo: [],
         jsSource: '',
         graphSource: '',
         graphsAbi: null,
@@ -231,6 +231,9 @@ export default {
             console.log('response', response);
             let pclasses = response.data.pclasses.map(pclass => {
                 pclass.deployment = response.data.pclassii.find(depl => depl.pclassid == pclass._id);
+                if (!pclass.deployment) {
+                    pclass.deployment = {pclassi: {address: `Deployment address for ${pclass.name} not found.`}};
+                }
                 return pclass;
             });
             this.linkContainersFunctions(response.data.pfunctions, pclasses);
@@ -251,21 +254,36 @@ export default {
             this.selectedFunctions,
             {
                 onGraphChange: () => {
+                    let deployment_info;
                     this.contractSource = this.graphInstance.getSource('solidity');
                     this.graphSource = JSON.stringify(this.graphInstance.getSource('graphs'));
                     this.jsSource = this.graphInstance.getSource('javascript');
                     this.graphsAbi = this.graphInstance.getSource('abi');
-                    this.deploymentInfo = [Pipeos.contracts.PipeProxy.addresses[this.chain]]
-                        .concat(this.graphInstance.getSource('constructor').map(function_id => {
+                    deployment_info = this.graphInstance.getSource('constructor');
+                    this.deploymentInfo = [{
+                        funcName: 'proxy',
+                        deployment: Pipeos.contracts.PipeProxy.addresses[this.chain],
+                        contractName: 'PipeProxy',
+                    }];
+
+                    this.deploymentInfo = this.deploymentInfo.concat(
+                        Object.keys(deployment_info).map(funcName => {
+                            let function_id = deployment_info[funcName]
                             let contract_address;
                             this.selectedFunctions.forEach(pipedFunction => {
                                 let functionObj = pipedFunction.find(func => func._id == function_id);
                                 if (functionObj) {
-                                    contract_address = functionObj.pclass.deployment.pclassi.address;
+                                    let deployment = functionObj.pclass.deployment.pclassi;
+                                    contract_address = {
+                                        funcName,
+                                        deployment: deployment.openapiid ? `http://${deployment.host}${deployment.basePath}` : deployment.address,
+                                        contractName: functionObj.pclass.name,
+                                    };
                                 }
                             });
                             return contract_address;
-                        })).map(address => `"${address}"`).join(',');
+                        })
+                    );
                     console.log('this.deploymentInfo', this.deploymentInfo);
                 },
                 onGraphFunctionRemove: (grIndex, nodes) => {
