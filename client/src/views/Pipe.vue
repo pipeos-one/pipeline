@@ -191,7 +191,7 @@ export default {
   methods: {
     setNetworkInfo: function(chain, web3) {
         this.chain = chain;
-        this.chain_query = chain === 'JavaScriptVM' ? '3' : chain;
+        this.chain_query = chain === 'JavaScriptVM' ? '' : chain;
         this.web3 = web3;
         this.loadData();
         setTimeout(() => {
