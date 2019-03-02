@@ -231,6 +231,9 @@ export default {
             console.log('response', response);
             let pclasses = response.data.pclasses.map(pclass => {
                 pclass.deployment = response.data.pclassii.find(depl => depl.pclassid == pclass._id);
+                if (!pclass.deployment) {
+                    pclass.deployment = {pclassi: {address: `Deployment address for ${pclass.name} not found.`}};
+                }
                 return pclass;
             });
             this.linkContainersFunctions(response.data.pfunctions, pclasses);
