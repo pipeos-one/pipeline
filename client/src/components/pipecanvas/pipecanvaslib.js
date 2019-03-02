@@ -14,6 +14,7 @@ const ARGUMENT_NAMES = /([^\s,]+)/g;
 const UNNAMED_INPUT = 'i_unnamed';
 const UNNAMED_OUTPUT = 'o_unnamed';
 const WEI_VALUE  = 'wei_value';
+const DEPLOYMENT_VAR = 'deployment';
 
 function getParamNames(func) {
     const fnStr = func.toString().replace(STRIP_COMMENTS, '');
@@ -1749,7 +1750,7 @@ function callInternalFunctionJs(funcName, inputset, funcObj) {
     }
     if (funcObj.func.pclass.deployment.pclassi.openapiid) {
         result += `
-    baseUrl = baseUrl_${funcName};
+    baseUrl = ${DEPLOYMENT_VAR}_${funcName};
 `
     }
     result += `    result = await ${funcName}(${Object.values(inputset).join(",")});
@@ -1802,13 +1803,13 @@ function addSourceJsFromSolidity(funcName, funcObj) {
 function buildPClassVarsJs(funcName, funcObj) {
     let pclassi = funcObj.func.pclass.deployment.pclassi;
     if (pclassi.openapiid) {
-        return `const baseUrl_${funcName} = "http://${pclassi.host}${pclassi.basePath}";\n`;
+        return `const ${DEPLOYMENT_VAR}_${funcName} = "http://${pclassi.host}${pclassi.basePath}";\n`;
     }
     const abi = funcObj.func.pclass.pclass.gapi;
     return `
 const abi_${funcName} = ${JSON.stringify(abi)};
-const contractAddress_${funcName} = "${pclassi.address}";
-const contract_${funcName} = new ethers.Contract(contractAddress_${funcName}, abi_${funcName}, signer);
+const ${DEPLOYMENT_VAR}_${funcName} = "${pclassi.address}";
+const contract_${funcName} = new ethers.Contract(${DEPLOYMENT_VAR}_${funcName}, abi_${funcName}, signer);
 `;
 }
 
