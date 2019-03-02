@@ -149,6 +149,28 @@ export class PackageController {
     await this.packageRepository.deleteById(id);
   }
 
+  @del('/package/{id}/all', {
+    responses: {
+        '200': {
+            description: 'Package, PClass, PClassI, PFunction DELETE success count',
+            content: {'application/json': {schema: CountSchema}},
+        },
+    },
+  })
+  async deleteEntirePackageComponents(@param.path.string('id') id: string): Promise<any> {
+    let ppackage, pclasses, count: Count = {count: 0};
+    let pclassController = new PClassController(await this.packageRepository.pclass);
+
+    ppackage = await this.findById(id);
+
+    pclasses = await pclassController.find({where: {packageid: id}});
+    for (let i = 0; i < pclasses.length; i++) {
+        count.count += (await pclassController.deletePClassFunctions(pclasses[i]._id)).count;
+    };
+    await this.deleteById(id);
+    return count;
+  }
+
   @get('/package/storage/{type}/{hash}', {
     responses: {
       '200': {
@@ -177,7 +199,7 @@ export class PackageController {
   }
 
   async insertFromStorage(type: DStorageType, hash: string): Promise<Package> {
-    let dstorage, ppackage;
+    let dstorage, ppackage, newPackage;
     let json: any, package_json: EthPMPackageJson;
 
     dstorage = new DStorageController();
@@ -201,7 +223,8 @@ export class PackageController {
         package_json: JSON.stringify(package_json),
         storage: {type, hash},
     };
-    return await this.packageRepository.create(ppackage);
+    newPackage = await this.packageRepository.create(ppackage);
+    return await this.importFromEthpm(newPackage._id);
   }
 
   @get('/package/import/{id}', {
@@ -279,7 +302,7 @@ export class PackageController {
         // http://solidity.readthedocs.io/en/latest/using-the-compiler.html#compiler-input-and-output-json-description
         // EthPM schema only has compiler.settings = {optimize: boolean}
         compiler = contractType.compiler;
-        if (compiler.settings) {
+        if (compiler && compiler.settings) {
             if (!compiler.settings.optimizer) {
                 compiler.settings.optimizer = {
                     enabled: compiler.settings.optimize,

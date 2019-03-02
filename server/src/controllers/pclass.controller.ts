@@ -268,7 +268,7 @@ export class PClassController {
   @del('/pclass/{id}/pfunctions', {
     responses: {
       '200': {
-        description: 'PClass.PFunction DELETE success count',
+        description: 'PClass, PClassi, PFunction DELETE success count',
         content: {'application/json': {schema: CountSchema}},
       },
     },
@@ -277,15 +277,16 @@ export class PClassController {
     @param.path.string('id') id: string,
     // @param.query.object('where', getWhereSchemaFor(PFunction)) where?: Where,
   ): Promise<Count> {
+    let count: Count;
     let pfunctionRepository = await this.pclassRepository.pfunctions;
     let pfunctionController = new PFunctionController(pfunctionRepository);
 
     let pclassiRepository = await this.pclassRepository.pclassi;
     let pclassiController = new PClassIController(pclassiRepository);
-
+    count = await pfunctionController.delete({pclassid: id});
+    await pclassiController.delete({pclassid: id});
     await this.pclassRepository.deleteById(id);
-    await pclassiController.delete({pclassid: {like: id}});
-    return await pfunctionController.delete({pclassid: {like: id}});
+    return count;
 
     // return await this.pclassRepository.functions(id).delete();
   }
