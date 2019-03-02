@@ -155,6 +155,6 @@ export default {
 
 <style>
 .load-remix {
-    margin-top: 25px;
+    margin-top: 5px;
 }
 </style>
