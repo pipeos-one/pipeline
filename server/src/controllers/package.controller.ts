@@ -243,6 +243,7 @@ export class PackageController {
     let pclassIds: any = {};
     let deployments: any[] = [], modules: string[] = [];
     let sources: any[] = [];
+    let tags: string[] = [];
 
     let pclassController = new PClassController(await this.packageRepository.pclass);
     let pclassiController = new PClassIController(await this.packageRepository.pclassi);
@@ -254,6 +255,12 @@ export class PackageController {
         return ppackage;
     }
     package_json = JSON.parse(ppackage.package_json);
+
+    tags.push(package_json.package_name);
+    tags.push('ethpm');
+    if (package_json.meta && package_json.meta.keywords) {
+        tags = tags.concat(package_json.meta.keywords);
+    }
 
     sources = await Promise.all(Object.entries(package_json.sources).map(async (entry: any): Promise<number> => {
         let relative_path: string = entry[0];
@@ -337,7 +344,7 @@ export class PackageController {
                 // metadata: , // ?
                 compiler,
             },
-            tags: package_json.meta ? package_json.meta.keywords : [],
+            tags,
             chainids,
         }
         pclassId = (
