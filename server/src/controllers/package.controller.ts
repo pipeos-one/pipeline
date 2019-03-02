@@ -301,7 +301,7 @@ export class PackageController {
         // http://solidity.readthedocs.io/en/latest/using-the-compiler.html#compiler-input-and-output-json-description
         // EthPM schema only has compiler.settings = {optimize: boolean}
         compiler = contractType.compiler;
-        if (compiler.settings) {
+        if (compiler && compiler.settings) {
             if (!compiler.settings.optimizer) {
                 compiler.settings.optimizer = {
                     enabled: compiler.settings.optimize,
