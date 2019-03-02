@@ -792,10 +792,6 @@ function addPortFunc(i, o1, state1){
     let out2 = JSON.parse(JSON.stringify(out))
     // let out2 = out
 
-    // JSON.parse(JSON.stringify(
-    // console.log('addPortFunc', out2)
-    // out2.func.pfunction.gapi.outputs[0] = {name: "Lore", type:"olt"}
-    // JSON.parse(JSON.stringify(state1))
     out2.func.pfunction.gapi.outputs[0] = {name: state1.name, type: state1.type}
     // console.log('addPortFunc', out.state)
     // console.log('addPortFunc', JSON.stringify(out2))
