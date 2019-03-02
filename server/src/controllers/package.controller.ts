@@ -199,7 +199,7 @@ export class PackageController {
   }
 
   async insertFromStorage(type: DStorageType, hash: string): Promise<Package> {
-    let dstorage, ppackage;
+    let dstorage, ppackage, newPackage;
     let json: any, package_json: EthPMPackageJson;
 
     dstorage = new DStorageController();
@@ -223,7 +223,8 @@ export class PackageController {
         package_json: JSON.stringify(package_json),
         storage: {type, hash},
     };
-    return await this.packageRepository.create(ppackage);
+    newPackage = await this.packageRepository.create(ppackage);
+    return await this.importFromEthpm(newPackage._id);
   }
 
   @get('/package/import/{id}', {
