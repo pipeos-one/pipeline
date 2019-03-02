@@ -5,7 +5,7 @@
         </swiper-slide>
         <swiper-slide class="swiper-margin no-swipe">
                 <v-layout row wrap>
-                    <v-flex xs3 style="margin-top: 70px;">
+                    <v-flex xs4 style="margin-top: 70px;">
                         <Search
                             v-on:select="onSearchSelect"
                             v-on:search="onSearchQuery"
@@ -17,7 +17,7 @@
                             v-on:provider-changed="setNetworkInfo"
                         />
                     </v-flex>
-                    <v-flex xs9>
+                    <v-flex xs8>
                     <PaginatedList
                         :items="selectedContainers"
                         :pages="pages"
@@ -570,10 +570,10 @@ body {
     width: 100%!important;
 }
 .swiper-slide:nth-child(2n), .swiper-slide:nth-child(4n) {
-    width: 70%!important;
+    width: 60%!important;
 }
 .swiper-slide:nth-child(3n), .swiper-slide:nth-child(5n) {
-    width: 30%!important;
+    width: 40%!important;
     overflow-y: scroll;
 }
 .fullheight, .v-window, .v-window__container {
