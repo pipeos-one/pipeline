@@ -276,7 +276,7 @@ export default {
                                     let deployment = functionObj.pclass.deployment.pclassi;
                                     contract_address = {
                                         funcName,
-                                        deployment: deployment.openapiid ? `${deployment.host}${deployment.basePath}` : deployment.address,
+                                        deployment: deployment.openapiid ? `http://${deployment.host}${deployment.basePath}` : deployment.address,
                                         contractName: functionObj.pclass.name,
                                     };
                                 }
