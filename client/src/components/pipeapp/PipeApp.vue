@@ -89,6 +89,20 @@
                             <!-- <span>Run source</span>
                         </v-tooltip> -->
                         <v-card>
+                            <v-flex xs12
+                                v-for="instance in deploymentInfoMap"
+                            >
+                                <v-text-field
+                                    :ref="instance.funcName"
+                                    outline
+                                    persistent-hint
+                                    height="60%"
+                                    type="text"
+                                    :value="instance.deployment"
+                                    :placeholder="instance.deployment"
+                                    :hint="`${instance.contractName}:  ${instance.funcName}`"
+                                ></v-text-field>
+                            </v-flex>
                             <AbiFunction
                                 v-if="graphsAbi.length"
                                 v-for="(funcAbi, i) in graphsAbi"
@@ -138,10 +152,14 @@ export default {
         graphSourceLast: '',
         jsSourceLast: '',
         deploymentInfoLast: '',
+        deploymentInfoMap: '',
         dialog: false,
     }),
     created: function() {
         this.setInitialData();
+    },
+    mounted: function() {
+        this.setDeploymentInfo();
     },
     watch: {
         contractSource: function() {
@@ -154,15 +172,21 @@ export default {
             this.jsSourceLast = this.jsSource;
         },
         deploymentInfo: function() {
-            this.deploymentInfoLast = this.deploymentInfo;
+            this.setDeploymentInfo();
         },
     },
     methods: {
+        setDeploymentInfo: function() {
+            this.deploymentInfoMap = this.deploymentInfo.slice(1);
+            this.deploymentInfoLast = this.deploymentInfo.map(deployment => {
+                return `"${deployment.deployment}"`;
+            }).join(',');
+
+        },
         setInitialData: function() {
             this.contractSourceLast = this.contractSource;
             this.graphSourceLast = this.graphSource;
             this.jsSourceLast = this.jsSource;
-            this.deploymentInfoLast = this.deploymentInfo;
             let self = this;
 
             this.PipedScriptCallback = window.PipedScriptCallback = (funcName, returnValues) => {
@@ -190,6 +214,18 @@ export default {
             eval(this.$refs[reference].value);
         },
         jsArgumentsChange: function(args)  {
+            this.deploymentInfoMap.forEach((deployment) => {
+                let userValue = this.$refs[deployment.funcName][0].$refs.input.value;
+
+                if (deployment.deployment != userValue) {
+                    let varName = `deployment_${deployment.funcName}`;
+                    let pattern1 = `const ${varName} = `;
+                    let regex = new RegExp(pattern1 + '.*;');
+                    let replacement = `const ${varName} = "${userValue}";`;
+
+                    this.jsSourceLast = this.jsSourceLast.replace(regex, replacement);
+                }
+            });
             args.forEach((arg, i) => {
                 let pattern1 = `let ${arg.name} = `;
                 let regex = new RegExp(pattern1 + '.*;');
@@ -198,7 +234,7 @@ export default {
             });
             setTimeout(() => this.runSource('jsSource'), 1000);
         },
-    }
+    },
 }
 </script>
 

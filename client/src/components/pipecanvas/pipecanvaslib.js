@@ -1384,7 +1384,7 @@ class GraphVisitor{
         // code for constructor function, setting the public variables from arguments
         this.genConstr3 = []
         // _ids for constructor arguments in order (pclass ids)
-        this.genConstr4 = []
+        this.genConstr4 = {}
         this.genG = []
         // function sources that should be made available - js
         this.funcsources = []
@@ -1634,7 +1634,7 @@ class GraphVisitor{
             this.genConstr3.push(this.ops.genConstr3(funcName, funcObj));
         }
         // _ids for constructor arguments in order (pclass ids)
-        this.genConstr4.push(funcObj.func._id)
+        this.genConstr4[funcName] = funcObj.func._id;
 
         let f = this.genF[grIndex] || "";
         this.genF[grIndex] = f + "\n";
