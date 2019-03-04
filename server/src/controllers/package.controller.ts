@@ -60,7 +60,7 @@ export class PackageController {
     },
   })
   async initPackage(@requestBody() ppackage: Package): Promise<any> {
-    let pclasses, pclassiIds = [], ppackageNew, dstorage;
+    let pclasses, pclassiIds = [], ppackageNew;
 
     let pclassController = new PClassController(await this.packageRepository.pclass);
     let pclassiController = new PClassIController(await this.packageRepository.pclassi);
@@ -121,35 +121,7 @@ export class PackageController {
         {strictObjectIDCoercion: true},
     );
 
-    let package_json = await this.exportToEthpm(package_id);
-    if (!package_json) {
-        throw new HttpErrors.InternalServerError('Package json could not be created');
-    }
-    console.log('package_json', package_json);
-    let package_json_str = JSON.stringify(package_json);
-
-    dstorage = new DStorageController();
-    let hash: string = (await dstorage.post('swarm', package_json_str))[0];
-    console.log('hash', hash);
-    if (!hash) {
-        throw new HttpErrors.InternalServerError('Could not upload to swarm');
-    }
-
-    await this.packageRepository.updateById(ppackageNew._id, {
-        package_json: package_json_str,
-        storage: {
-            type: (<DStorageType>'swarm'),
-            hash: hash,
-        },
-    });
-    return {
-        package_json: package_json_str,
-        storage: {
-            type: (<DStorageType>'swarm'),
-            hash: hash,
-        },
-    };
-
+    return await this.exportToEthpm(package_id);
     // TODO: modules
     // TODO: storage, json
     // TODO: contracts & deployments ids: ObjectID (import) vs. string (this)
@@ -524,8 +496,8 @@ export class PackageController {
   })
   async exportToEthpm(
     @param.path.string('id') id: string,
-): Promise<EthPMPackageJson> {
-    let ppackage, pclasses, pclassii;
+): Promise<any> {
+    let ppackage, pclasses, pclassii, dstorage;
     let package_json: EthPMPackageJson;
 
     let pclassController = new PClassController(await this.packageRepository.pclass);
@@ -536,6 +508,37 @@ export class PackageController {
     pclassii = await pclassiController.pclassIRepository.find({where: {packageid: id}}, {strictObjectIDCoercion: true});
 
 
-    return pipeToEthpm(ppackage.package, pclasses, pclassii);
+    package_json = pipeToEthpm(ppackage.package, pclasses, pclassii);
+    if (!package_json) {
+        throw new HttpErrors.InternalServerError('Package json could not be created');
+    }
+    console.log('package_json', package_json);
+    let package_json_str = JSON.stringify(package_json);
+
+    dstorage = new DStorageController();
+    let hash: string = (
+        await dstorage.post('swarm', package_json_str).catch(error => {
+            console.log('hahhh', error);
+        })
+    )[0];
+    console.log('hash', hash);
+    if (!hash) {
+        throw new HttpErrors.InternalServerError('Could not upload to swarm');
+    }
+
+    await this.packageRepository.updateById(id, {
+        package_json: package_json_str,
+        storage: {
+            type: (<DStorageType>'swarm'),
+            hash: hash,
+        },
+    });
+    return {
+        package_json: package_json_str,
+        storage: {
+            type: (<DStorageType>'swarm'),
+            hash: hash,
+        },
+    };
   }
 }
