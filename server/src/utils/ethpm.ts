@@ -1,4 +1,5 @@
 import {EthPMPackageJson} from '../interfaces/ethpm';
+import {chainIdToBip122Uri} from './chain';
 
 export let pipeToEthpm = (ppackage: any, pclasses: any, pclassii: any): EthPMPackageJson => {
     let contract_types: any = {}, deployments: any = {}, sources: any = {};
@@ -27,12 +28,14 @@ export let pipeToEthpm = (ppackage: any, pclasses: any, pclassii: any): EthPMPac
     });
 
     pclassii.forEach((pclassi: any) => {
-        let bip122_uri = pclassi.pclassi.bip122_uri;
+        let bip122_uri = pclassi.pclassi.bip122_uri || chainIdToBip122Uri(pclassi.pclassi.chain_id, pclassi.pclassi.block);
 
         if (!deployments[bip122_uri]) {
             deployments[bip122_uri] = {}
         }
-        deployments[bip122_uri][pclassi.pclassi.instance_name] = {
+        deployments[bip122_uri][
+            pclassi.pclassi.instance_name || pclassidToAlias[pclassi.pclassid]
+        ] = {
             contract_type: pclassidToAlias[pclassi.pclassid],
             address: pclassi.pclassi.address,
             transaction: pclassi.pclassi.transaction,

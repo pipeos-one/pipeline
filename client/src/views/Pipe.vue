@@ -34,6 +34,39 @@
         </swiper-slide class="swiper-margin">
 
         <swiper-slide class="swiper-margin no-swipe">
+            <v-layout row wrap>
+                <v-flex xs12>
+                    <v-toolbar flat height="48" color="white">
+                        <v-toolbar-items>
+                            <v-tooltip bottom>
+                                <v-btn
+                                    flat round
+                                    slot="activator"
+                                    class="black--text normaltxt"
+                                    :disabled="selectedTreeContainers.length === 0"
+                                    @click="exportToEthpmUI"
+                                >
+                                    <v-icon left>fa-upload</v-icon>EthPM
+                                </v-btn>
+                                <span>Export tree loaded contracts</span>
+                            </v-tooltip>
+                            <v-dialog v-model="ethpmDialog" hide-overlay max-width="600px">
+                                <v-card>
+                                    <ExportToEthPM
+                                        :result="exportToEthpmResult"
+                                        :error="exportToEthpmError"
+                                        v-on:export="exportToEthpm"
+                                        on:retry-upload="retryEthpmUpload"
+                                    />
+                                </v-card>
+                            </v-dialog>
+                        </v-toolbar-items>
+                    </v-toolbar>
+                </v-flex>
+                <v-flex xs12>
+                    <v-divider></v-divider>
+                </v-flex>
+            </v-layout>
             <PipeTree
                 :items="selectedTreeContainers"
                 :removeItem="1"
@@ -111,6 +144,7 @@ import PipeAbout from '../components/about/PipeAbout';
 import RemixLoadContract from '../components/remix/RemixLoadContract';
 import LoadFromEthpm from '../components/LoadFromEthpm';
 import Search from '../components/Search';
+import ExportToEthPM from '../components/ExportToEthPM';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
 import {
@@ -146,6 +180,7 @@ export default {
     PipeApp,
     RemixLoadContract,
     LoadFromEthpm,
+    ExportToEthPM,
   },
   data() {
     return {
@@ -182,6 +217,9 @@ export default {
         graphsAbi: null,
         graphInstance: null,
         pipedContracts: {},
+        ethpmDialog: false,
+        exportToEthpmResult: null,
+        exportToEthpmError: null,
     };
   },
   mounted() {
@@ -481,6 +519,37 @@ export default {
             this.loadData({packageid: ppackage._id});
         }).catch(error => {
             alert(`Could not import package: ${error}`);
+        });
+    },
+    exportToEthpmUI: function() {
+        this.ethpmDialog = true;
+    },
+    exportToEthpm: function(ppackage) {
+        if (!this.selectedTreeContainers.length) {
+            alert('There are no contracts loaded in the right side tree');
+        }
+        this.exportToEthpmResult = null;
+        this.exportToEthpmError = null;
+        ppackage.package.contracts = this.selectedTreeContainers.map((pclass) => pclass._id);
+        Vue.axios.post(`${packageApi}/init`, ppackage).then((response) => {
+            console.log('response', response);
+            let ppackage = response.data;
+            this.exportToEthpmResult = `Package was uploaded to swarm: ${JSON.stringify(ppackage.storage)}`;
+        }).catch(error => {
+            this.exportToEthpmError = `Could not export package: ${JSON.stringify(error)}`;
+        });
+    },
+    retryEthpmUpload: function() {
+        Vue.axios.get(`${containerApi}/${this.selectedTreeContainers[0]._id}`).then((response) => {
+            return response.data;
+        }).then((pclass) => {
+            if (pclass & pclass.packageid) {
+                Vue.axios.get(`${packageApi}/export/${pclass.packageid}`).then((response) => {
+                    this.exportToEthpmResult = `Package was uploaded to swarm: ${JSON.stringify(response.data.storage)}`;
+                }).catch(error => {
+                    this.exportToEthpmError = `Could not export package: ${JSON.stringify(error)}`;
+                });
+            }
         });
     },
     buildFunctionsFromContainer: function(container) {

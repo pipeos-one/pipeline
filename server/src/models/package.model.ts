@@ -94,13 +94,13 @@ export class Package extends Entity {
 
     @property({
        type: 'string',
-       required: true,
+       // required: true,
     })
     package_json: string;
 
     @property({
        type: 'object',
-       required: true,
+       // required: true,
     })
     storage: DStorage;
 

@@ -284,6 +284,9 @@ export class PClassController {
     let pclassiRepository = await this.pclassRepository.pclassi;
     let pclassiController = new PClassIController(pclassiRepository);
     count = await pfunctionController.delete({pclassid: id});
+    if (count.count === 0) {
+        throw new HttpErrors.InternalServerError('No PFunctions Deleted')
+    }
     await pclassiController.delete({pclassid: id});
     await this.pclassRepository.deleteById(id);
     return count;
