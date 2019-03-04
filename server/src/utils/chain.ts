@@ -16,3 +16,7 @@ export const CHAINID_TO_BIP122: CHAINID_MAP = reverseKeys(BIP122_TO_CHAINID)
 export let bip122UriToChainId = (bip122Uri: any) => {
     return bip122Uri.replace(/^blockchain:\/\//, '').split('/');
 }
+
+export let chainIdToBip122Uri = (chainId: string, blockHash: string = '') => {
+    return `blockchain://${CHAINID_TO_BIP122[chainId]}/block/${blockHash}`;
+}
