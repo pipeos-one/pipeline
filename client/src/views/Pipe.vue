@@ -54,7 +54,9 @@
                                 <v-card>
                                     <ExportToEthPM
                                         :result="exportToEthpmResult"
+                                        :error="exportToEthpmError"
                                         v-on:export="exportToEthpm"
+                                        on:retry-upload="retryEthpmUpload"
                                     />
                                 </v-card>
                             </v-dialog>
@@ -217,6 +219,7 @@ export default {
         pipedContracts: {},
         ethpmDialog: false,
         exportToEthpmResult: null,
+        exportToEthpmError: null,
     };
   },
   mounted() {
@@ -526,13 +529,27 @@ export default {
             alert('There are no contracts loaded in the right side tree');
         }
         this.exportToEthpmResult = null;
+        this.exportToEthpmError = null;
         ppackage.package.contracts = this.selectedTreeContainers.map((pclass) => pclass._id);
         Vue.axios.post(`${packageApi}/init`, ppackage).then((response) => {
             console.log('response', response);
             let ppackage = response.data;
             this.exportToEthpmResult = `Package was uploaded to swarm: ${JSON.stringify(ppackage.storage)}`;
         }).catch(error => {
-            this.exportToEthpmResult = `Could not export package: ${JSON.stringify(error)}`;
+            this.exportToEthpmError = `Could not export package: ${JSON.stringify(error)}`;
+        });
+    },
+    retryEthpmUpload: function() {
+        Vue.axios.get(`${containerApi}/${this.selectedTreeContainers[0]._id}`).then((response) => {
+            return response.data;
+        }).then((pclass) => {
+            if (pclass & pclass.packageid) {
+                Vue.axios.get(`${packageApi}/export/${pclass.packageid}`).then((response) => {
+                    this.exportToEthpmResult = `Package was uploaded to swarm: ${JSON.stringify(response.data.storage)}`;
+                }).catch(error => {
+                    this.exportToEthpmError = `Could not export package: ${JSON.stringify(error)}`;
+                });
+            }
         });
     },
     buildFunctionsFromContainer: function(container) {

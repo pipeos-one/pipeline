@@ -65,14 +65,23 @@
         >
             <v-icon left>fa-upload</v-icon>
         </v-btn>
+        <v-btn
+            v-if="error"
+            flat round
+            class="black--text normaltxt"
+            @click="$emit('retry-upload')"
+        >
+            Retry!
+        </v-btn>
         <p v-if="result">{{result}}</p>
+        <p v-if="error">{{error}}</p>
     </v-container>
 </template>
 
 <script>
 
 export default {
-    props: ['result'],
+    props: ['result', 'error'],
     data: () => ({
         name: null,
         version: '1.0.0',
