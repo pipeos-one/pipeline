@@ -51,6 +51,110 @@ export class PackageController {
     return await this.packageRepository.create(ppackage);
   }
 
+  @post('/package/init', {
+    responses: {
+      '200': {
+        description: 'Package model instance',
+        // content: {'application/json': {schema: {'x-ts-type': <Partial>Package}}},
+      },
+    },
+  })
+  async initPackage(@requestBody() ppackage: Package): Promise<any> {
+    let pclasses, pclassiIds = [], ppackageNew, dstorage;
+
+    let pclassController = new PClassController(await this.packageRepository.pclass);
+    let pclassiController = new PClassIController(await this.packageRepository.pclassi);
+
+    if (!ppackage.package) {
+        throw new HttpErrors.BadRequest('No EthPM package description provided');
+    }
+
+    if (!ppackage.package.contracts) {
+        throw new HttpErrors.BadRequest('No contract ids were provided for the package');
+    }
+
+    pclasses = await pclassController.find({where: {_id: {inq: ppackage.package.contracts}}});
+
+    if (pclasses.length === 0) {
+        throw new HttpErrors.BadRequest('PClasses not found.');
+    }
+
+    for (let i = 0; i < pclasses.length; i++) {
+        let pclass = pclasses[i];
+        let pclassi;
+
+        if (pclass.packageid) {
+            throw new HttpErrors.BadRequest(`Contract instance ${pclass.name} is already included in another package. Insert the contract as a new instance.`);
+        }
+
+        pclassi = (await pclassiController.find({where: {pclassid: {inq: [pclass._id]}}}))[0];
+
+        if (pclassi) {
+            if (pclassi.packageid) {
+                throw new HttpErrors.BadRequest(`Contract deployment instance ${pclass.name} is already included in another package. Insert the contract as a new instance.`);
+            }
+            pclassiIds.push(pclassi._id);
+        }
+    };
+    ppackage.package.manifest_version = '1';
+    ppackage.package.deployments = pclassiIds;
+
+    ppackageNew = await this.packageRepository.create(ppackage, {strictObjectIDCoercion: true});
+    console.log('ppackageNew', ppackageNew);
+    let package_id: string = String(ppackageNew._id.valueOf());
+    await pclassController.pclassRepository.updateAll(
+        {packageid: package_id},
+        {_id: {inq: ppackage.package.contracts}},
+        {strictObjectIDCoercion: true},
+    );
+    for (let i = 0; i < ppackage.package.contracts.length; i++) {
+        let pclassid = ppackage.package.contracts[i];
+        let tags = (await pclassController.findById(pclassid)).tags;
+        await pclassController.updateById(
+            pclassid,
+            {tags: tags.concat(['ethpm', ppackage.package.package_name])},
+        );
+    };
+    await pclassiController.pclassIRepository.updateAll(
+        {packageid: package_id},
+        {_id: {inq: pclassiIds}},
+        {strictObjectIDCoercion: true},
+    );
+
+    let package_json = await this.exportToEthpm(package_id);
+    if (!package_json) {
+        throw new HttpErrors.InternalServerError('Package json could not be created');
+    }
+    console.log('package_json', package_json);
+    let package_json_str = JSON.stringify(package_json);
+
+    dstorage = new DStorageController();
+    let hash: string = (await dstorage.post('swarm', package_json_str))[0];
+    console.log('hash', hash);
+    if (!hash) {
+        throw new HttpErrors.InternalServerError('Could not upload to swarm');
+    }
+
+    await this.packageRepository.updateById(ppackageNew._id, {
+        package_json: package_json_str,
+        storage: {
+            type: (<DStorageType>'swarm'),
+            hash: hash,
+        },
+    });
+    return {
+        package_json: package_json_str,
+        storage: {
+            type: (<DStorageType>'swarm'),
+            hash: hash,
+        },
+    };
+
+    // TODO: modules
+    // TODO: storage, json
+    // TODO: contracts & deployments ids: ObjectID (import) vs. string (this)
+  }
+
   @get('/package/count', {
     responses: {
       '200': {
@@ -428,8 +532,9 @@ export class PackageController {
     let pclassiController = new PClassIController(await this.packageRepository.pclassi);
 
     ppackage = await this.findById(id);
-    pclasses = await pclassController.find({where: {packageid: id}});
-    pclassii = await pclassiController.find({where: {packageid: id}});
+    pclasses = await pclassController.pclassRepository.find({where: {packageid: id}}, {strictObjectIDCoercion: true});
+    pclassii = await pclassiController.pclassIRepository.find({where: {packageid: id}}, {strictObjectIDCoercion: true});
+
 
     return pipeToEthpm(ppackage.package, pclasses, pclassii);
   }

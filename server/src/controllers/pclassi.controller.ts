@@ -77,7 +77,7 @@ export class PClassIController {
     },
   })
   async updateAll(
-    @requestBody() pclassi: PClassI,
+    @requestBody() pclassi: Partial<PClassI>,
     @param.query.object('where', getWhereSchemaFor(PClassI)) where?: Where,
   ): Promise<Count> {
     return await this.pclassIRepository.updateAll(pclassi, where);
