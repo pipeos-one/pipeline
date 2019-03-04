@@ -3,6 +3,7 @@ import {Ipfs} from './ipfs.controller';
 import {Swarm} from './swarm.controller';
 import {IpfsDataSource, SwarmDataSource} from '../datasources';
 import {DStorageType} from '../interfaces';
+import {HttpErrors} from '@loopback/rest';
 
 export class DStorageController {
   constructor() {}
@@ -33,6 +34,21 @@ export class DStorageController {
     } else if (type === 'swarm') {
         storage = await this.swarm();
         return storage.swarm.get(hash);
+    }
+  }
+
+  async post(type: DStorageType, content: string): Promise<any> {
+    let storage;
+    if (type === 'ipfs') {
+        storage = await this.ipfs();
+        return storage.ipfs.post(content).catch(error => {
+            throw new HttpErrors.InternalServerError(error);
+        });
+    } else if (type === 'swarm') {
+        storage = await this.swarm();
+        return storage.swarm.post(content).catch(error => {
+            throw new HttpErrors.InternalServerError(error);
+        });
     }
   }
 }
