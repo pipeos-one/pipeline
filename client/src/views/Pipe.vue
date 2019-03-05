@@ -56,7 +56,7 @@
                                         :result="exportToEthpmResult"
                                         :error="exportToEthpmError"
                                         v-on:export="exportToEthpm"
-                                        on:retry-upload="retryEthpmUpload"
+                                        v-on:retry="retryEthpmUpload"
                                     />
                                 </v-card>
                             </v-dialog>
@@ -522,6 +522,8 @@ export default {
         });
     },
     exportToEthpmUI: function() {
+        this.exportToEthpmResult = null;
+        this.exportToEthpmError = null;
         this.ethpmDialog = true;
     },
     exportToEthpm: function(ppackage) {
@@ -540,16 +542,19 @@ export default {
         });
     },
     retryEthpmUpload: function() {
-        Vue.axios.get(`${containerApi}/${this.selectedTreeContainers[0]._id}`).then((response) => {
+        Vue.axios.get(`${containerApi}/${this.selectedTreeContainers[0]._id}`)
+        .then((response) => {
             return response.data;
         }).then((pclass) => {
-            if (pclass & pclass.packageid) {
-                Vue.axios.get(`${packageApi}/export/${pclass.packageid}`).then((response) => {
-                    this.exportToEthpmResult = `Package was uploaded to swarm: ${JSON.stringify(response.data.storage)}`;
-                }).catch(error => {
-                    this.exportToEthpmError = `Could not export package: ${JSON.stringify(error)}`;
-                });
+            if (!pclass || !pclass.packageid) {
+                throw new Error(`No package id found`);
             }
+            return Vue.axios.get(`${packageApi}/export/${pclass.packageid}`);
+        }).then((response) => {
+            this.exportToEthpmResult = `Package was uploaded to swarm: ${JSON.stringify(response.data.storage)}`;
+            this.exportToEthpmError = null;
+        }).catch(error => {
+            this.exportToEthpmError = `Could not export package: ${JSON.stringify(error)}`;
         });
     },
     buildFunctionsFromContainer: function(container) {
