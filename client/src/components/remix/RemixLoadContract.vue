@@ -133,7 +133,7 @@ export default {
                     'solidity',
                     'getCompilationResult'
                 );
-                return compiledContractProcess(result[0], callback);
+                return compiledContractProcess(result, callback);
             } catch (e) {
                 throw e;
             }
