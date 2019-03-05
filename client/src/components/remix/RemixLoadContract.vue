@@ -44,11 +44,12 @@ export default {
             ],
         }
     },
-    mounted() {
+    async mounted() {
+        await Pipeos.remix.loaded();
         this.setNetworkInfo();
         this.setContractsFromRemix();
 
-        Pipeos.remix.listen('solidity', 'compilationFinished', ([success, data, source]) => {
+        Pipeos.remix.listen('solidity', 'compilationFinished', (success, data, source) => {
             console.log('compiler compilationFinished', sourceTarget, source, version, data);
             this.setNetworkInfo();
             this.setContractsFromRemix();
@@ -70,36 +71,33 @@ export default {
         ethaddressInput() {
             return this.$refs['addr_input'];
         },
-        setNetworkInfo() {
-            Pipeos.remix.call(
+        async setNetworkInfo() {
+            const provider = await Pipeos.remix.call(
                 'app',
-                'getExecutionContextProvider',
-                [],
-                (error, [provider]) => {
-                    console.log('getExecutionContextProvider', error, provider);
-                    // provider = injected | web3 | vm
-                    if (provider === 'vm') {
-                        this.chain = 'JavaScriptVM';
-                        this.deployPipeProxy();
-                    } else if (provider === 'injected') {
-                        this.web3 = window.web3;
-                        this.chain = this.web3.version.network;
-                    } else {
-                        alert('Use an injected provider. Node by endpoint is not supported.');
-                        // Pipeos.remix.call(
-                        //     'app',
-                        //     'getProviderEndpoint',
-                        //     [],
-                        //     (error, provider) => {
-                        //         console.log('getProviderEndpoint', error, provider);
-                        //     }
-                        // );
-                    }
-                    this.$emit('provider-changed', this.chain, this.web3);
-                }
+                'getExecutionContextProvider'
             );
+            console.log('getExecutionContextProvider', provider);
+            // provider = injected | web3 | vm
+            if (provider === 'vm') {
+                this.chain = 'JavaScriptVM';
+                this.deployPipeProxy();
+            } else if (provider === 'injected') {
+                this.web3 = window.web3;
+                this.chain = this.web3.version.network;
+            } else {
+                alert('Use an injected provider. Node by endpoint is not supported.');
+                // Pipeos.remix.call(
+                //     'app',
+                //     'getProviderEndpoint',
+                //     [],
+                //     (error, provider) => {
+                //         console.log('getProviderEndpoint', error, provider);
+                //     }
+                // );
+            }
+            this.$emit('provider-changed', this.chain, this.web3);
         },
-        setContractsFromRemix() {
+        async setContractsFromRemix() {
             let contracts = [];
             this.getDataFromRemix(function(container) {
                 contracts.push(container.name);
@@ -128,19 +126,17 @@ export default {
                 }
             });
         },
-        getDataFromRemix(callback) {
-            Pipeos.remix.call(
-                'solidity',
-                'getCompilationResult',
-                [],
-                function(error, result) {
-                    console.log(error, result);
-                    if (error) {
-                        throw new Error(error);
-                    }
-                    compiledContractProcess(result[0], callback);
-                }
-            );
+        async getDataFromRemix(callback) {
+            let result
+            try {
+                result = await Pipeos.remix.call(
+                    'solidity',
+                    'getCompilationResult'
+                );
+                return compiledContractProcess(result[0], callback);
+            } catch (e) {
+                throw e;
+            }
         },
         deployPipeProxy() {
             if (this.chain === 'JavaScriptVM') {
