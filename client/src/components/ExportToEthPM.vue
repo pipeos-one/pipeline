@@ -59,6 +59,7 @@
             ></v-text-field>
         </v-flex>
         <v-btn
+            v-if="!error && !result"
             flat round
             class="black--text normaltxt"
             @click="exportToEthpm"
@@ -69,9 +70,9 @@
             v-if="error"
             flat round
             class="black--text normaltxt"
-            @click="$emit('retry-upload')"
+            @click="retryEthpm"
         >
-            Retry!
+            <v-icon left>fa-upload</v-icon> Retry!
         </v-btn>
         <p v-if="result">{{result}}</p>
         <p v-if="error">{{error}}</p>
@@ -106,6 +107,9 @@ export default {
                 }
             };
             this.$emit('export', ppackage);
+        },
+        retryEthpm: function() {
+            this.$emit('retry');
         }
     }
 }
