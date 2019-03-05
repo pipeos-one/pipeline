@@ -516,11 +516,7 @@ export class PackageController {
     let package_json_str = JSON.stringify(package_json);
 
     dstorage = new DStorageController();
-    let hash: string = (
-        await dstorage.post('swarm', package_json_str).catch(error => {
-            console.log('hahhh', error);
-        })
-    )[0];
+    let hash: string = (await dstorage.post('swarm', package_json_str))[0];
     console.log('hash', hash);
     if (!hash) {
         throw new HttpErrors.InternalServerError('Could not upload to swarm');
