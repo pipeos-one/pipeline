@@ -96,7 +96,7 @@ export class PackageController {
             pclassiIds.push(pclassi._id);
         }
     };
-    ppackage.package.manifest_version = '1';
+    ppackage.package.manifest_version = '2';
     ppackage.package.deployments = pclassiIds;
 
     ppackageNew = await this.packageRepository.create(ppackage, {strictObjectIDCoercion: true});
