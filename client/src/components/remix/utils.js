@@ -1,41 +1,33 @@
 import Pipeos from '../../namespace/namespace';
 
-export function deployOnJVM(bytecode, gasLimit, callback) {
-    Pipeos.remix.call(
+export async function deployOnJVM(bytecode, gasLimit, callback) {
+    const accounts = await Pipeos.remix.call(
         'udapp',
-        'getAccounts',
-        [],
-        (error, [accounts]) => {
-            if (error) {
-                throw new Error(error);
-            }
-            const transaction = {
-                from: accounts[0],
-                data: bytecode,
-                gasLimit,
-                value: '0',
-                useCall: false,
-            };
-            console.log('transaction', transaction)
-            Pipeos.remix.call(
-                'udapp',
-                'runTx',
-                [transaction],
-                (error2, result) => {
-                    if (error2) {
-                        throw new Error(error2);
-                    }
-                    if (result[0].error) {
-                        throw new Error(JSON.stringify(result[0].error));
-                    }
-                    if (!result[0] || !result[0].createdAddress) {
-                        throw new Error('PipeProxy contract not created');
-                    }
-                    if (callback) {
-                        callback(result[0]);
-                    }
-                },
-            );
-        },
-    );
+        'getAccounts');
+    const transaction = {
+        from: accounts[0],
+        data: bytecode,
+        gasLimit,
+        value: '0',
+        useCall: false,
+    };
+    console.log('transaction', transaction);
+    let result
+    try {
+        result = await Pipeos.remix.call(
+            'udapp',
+            'runTestTx',
+            transaction);
+        if (result.error) {
+            throw new Error(JSON.stringify(result.error));
+        }
+        if (!result || !result.createdAddress) {
+            throw new Error('PipeProxy contract not created');
+        }
+    } catch (e) {
+        throw e
+    }
+    if (callback) {
+        callback(result);
+    }
 }
