@@ -90,7 +90,8 @@
                         </v-tooltip> -->
                         <v-card>
                             <v-flex xs12
-                                v-for="instance in deploymentInfoMap"
+                                v-for="(instance, i) in deploymentInfoMap"
+                                :key="i"
                             >
                                 <v-text-field
                                     :ref="instance.funcName"
