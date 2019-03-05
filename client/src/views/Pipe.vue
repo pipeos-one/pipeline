@@ -482,9 +482,7 @@ export default {
             Pipeos.remix.call(
                 'fileManager',
                 'setFile',
-                [fileName, source],
-                function (error, result) { console.log(error, result) }
-            );
+                fileName, source)
         }
     },
     loadFromRemix: function(container, deployment) {
@@ -624,37 +622,34 @@ export default {
 
         if (this.chain === 'JavaScriptVM') return;
 
-        Pipeos.remix.listen('txListener', 'newTransaction', (data) => {
+        Pipeos.remix.listen('txListener', 'newTransaction', async (data) => {
             console.log('txlistener newTransaction', data);
-            Pipeos.remix.call(
+            const result = await Pipeos.remix.call(
                 'solidity',
-                'getCompilationResult',
-                [],
-                (error, result) => {
-                    console.log(error, result);
-                    if (error) {
-                        throw new Error(error);
-                    }
-                    if (result[0].source.target)
-                    compiledContractProcess(result[0], function(contract) {
-                        contract.tags.push('piped');
-                        console.log('contract', contract);
-                        if (self.pipedContracts[contract.name]) {
-                            if (confirm(`
-                                You have deployed ${contract.name}.
-                                Click "OK" if you want to save it on the Pipeos server.`)
-                            ) {
-                                self.saveFromRemix(contract, {
-                                    deployed: {
-                                        address: data[0].contractAddress,
-                                        chain_id: this.chain,
-                                    }
-                                });
-                            }
-                        }
-                    });
-                }
+                'getCompilationResult'
             );
+            console.log(error, result);
+            if (error) {
+                throw new Error(error);
+            }
+            if (result[0].source.target)
+            compiledContractProcess(result[0], function(contract) {
+                contract.tags.push('piped');
+                console.log('contract', contract);
+                if (this.pipedContracts[contract.name]) {
+                    if (confirm(`
+                        You have deployed ${contract.name}.
+                        Click "OK" if you want to save it on the Pipeos server.`)
+                    ) {
+                        this.saveFromRemix(contract, {
+                            deployed: {
+                                address: data[0].contractAddress,
+                                chain_id: this.chain,
+                            }
+                        });
+                    }
+                }
+            });
         });
     },
   }

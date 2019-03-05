@@ -1,6 +1,7 @@
-import {IframePlugin} from 'remix-plugin';
+import {RemixExtension} from 'remix-plugin';
 
 const pipeserverIp = process.env.VUE_APP_PIPESERVER_IP;
+let remix = new RemixExtension();
 
 const Pipeos = {
     pipeserver: {
@@ -28,7 +29,7 @@ const Pipeos = {
             },
         },
     },
-    remix: new IframePlugin(),
+    remix,
 };
 
 export default Pipeos;
