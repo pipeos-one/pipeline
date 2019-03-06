@@ -175,6 +175,12 @@ export default {
         deploymentInfo: function() {
             this.setDeploymentInfo();
         },
+        dialog: function() {
+            let elements = document.getElementsByClassName('abiFunctionOutput');
+            for (let i = 0; i < elements.length; i++) {
+                elements[i].innerHTML = '';
+            };
+        },
     },
     methods: {
         setDeploymentInfo: function() {
