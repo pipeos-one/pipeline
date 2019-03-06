@@ -1603,8 +1603,12 @@ class GraphVisitor{
         this.genFuncFunction(funcObj, row);
     }
 
+    prepFuncName(name) {
+        return name.replace(/:/g, '').replace(/-/g, '');
+    }
+
     genFuncFunction(funcObj, row) {
-        let funcName = funcObj.func.pfunction.gapi.name + "_" + funcObj.i;
+        let funcName = this.prepFuncName(funcObj.func.pfunction.gapi.name) + "_" + funcObj.i;
 
         if (funcObj.func.pfunction.gapi.payable) {
             this.isPayable = true;

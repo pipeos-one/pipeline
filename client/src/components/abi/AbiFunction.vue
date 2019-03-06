@@ -56,7 +56,7 @@
         <v-layout row wrap>
             <v-flex xs12
                 align-start
-                class="text-xs-left"
+                class="text-xs-left abiFunctionOutput"
                 :id="'output_' + abi.name"
             >
             </v-flex>

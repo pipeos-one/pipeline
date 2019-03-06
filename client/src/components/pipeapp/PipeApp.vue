@@ -91,7 +91,7 @@
                         <v-card>
                             <v-flex xs12
                                 v-for="(instance, i) in deploymentInfoMap"
-                                :key="i"
+                                :key="`deployment_${i}`"
                             >
                                 <v-text-field
                                     :ref="instance.funcName"
@@ -107,7 +107,7 @@
                             <AbiFunction
                                 v-if="graphsAbi.length"
                                 v-for="(funcAbi, i) in graphsAbi"
-                                :key="i"
+                                :key="`function_${i}`"
                                 :abi="funcAbi"
                                 v-on:value-changed="jsArgumentsChange"
                             />
@@ -174,6 +174,12 @@ export default {
         },
         deploymentInfo: function() {
             this.setDeploymentInfo();
+        },
+        dialog: function() {
+            let elements = document.getElementsByClassName('abiFunctionOutput');
+            for (let i = 0; i < elements.length; i++) {
+                elements[i].innerHTML = '';
+            };
         },
     },
     methods: {
