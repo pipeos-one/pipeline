@@ -260,6 +260,12 @@ export default class Graphs {
 
     }
 
+    setGraphs(igraphs) {
+        pipe2.graphs = igraphs;
+        this.idGen = igraphs.length;
+        proc1();
+    }
+
     addFunction( funcData, grIndex1){
         console.log("add", funcData, grIndex1)
         // console.log("gr", pipe2)

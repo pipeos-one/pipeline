@@ -113,6 +113,7 @@
                 :graphSource="graphSource"
                 :graphsAbi="graphsAbi"
                 v-on:load-remix="pipedLoadToRemix"
+                v-on:set-graphs="setCanvasGraph"
             />
         </swiper-slide>
 
@@ -395,6 +396,21 @@ export default {
         this.addToCanvas(pfunction, this.activeCanvas);
         console.log('activeCanvas', this.activeCanvas);
         console.log('this.selectedFunctions', this.selectedFunctions);
+    },
+    setCanvasGraph: function(graphs) {
+        graphs.forEach((graph, i) => {
+            Object.values(graph.n).forEach(node => {
+                let pfunction;
+                this.selectedTreeContainers.forEach(pclass => {
+                    pfunction = pclass.functions.find(pfunc => pfunc._id === node.id);
+                    if (pfunction) {
+                        this.selectedFunctions[i].push(pfunction);
+                        this.addToCanvas(pfunction, i);
+                    }
+                });
+            });
+        });
+        this.graphInstance.setGraphs(graphs);
     },
     onTreeToggle: function (pclass) {
         let index = this.selectedTreeContainers.findIndex(container => container._id == pclass._id);

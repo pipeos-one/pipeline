@@ -132,7 +132,11 @@
                         <span>Copy to clipboard</span>
                     </v-tooltip>
                 </v-toolbar>
-                <textarea ref='graphSource' class='source-txtar'>{{graphSourceLast}}</textarea>
+                <textarea
+                    ref='graphSource'
+                    class='source-txtar'
+                    v-on:change="setGraphs"
+                >{{graphSourceLast}}</textarea>
             </v-tab-item>
         </v-tabs>
     </div>
@@ -241,6 +245,14 @@ export default {
             });
             setTimeout(() => this.runSource('jsSource'), 1000);
         },
+        setGraphs: function() {
+            let graphs = this.$refs['graphSource'].value;
+            if (graphs) {
+                // TODO handle validation after using a proper v-textarea with error messages
+                // validate json & graph format (build json schema)
+                this.$emit('set-graphs', JSON.parse(graphs));
+            }
+        }
     },
 }
 </script>
