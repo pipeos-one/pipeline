@@ -41,14 +41,10 @@ export class DStorageController {
     let storage;
     if (type === 'ipfs') {
         storage = await this.ipfs();
-        return storage.ipfs.post(content).catch(error => {
-            throw new HttpErrors.InternalServerError(error);
-        });
+        return storage.ipfs.post(content);
     } else if (type === 'swarm') {
         storage = await this.swarm();
-        return storage.swarm.post(content).catch(error => {
-            throw new HttpErrors.InternalServerError(error);
-        });
+        return storage.swarm.post(content);
     }
   }
 }

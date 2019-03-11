@@ -42,7 +42,7 @@
                 outline
                 height="60%"
                 type="text"
-                label="keywords"
+                label="authors"
                 placeholder="Name1 <name1@email.com>,Name2 <name2@email.com>"
                 hint="Comma separated author names"
                 :rules=rulesSimple

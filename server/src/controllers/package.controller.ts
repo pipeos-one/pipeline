@@ -32,6 +32,7 @@ import {
 } from '../interfaces';
 import {bip122UriToChainId, BIP122_TO_CHAINID} from '../utils/chain';
 import {pipeToEthpm} from '../utils/ethpm';
+import {retryDstorageUpload} from '../utils/dstorage';
 
 export class PackageController {
   constructor(
@@ -498,28 +499,31 @@ export class PackageController {
     @param.path.string('id') id: string,
 ): Promise<any> {
     let ppackage, pclasses, pclassii, dstorage;
-    let package_json: EthPMPackageJson;
+    let package_json: EthPMPackageJson, package_json_str: string;
 
     let pclassController = new PClassController(await this.packageRepository.pclass);
     let pclassiController = new PClassIController(await this.packageRepository.pclassi);
+
+    dstorage = new DStorageController();
 
     ppackage = await this.findById(id);
     pclasses = await pclassController.pclassRepository.find({where: {packageid: id}}, {strictObjectIDCoercion: true});
     pclassii = await pclassiController.pclassIRepository.find({where: {packageid: id}}, {strictObjectIDCoercion: true});
 
-
-    package_json = pipeToEthpm(ppackage.package, pclasses, pclassii);
+    package_json = await pipeToEthpm(
+        ppackage.package,
+        pclasses,
+        pclassii,
+        retryDstorageUpload,
+    );
     if (!package_json) {
         throw new HttpErrors.InternalServerError('Package json could not be created');
     }
-    console.log('package_json', package_json);
-    let package_json_str = JSON.stringify(package_json);
+    package_json_str = JSON.stringify(package_json);
 
-    dstorage = new DStorageController();
-    let hash: string = (await dstorage.post('swarm', package_json_str))[0];
-    console.log('hash', hash);
+    const hash = await retryDstorageUpload('swarm', package_json_str);
     if (!hash) {
-        throw new HttpErrors.InternalServerError('Could not upload to swarm');
+        throw new HttpErrors.InternalServerError('Could not upload ethpm package to swarm');
     }
 
     await this.packageRepository.updateById(id, {
