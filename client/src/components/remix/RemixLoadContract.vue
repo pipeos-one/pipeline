@@ -45,15 +45,10 @@ export default {
         }
     },
     async mounted() {
-        await Pipeos.remix.loaded();
-        this.setNetworkInfo();
-        this.setContractsFromRemix();
-
-        Pipeos.remix.listen('solidity', 'compilationFinished', (success, data, source) => {
-            console.log('compiler compilationFinished', sourceTarget, source, version, data);
-            this.setNetworkInfo();
-            this.setContractsFromRemix();
-        });
+        this.setData();
+    },
+    beforeUpdate() {
+        this.setData();
     },
     watch: {
         chain(newValue) {
@@ -68,6 +63,17 @@ export default {
         }
     },
     methods: {
+        async setData() {
+            await Pipeos.remix.loaded();
+            this.setNetworkInfo();
+            this.setContractsFromRemix();
+
+            Pipeos.remix.listen('solidity', 'compilationFinished', (target, source, version, data) => {
+                console.log('compiler compilationFinished', target, source, version, data);
+                this.setNetworkInfo();
+                this.setContractsFromRemix();
+            });
+        },
         ethaddressInput() {
             return this.$refs['addr_input'];
         },
@@ -133,7 +139,9 @@ export default {
                     'solidity',
                     'getCompilationResult'
                 );
-                return compiledContractProcess(result, callback);
+                if (result.data && result.source) {
+                    return compiledContractProcess(result, callback);
+                }
             } catch (e) {
                 throw e;
             }
