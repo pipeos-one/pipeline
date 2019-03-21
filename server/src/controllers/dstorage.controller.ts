@@ -26,14 +26,14 @@ export class DStorageController {
     );
   }
 
-  async get(type: DStorageType, hash: string): Promise<any> {
+  async get(type: DStorageType, hash: string, contentType: string): Promise<any> {
     let storage;
     if (type === 'ipfs') {
         storage = await this.ipfs();
         return storage.ipfs.get(hash);
     } else if (type === 'swarm') {
         storage = await this.swarm();
-        return storage.swarm.get(hash);
+        return storage.swarm[`get${contentType}`](hash);
     }
   }
 

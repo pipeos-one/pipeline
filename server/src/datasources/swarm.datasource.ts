@@ -16,10 +16,28 @@ export const SwarmDataSource: juggler.DataSource = new juggler.DataSource({
       template: {
         method: 'GET',
         url: `${swarmGateway}/bzz-raw:/{hash}`,
+        headers: {
+            accept: "application/json",
+            "content-type": "application/json"
+        },
         responsePath: '$',
       },
       functions: {
-        get: ['hash'],
+        getJson: ['hash'],
+      },
+    },
+    {
+      template: {
+        method: 'GET',
+        url: `${swarmGateway}/bzz-raw:/{hash}`,
+        headers: {
+            accept: "text/plain",
+            "content-type": "text/plain; charset=utf-8"
+        },
+        responsePath: '$',
+      },
+      functions: {
+        getText: ['hash'],
       },
     },
     {
