@@ -21,7 +21,7 @@ export let pipeToEthpm = async (
             if (!sources[source.relative_path]) {
                 if (!source.storage) {
                     // We upload the source to swarm
-                    let hash = await uploadCallback('swarm', source.source);
+                    let hash = await uploadCallback('swarm', source.source, 'Text');
                     if (hash) {
                         source.storage = {
                             type: 'swarm',

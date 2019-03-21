@@ -37,14 +37,14 @@ export class DStorageController {
     }
   }
 
-  async post(type: DStorageType, content: string): Promise<any> {
+  async post(type: DStorageType, content: string, contentType: string): Promise<any> {
     let storage;
     if (type === 'ipfs') {
         storage = await this.ipfs();
         return storage.ipfs.post(content);
     } else if (type === 'swarm') {
         storage = await this.swarm();
-        return storage.swarm.post(content);
+        return storage.swarm[`post${contentType}`](content);
     }
   }
 }

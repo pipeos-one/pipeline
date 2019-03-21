@@ -8,7 +8,7 @@ export const SwarmDataSource: juggler.DataSource = new juggler.DataSource({
   options: {
     headers: {
       accept: 'application/json',
-      'content-type': 'application/json',
+      'content-type': 'text/html; charset=utf-8',
     },
   },
   operations: [
@@ -26,11 +26,30 @@ export const SwarmDataSource: juggler.DataSource = new juggler.DataSource({
       template: {
         method: 'POST',
         url: `${swarmGateway}/bzz-raw:/`,
-        form: '{^content}',
+        body: '{^content}',
+        headers: {
+          accept: 'text/html',
+          'content-type': 'text/plain; charset=utf-8',
+        },
         responsePath: '$',
       },
       functions: {
-        post: ['content'],
+        postText: ['content'],
+      },
+    },
+    {
+      template: {
+        method: 'POST',
+        url: `${swarmGateway}/bzz-raw:/`,
+        form: '{^content}',
+        headers: {
+            accept: "application/json",
+            "content-type": "application/json"
+        },
+        responsePath: '$',
+      },
+      functions: {
+        postJson: ['content'],
       },
     },
   ],
