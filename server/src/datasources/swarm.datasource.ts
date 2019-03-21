@@ -8,7 +8,7 @@ export const SwarmDataSource: juggler.DataSource = new juggler.DataSource({
   options: {
     headers: {
       accept: 'application/json',
-      'content-type': 'application/json',
+      'content-type': 'text/html; charset=utf-8',
     },
   },
   operations: [
@@ -16,10 +16,43 @@ export const SwarmDataSource: juggler.DataSource = new juggler.DataSource({
       template: {
         method: 'GET',
         url: `${swarmGateway}/bzz-raw:/{hash}`,
+        headers: {
+            accept: "application/json",
+            "content-type": "application/json"
+        },
         responsePath: '$',
       },
       functions: {
-        get: ['hash'],
+        getJson: ['hash'],
+      },
+    },
+    {
+      template: {
+        method: 'GET',
+        url: `${swarmGateway}/bzz-raw:/{hash}`,
+        headers: {
+            accept: "text/plain",
+            "content-type": "text/plain; charset=utf-8"
+        },
+        responsePath: '$',
+      },
+      functions: {
+        getText: ['hash'],
+      },
+    },
+    {
+      template: {
+        method: 'POST',
+        url: `${swarmGateway}/bzz-raw:/`,
+        body: '{^content}',
+        headers: {
+          accept: 'text/html',
+          'content-type': 'text/plain; charset=utf-8',
+        },
+        responsePath: '$',
+      },
+      functions: {
+        postText: ['content'],
       },
     },
     {
@@ -27,10 +60,14 @@ export const SwarmDataSource: juggler.DataSource = new juggler.DataSource({
         method: 'POST',
         url: `${swarmGateway}/bzz-raw:/`,
         form: '{^content}',
+        headers: {
+            accept: "application/json",
+            "content-type": "application/json"
+        },
         responsePath: '$',
       },
       functions: {
-        post: ['content'],
+        postJson: ['content'],
       },
     },
   ],

@@ -7,16 +7,18 @@
                 height="60%"
                 type="text"
                 label="package name"
-                placeholder="package name"
+                placeholder="Package Name"
                 :rules=rulesSimple
             ></v-text-field>
             <v-text-field
                 v-model="version"
                 outline
+                persistent-hint
                 height="60%"
                 type="text"
                 label="version"
                 placeholder="1.0.0"
+                hint="1.0.0"
                 :rules=rulesSimple
             ></v-text-field>
             <v-text-field
@@ -25,7 +27,7 @@
                 height="60%"
                 type="text"
                 label="license"
-                placeholder="MIT"
+                hint="MIT"
                 :rules=rulesSimple
             ></v-text-field>
             <v-text-field
@@ -40,21 +42,23 @@
             <v-text-field
                 v-model="authors"
                 outline
+                persistent-hint
                 height="60%"
                 type="text"
-                label="keywords"
+                label="authors"
                 placeholder="Name1 <name1@email.com>,Name2 <name2@email.com>"
-                hint="Comma separated author names"
+                hint="Name1 <@email.com>,Name2 <@email.com>"
                 :rules=rulesSimple
             ></v-text-field>
             <v-text-field
                 v-model="keywords"
                 outline
+                persistent-hint
                 height="60%"
                 type="text"
                 label="keywords"
                 placeholder="keyword1,keyword2"
-                hint="Comma separated strings"
+                hint="keyword1,keyword2"
                 :rules=rulesSimple
             ></v-text-field>
         </v-flex>

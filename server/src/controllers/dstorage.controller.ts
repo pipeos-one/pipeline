@@ -26,29 +26,25 @@ export class DStorageController {
     );
   }
 
-  async get(type: DStorageType, hash: string): Promise<any> {
+  async get(type: DStorageType, hash: string, contentType: string): Promise<any> {
     let storage;
     if (type === 'ipfs') {
         storage = await this.ipfs();
         return storage.ipfs.get(hash);
     } else if (type === 'swarm') {
         storage = await this.swarm();
-        return storage.swarm.get(hash);
+        return storage.swarm[`get${contentType}`](hash);
     }
   }
 
-  async post(type: DStorageType, content: string): Promise<any> {
+  async post(type: DStorageType, content: string, contentType: string): Promise<any> {
     let storage;
     if (type === 'ipfs') {
         storage = await this.ipfs();
-        return storage.ipfs.post(content).catch(error => {
-            throw new HttpErrors.InternalServerError(error);
-        });
+        return storage.ipfs.post(content);
     } else if (type === 'swarm') {
         storage = await this.swarm();
-        return storage.swarm.post(content).catch(error => {
-            throw new HttpErrors.InternalServerError(error);
-        });
+        return storage.swarm[`post${contentType}`](content);
     }
   }
 }

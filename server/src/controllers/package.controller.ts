@@ -32,6 +32,7 @@ import {
 } from '../interfaces';
 import {bip122UriToChainId, BIP122_TO_CHAINID} from '../utils/chain';
 import {pipeToEthpm} from '../utils/ethpm';
+import {retryDstorageUpload} from '../utils/dstorage';
 
 export class PackageController {
   constructor(
@@ -275,12 +276,12 @@ export class PackageController {
   }
 
   async insertFromStorage(type: DStorageType, hash: string): Promise<Package> {
-    let dstorage, ppackage, newPackage;
+    let dstorage, ppackage, newPackage: any;
     let json: any, package_json: EthPMPackageJson;
 
     dstorage = new DStorageController();
 
-    json = (await dstorage.get(type, hash))[0];
+    json = (await dstorage.get(type, hash, 'Json'))[0];
     if (!json) {
         throw new HttpErrors.NotFound('Package.json not found');
     }
@@ -300,7 +301,10 @@ export class PackageController {
         storage: {type, hash},
     };
     newPackage = await this.packageRepository.create(ppackage);
-    return await this.importFromEthpm(newPackage._id);
+    return await this.importFromEthpm(newPackage._id).catch(async (error) => {
+        await this.packageRepository.deleteById(newPackage._id);
+        throw error;
+    });
   }
 
   @get('/package/import/{id}', {
@@ -325,12 +329,16 @@ export class PackageController {
     let pclassiController = new PClassIController(await this.packageRepository.pclassi);
 
     ppackage = await this.findById(id);
-    if (!ppackage) throw new HttpErrors.NotFound('Game not found');
+    if (!ppackage) throw new HttpErrors.NotFound('Package not found');
     if (ppackage.package) {
         // TODO return pclasses, deployments and pfunctions
         return ppackage;
     }
-    package_json = JSON.parse(ppackage.package_json);
+    try {
+        package_json = JSON.parse(ppackage.package_json);
+    } catch(e) {
+        throw new HttpErrors.InternalServerError(`Cannot parse package.json for _id ${id}`);
+    }
 
     tags.push(package_json.package_name);
     tags.push('ethpm');
@@ -341,27 +349,33 @@ export class PackageController {
     sources = await Promise.all(Object.entries(package_json.sources).map(async (entry: any): Promise<number> => {
         let relative_path: string = entry[0];
         let source: string = entry[1];
-        let source_entry: any, source_string: string, dstorage_link: any;
+        let source_entry: any, source_string: any, dstorage_link: any;
+        let storageType: DStorageType;
         let dstorage;
 
         source_entry = {relative_path};
-        dstorage_link = source.match(/^(ipfs|bzz)/g);
+
+        // TODO better abstractions for protocols
+        dstorage_link = source.match(/^(ipfs|bzz|bzz-raw)/g);
+        storageType = dstorage_link[0] === 'ipfs' ? 'ipfs' : 'swarm';
 
         if (dstorage_link) {
             source_entry.storage = {
-                type: dstorage_link[0],
-                hash: source.replace(/^(ipfs|bzz):\/\//g, ''),
+                type: storageType,
+                hash: source.replace(/^(ipfs|bzz|bzz-raw):\/\//g, ''),
             }
             dstorage = new DStorageController();
 
-            source_string = (await dstorage.get(
+            source_string = await dstorage.get(
                 source_entry.storage.type,
                 source_entry.storage.hash,
-            ).catch((error) => { throw(error) }))[0];
-            if (!source_string) {
+                'Text',
+            );
+
+            if (!source_string || !source_string[0]) {
                 throw new HttpErrors.NotFound(`Source for ${source} not found`);
             }
-            source_entry.source = source_string;
+            source_entry.source = source_string[0];
         }
 
         if (!source_entry.source) {
@@ -498,28 +512,31 @@ export class PackageController {
     @param.path.string('id') id: string,
 ): Promise<any> {
     let ppackage, pclasses, pclassii, dstorage;
-    let package_json: EthPMPackageJson;
+    let package_json: EthPMPackageJson, package_json_str: string;
 
     let pclassController = new PClassController(await this.packageRepository.pclass);
     let pclassiController = new PClassIController(await this.packageRepository.pclassi);
+
+    dstorage = new DStorageController();
 
     ppackage = await this.findById(id);
     pclasses = await pclassController.pclassRepository.find({where: {packageid: id}}, {strictObjectIDCoercion: true});
     pclassii = await pclassiController.pclassIRepository.find({where: {packageid: id}}, {strictObjectIDCoercion: true});
 
-
-    package_json = pipeToEthpm(ppackage.package, pclasses, pclassii);
+    package_json = await pipeToEthpm(
+        ppackage.package,
+        pclasses,
+        pclassii,
+        retryDstorageUpload,
+    );
     if (!package_json) {
         throw new HttpErrors.InternalServerError('Package json could not be created');
     }
-    console.log('package_json', package_json);
-    let package_json_str = JSON.stringify(package_json);
+    package_json_str = JSON.stringify(package_json);
 
-    dstorage = new DStorageController();
-    let hash: string = (await dstorage.post('swarm', package_json_str))[0];
-    console.log('hash', hash);
+    const hash = await retryDstorageUpload('swarm', package_json_str);
     if (!hash) {
-        throw new HttpErrors.InternalServerError('Could not upload to swarm');
+        throw new HttpErrors.InternalServerError('Could not upload ethpm package to swarm');
     }
 
     await this.packageRepository.updateById(id, {
