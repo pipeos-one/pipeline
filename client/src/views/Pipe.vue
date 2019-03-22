@@ -477,8 +477,13 @@ export default {
         });
     },
     loadToRemixCall: function(name, source) {
-        let fileName = `browser/${name}`;
-        if (confirm(`Click "OK" if you want to load the "${fileName}" contract in Remix.`)) {
+        let fileName;
+
+        var newContractName = prompt(`Click "OK" if you want to load the "${name}" contract in Remix. You can change the name here: `, name);
+
+        // newContractName is null if user clicks Cancel
+        if (newContractName) {
+            fileName = `browser/${newContractName}`;
             Pipeos.remix.call(
                 'editor',
                 'setFile',
