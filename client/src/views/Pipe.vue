@@ -488,7 +488,8 @@ export default {
             Pipeos.remixClient.call(
                 'fileManager',
                 'setFile',
-                fileName, source)
+                fileName, source
+            );
         }
     },
     loadFromRemix: function(container, deployment) {
@@ -628,8 +629,8 @@ export default {
 
         if (this.chain === 'JavaScriptVM') return;
 
-        Pipeos.remixClient.listen('txListener', 'newTransaction', async (data) => {
-            console.log('txlistener newTransaction', data);
+        Pipeos.remixClient.on('udapp', 'newTransaction', async (data) => {
+            console.log('pipedLoadToRemix newTransaction', data);
             const result = await Pipeos.remixClient.call(
                 'solidity',
                 'getCompilationResult'
