@@ -54,8 +54,9 @@ export const getNatspec = (devdoc = EMPTY_NATSPEC, userdoc = EMPTY_NATSPEC) => {
     return natspec;
 };
 
-export function compiledContractProcess(compiled, callback) {
+export function compiledContractProcess(compiled) {
     const sources = [];
+    let compiledContracts = [];
 
     Object.keys(compiled.source.sources).forEach((key) => {
         if (key === 'target') return;
@@ -119,7 +120,8 @@ export function compiledContractProcess(compiled, callback) {
             // Remove duplicate abi, devdoc, userdoc
             delete data.pclass.metadata.output;
             console.log('data', data);
-            callback(data);
+            compiledContracts.push(data);
         });
     });
+    return compiledContracts;
 }

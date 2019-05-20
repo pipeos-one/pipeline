@@ -13,6 +13,7 @@
                         />
                         <LoadFromEthpm v-on:change="onLoadFromEthpm"/>
                         <RemixLoadContract
+                            v-if="isRemix"
                             v-on:load-from-remix="loadFromRemixWrap"
                             v-on:provider-changed="setNetworkInfo"
                         />
@@ -637,8 +638,8 @@ export default {
             if (error) {
                 throw new Error(error);
             }
-            if (result[0].source.target)
-            compiledContractProcess(result[0], function(contract) {
+            if (!result[0].source.target) return;
+            compiledContractProcess(result[0]).forEach((contract) => {
                 contract.tags.push('piped');
                 console.log('contract', contract);
                 if (this.pipedContracts[contract.name]) {
