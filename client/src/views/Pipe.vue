@@ -132,6 +132,13 @@
         >
             <v-icon>fa-chevron-right</v-icon>
         </v-btn>
+        <SimpleModal
+            :modalIsActive="simpleModal.active"
+            :modalMessage="simpleModal.msg"
+            :hasChoice="simpleModal.choice"
+            :modalInput="simpleModal.input"
+            v-on:change="simpleModalChange"
+        />
     </swiper>
 </template>
 
@@ -147,6 +154,7 @@ import RemixLoadContract from '../components/remix/RemixLoadContract';
 import LoadFromEthpm from '../components/LoadFromEthpm';
 import Search from '../components/Search';
 import ExportToEthPM from '../components/ExportToEthPM';
+import SimpleModal from '../components/modals/SimpleModal';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
 import {
@@ -183,9 +191,10 @@ export default {
     RemixLoadContract,
     LoadFromEthpm,
     ExportToEthPM,
+    SimpleModal,
   },
   data() {
-    return {
+    const data = {
         isRemix: window.self !== window.top,
         web3: null,
         chain: null,
@@ -222,7 +231,16 @@ export default {
         ethpmDialog: false,
         exportToEthpmResult: null,
         exportToEthpmError: null,
+        simpleModalDefault: {
+            active: false,
+            msg: '',
+            choice: false,
+            input: {label: '', placeholder: '', value: ''},
+            setBy: null,
+        },
     };
+    data.simpleModal = Object.assign({}, data.simpleModalDefault);
+    return data;
   },
   mounted() {
     this.loadData();
@@ -478,19 +496,27 @@ export default {
         });
     },
     loadToRemixCall: function(name, source) {
-        let fileName;
-
-        var newContractName = prompt(`Click "OK" if you want to load the "${name}" contract in Remix. You can change the name here: `, name);
-
-        // newContractName is null if user clicks Cancel
-        if (newContractName) {
-            fileName = `browser/${newContractName}`;
+        this.simpleModal.active = true;
+        this.simpleModal.msg = `Click "OK" if you want to load the "${name}" contract in Remix. You can change the name.`;
+        this.simpleModal.choice = true;
+        this.simpleModal.input = {
+            label: name,
+            placeholder: name,
+            value: name,
+            setBy: ['loadToRemixCall', source],
+        }
+    },
+    simpleModalChange: function(choice, inputValue) {
+        if (this.simpleModal.input.setBy[0] === 'loadToRemixCall' && choice === true && inputValue) {
+            let fileName = `browser/${inputValue}`;
             Pipeos.remixClient.call(
                 'fileManager',
                 'setFile',
-                fileName, source
+                fileName,
+                this.simpleModal.input.setBy[1],
             );
         }
+        this.simpleModal = Object.assign({}, this.simpleModalDefault);
     },
     loadFromRemix: function(container, deployment) {
         container._id = randomId();
