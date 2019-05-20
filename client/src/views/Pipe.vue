@@ -254,7 +254,9 @@ export default {
         this.loadData();
         setTimeout(() => {
             if (this.chain === '1') {
-                alert('Pipeline is Work In Progress. Do not deploy Pipeline created contracts on mainnet.');
+                this.simpleModal.active = true;
+                this.simpleModal.msg = 'Pipeline is Work In Progress. Do not deploy Pipeline created contracts on mainnet.';
+                this.simpleModal.setBy = ['default'];
             }
         }, 3000);
     },
@@ -406,7 +408,9 @@ export default {
     onFunctionToggle: function (pfunction) {
         if (pfunction.pfunction.gapi.type === 'event') {
             if (this.graphInstance.containsEvent(this.activeCanvas)) {
-                alert('There can only be one event per graph/tab. You can add another graph/tab by clicking the + button.');
+                this.simpleModal.active = true;
+                this.simpleModal.msg = 'There can only be one event per graph/tab. You can add another graph/tab by clicking the + button.';
+                this.simpleModal.setBy = ['default'];
                 return;
             }
         }
@@ -499,22 +503,32 @@ export default {
         this.simpleModal.active = true;
         this.simpleModal.msg = `Click "OK" if you want to load the "${name}" contract in Remix. You can change the name.`;
         this.simpleModal.choice = true;
+        this.simpleModal.setBy = ['loadToRemixCall', source];
         this.simpleModal.input = {
             label: name,
             placeholder: name,
             value: name,
-            setBy: ['loadToRemixCall', source],
         }
     },
     simpleModalChange: function(choice, inputValue) {
-        if (this.simpleModal.input.setBy[0] === 'loadToRemixCall' && choice === true && inputValue) {
+        if (this.simpleModal.setBy[0] === 'loadToRemixCall' && choice === true && inputValue) {
             let fileName = `browser/${inputValue}`;
             Pipeos.remixClient.call(
                 'fileManager',
                 'setFile',
                 fileName,
-                this.simpleModal.input.setBy[1],
+                this.simpleModal.setBy[1],
             );
+        }
+        if (this.simpleModal.setBy[0] === 'loadFromRemixWrap') {
+            if (choice === true) {
+                this.saveFromRemix(...this.simpleModal.setBy[1]);
+            } else {
+                this.loadFromRemix(...this.simpleModal.setBy[1]);
+            }
+        }
+        if (this.simpleModal.setBy[0] === 'pipedLoadToRemix'  && choice === true) {
+            this.saveFromRemix(...this.simpleModal.setBy[1]);
         }
         this.simpleModal = Object.assign({}, this.simpleModalDefault);
     },
@@ -565,7 +579,9 @@ export default {
             let ppackage = response.data;
             this.loadData({packageid: ppackage._id});
         }).catch(error => {
-            alert(`Could not import package: ${error}`);
+            this.simpleModal.active = true;
+            this.simpleModal.msg = `Could not import package: ${error}`;
+            this.simpleModal.setBy = ['default'];
         });
     },
     exportToEthpmUI: function() {
@@ -575,7 +591,9 @@ export default {
     },
     exportToEthpm: function(ppackage) {
         if (!this.selectedTreeContainers.length) {
-            alert('There are no contracts loaded in the right side tree');
+            this.simpleModal.active = true;
+            this.simpleModal.msg = 'There are no contracts loaded in the right side tree';
+            this.simpleModal.setBy = ['default'];
         }
         this.exportToEthpmResult = null;
         this.exportToEthpmError = null;
@@ -635,16 +653,19 @@ export default {
             Loading ${compiled_contract.name} (deployed at ${deployment_info.pclassi.address} on chain ${deployment_info.pclassi.chain_id}) to Pipeline.
         `;
         if (deployment_info.pclassi.chain_id === 'JavaScriptVM') {
-            alert(`${message} The contract will only load in the plugin client and will disappear on Refresh.`);
+            this.simpleModal.active = true;
+            this.simpleModal.msg = `${message} The contract will only load in the plugin client and will disappear on Refresh.`;
+            this.simpleModal.setBy = ['default'];
+
             this.loadFromRemix(compiled_contract, deployment_info);
-        } else if (confirm(`
-            ${message}
-            Click "OK" if you want to save it on the Pipeos server.
-            Click "Cancel" and the contract will only load in the plugin client and will disappear on Refresh.`)
-        ) {
-            this.saveFromRemix(compiled_contract, deployment_info);
         } else {
-            this.loadFromRemix(compiled_contract, deployment_info);
+            this.simpleModal.active = true;
+            this.simpleModal.msg = `
+                ${message}
+                Click "OK" if you want to save it on the Pipeos server.
+                Click "Cancel" and the contract will only load in the plugin client and will disappear on Refresh.`;
+            this.simpleModal.choice = true;
+            this.simpleModal.setBy = ['loadFromRemixWrap', [compiled_contract, deployment_info]];
         }
     },
     pipedLoadToRemix: function() {
@@ -670,17 +691,20 @@ export default {
                 contract.tags.push('piped');
                 console.log('contract', contract);
                 if (this.pipedContracts[contract.name]) {
-                    if (confirm(`
+                    this.simpleModal.active = true;
+                    this.simpleModal.msg = `
                         You have deployed ${contract.name}.
-                        Click "OK" if you want to save it on the Pipeos server.`)
-                    ) {
-                        this.saveFromRemix(contract, {
+                        Click "OK" if you want to save it on the Pipeos server.`;
+                    this.simpleModal.choice = true;
+                    this.simpleModal.setBy = [
+                        'pipedLoadToRemix',
+                        [contract, {
                             deployed: {
                                 address: data[0].contractAddress,
                                 chain_id: this.chain,
                             }
-                        });
-                    }
+                        }]
+                    ];
                 }
             });
         });
