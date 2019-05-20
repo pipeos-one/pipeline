@@ -3,6 +3,7 @@
         <v-dialog
             v-model="modalIsActive"
             max-width="300"
+            persistent
         >
             <v-card>
                 <v-card-text>{{modalMessage}}</v-card-text>
@@ -15,9 +16,9 @@
                         ></v-text-field>
                     </v-flex>
                 </v-container>
-                <v-card-actions v-if="hasChoice">
-                    <v-spacer></v-spacer>
+                <v-card-actions>
                     <v-btn
+                        v-if="hasChoice"
                         flat
                         @click="$emit('change', false, inputValue)"
                     >
@@ -45,11 +46,15 @@ export default {
         };
     },
     mounted() {
-        this.inputValue = this.modalInput.value;
+        if (this.modalInput) {
+            this.inputValue = this.modalInput.value;
+        }
     },
     watch: {
         modalInput() {
-            this.inputValue = this.modalInput.value;
+            if (this.modalInput) {
+                this.inputValue = this.modalInput.value;
+            }
         },
     },
 };
