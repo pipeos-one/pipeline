@@ -64,11 +64,11 @@ export default {
     },
     methods: {
         async setData() {
-            await Pipeos.remix.loaded();
+            await Pipeos.remixClient.onload();
             this.setNetworkInfo();
             this.setContractsFromRemix();
 
-            Pipeos.remix.listen('solidity', 'compilationFinished', (target, source, version, data) => {
+            Pipeos.remixClient.listen('solidity', 'compilationFinished', (target, source, version, data) => {
                 console.log('compiler compilationFinished', target, source, version, data);
                 this.setNetworkInfo();
                 this.setContractsFromRemix();
@@ -78,7 +78,7 @@ export default {
             return this.$refs['addr_input'];
         },
         async setNetworkInfo() {
-            const provider = await Pipeos.remix.call(
+            const provider = await Pipeos.remixClient.call(
                 'app',
                 'getExecutionContextProvider'
             );
@@ -92,7 +92,7 @@ export default {
                 this.chain = this.web3.version.network;
             } else {
                 alert('Use an injected provider. Node by endpoint is not supported.');
-                // Pipeos.remix.call(
+                // Pipeos.remixClient.call(
                 //     'app',
                 //     'getProviderEndpoint',
                 //     [],
@@ -135,7 +135,7 @@ export default {
         async getDataFromRemix(callback) {
             let result
             try {
-                result = await Pipeos.remix.call(
+                result = await Pipeos.remixClient.call(
                     'solidity',
                     'getCompilationResult'
                 );

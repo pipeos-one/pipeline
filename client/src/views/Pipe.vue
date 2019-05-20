@@ -484,7 +484,7 @@ export default {
         // newContractName is null if user clicks Cancel
         if (newContractName) {
             fileName = `browser/${newContractName}`;
-            Pipeos.remix.call(
+            Pipeos.remixClient.call(
                 'fileManager',
                 'setFile',
                 fileName, source)
@@ -627,9 +627,9 @@ export default {
 
         if (this.chain === 'JavaScriptVM') return;
 
-        Pipeos.remix.listen('txListener', 'newTransaction', async (data) => {
+        Pipeos.remixClient.listen('txListener', 'newTransaction', async (data) => {
             console.log('txlistener newTransaction', data);
-            const result = await Pipeos.remix.call(
+            const result = await Pipeos.remixClient.call(
                 'solidity',
                 'getCompilationResult'
             );

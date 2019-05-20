@@ -1,7 +1,7 @@
 import Pipeos from '../../namespace/namespace';
 
 export async function deployOnJVM(bytecode, gasLimit, callback) {
-    const accounts = await Pipeos.remix.call(
+    const accounts = await Pipeos.remixClient.call(
         'udapp',
         'getAccounts');
     const transaction = {
@@ -14,7 +14,7 @@ export async function deployOnJVM(bytecode, gasLimit, callback) {
     console.log('transaction', transaction);
     let result
     try {
-        result = await Pipeos.remix.call(
+        result = await Pipeos.remixClient.call(
             'udapp',
             'runTestTx',
             transaction);
