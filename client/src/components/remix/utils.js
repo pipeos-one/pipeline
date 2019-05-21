@@ -1,33 +1,35 @@
 import Pipeos from '../../namespace/namespace';
 
 export async function deployOnJVM(bytecode, gasLimit, callback) {
-    const accounts = await Pipeos.remix.call(
+    const account = await Pipeos.remixClient.call(
         'udapp',
-        'getAccounts');
+        'getAccounts',
+    );
     const transaction = {
-        from: accounts[0],
+        from: account,
         data: bytecode,
         gasLimit,
         value: '0',
         useCall: false,
     };
-    console.log('transaction', transaction);
-    let result
+
+    let receipt;
     try {
-        result = await Pipeos.remix.call(
+        receipt = await Pipeos.remixClient.call(
             'udapp',
-            'runTestTx',
-            transaction);
-        if (result.error) {
-            throw new Error(JSON.stringify(result.error));
-        }
-        if (!result || !result.createdAddress) {
+            'sendTransaction',
+            transaction,
+        );
+        if (!receipt || !receipt.createdAddress) {
             throw new Error('PipeProxy contract not created');
         }
+        if (receipt.error) {
+            throw new Error(`PipeProxy contract not created: ${receipt.error}`);
+        }
     } catch (e) {
-        throw e
+        throw e;
     }
     if (callback) {
-        callback(result);
+        callback(receipt);
     }
 }

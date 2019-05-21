@@ -4,7 +4,7 @@
             v-model="selectContract"
             :items="contracts"
             label="Load from Remix"
-        ></v-select
+        ></v-select>
         <p>To change what contracts to load, compile another file in Remix.</p>
         <v-tooltip bottom>
             <v-text-field
@@ -19,15 +19,23 @@
             ></v-text-field>
             <p>Set deployment address to load the {{contractName}} contract into the Pipeline plugin.</p>
         </v-tooltip>
+        <SimpleModal
+            :active="modalIsActive"
+            :msg="modalMessage"
+        />
     </div>
 </template>
 
 <script>
 import Pipeos from '../../namespace/namespace';
+import SimpleModal from '../modals/SimpleModal';
 import {compiledContractProcess} from '../../utils/utils';
 import {deployOnJVM} from './utils.js';
 
 export default {
+    components: {
+        SimpleModal,
+    },
     data() {
         let validationError = 'Invalid address';
         return {
@@ -42,14 +50,16 @@ export default {
                 v => v ? (v.length === 42 || validationError) : '',
                 v => v ? (v.substring(0, 2) === '0x' || validationError) : '',
             ],
+            modalIsActive: false,
+            modalMessage: '',
         }
     },
     async mounted() {
         this.setData();
     },
-    beforeUpdate() {
-        this.setData();
-    },
+    // beforeUpdate() {
+    //     this.setData();
+    // },
     watch: {
         chain(newValue) {
             if (newValue === 'JavaScriptVM') {
@@ -64,25 +74,27 @@ export default {
     },
     methods: {
         async setData() {
-            await Pipeos.remix.loaded();
-            this.setNetworkInfo();
-            this.setContractsFromRemix();
-
-            Pipeos.remix.listen('solidity', 'compilationFinished', (target, source, version, data) => {
-                console.log('compiler compilationFinished', target, source, version, data);
-                this.setNetworkInfo();
+            Pipeos.remixClient.onload().then(async (resp) => {
+                await this.listenNetworkInfo();
                 this.setContractsFromRemix();
+
+                Pipeos.remixClient.on('solidity', 'compilationFinished', (target, source, version, data) => {
+                    this.setContractsFromRemix();
+                });
             });
         },
         ethaddressInput() {
             return this.$refs['addr_input'];
         },
-        async setNetworkInfo() {
-            const provider = await Pipeos.remix.call(
-                'app',
-                'getExecutionContextProvider'
+        async listenNetworkInfo() {
+            const provider = await Pipeos.remixClient.call(
+                'network',
+                'getNetworkProvider'
             );
-            console.log('getExecutionContextProvider', provider);
+            this.setNetworkInfo(provider);
+            Pipeos.remixClient.on('network', 'providerChanged', this.setNetworkInfo);
+        },
+        setNetworkInfo(provider) {
             // provider = injected | web3 | vm
             if (provider === 'vm') {
                 this.chain = 'JavaScriptVM';
@@ -91,24 +103,15 @@ export default {
                 this.web3 = window.web3;
                 this.chain = this.web3.version.network;
             } else {
-                alert('Use an injected provider. Node by endpoint is not supported.');
-                // Pipeos.remix.call(
-                //     'app',
-                //     'getProviderEndpoint',
-                //     [],
-                //     (error, provider) => {
-                //         console.log('getProviderEndpoint', error, provider);
-                //     }
-                // );
+                this.modalIsActive = true;
+                this.modalMessage = 'Use an injected provider. Node by endpoint is not supported.';
             }
             this.$emit('provider-changed', this.chain, this.web3);
         },
-        async setContractsFromRemix() {
-            let contracts = [];
-            this.getDataFromRemix(function(container) {
-                contracts.push(container.name);
+        setContractsFromRemix() {
+            this.getDataFromRemix().then((containers) => {
+                this.contracts = containers.map(container => container.name);
             });
-            this.contracts = contracts;
         },
         loadFromRemix(contractName) {
             let input = this.ethaddressInput();
@@ -126,21 +129,23 @@ export default {
                 }
             };
 
-            this.getDataFromRemix((container) => {
-                if (container.name == contractName) {
-                    this.$emit('load-from-remix', container, deployment_info);
-                }
+            this.getDataFromRemix().then((containers) => {
+                containers.forEach((container) => {
+                    if (container.name == contractName) {
+                        this.$emit('load-from-remix', container, deployment_info);
+                    }
+                });
             });
         },
-        async getDataFromRemix(callback) {
-            let result
+        async getDataFromRemix() {
+            let result;
             try {
-                result = await Pipeos.remix.call(
+                result = await Pipeos.remixClient.call(
                     'solidity',
                     'getCompilationResult'
                 );
                 if (result.data && result.source) {
-                    return compiledContractProcess(result, callback);
+                    return compiledContractProcess(result);
                 }
             } catch (e) {
                 throw e;
