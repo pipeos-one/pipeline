@@ -724,7 +724,6 @@ body {
     height: 100%;
     margin: 0;
     padding: 0;
-    font-family: sans-serif;
 }
 .swiper-slide {
     width: 100%!important;
