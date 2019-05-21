@@ -18,7 +18,6 @@ export default {
     height: 100%;
     margin: 0px;
     padding: 0px;
-    font-family: sans-serif;
 }
 
 .s_content {

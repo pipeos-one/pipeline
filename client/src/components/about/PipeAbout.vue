@@ -34,7 +34,7 @@
                         width="44"
                     ></v-img>
                 </v-avatar>
-                Pipeline: The Visual IDE (WIP)
+                Pipeline: The Visual IDE
             </div>
             <v-layout row wrap>
                 <v-flex xs12>
@@ -56,7 +56,7 @@
                 </v-flex>
                 <v-flex xs12>
                     <br>
-                    <iframe width="476" height="280" src="https://www.youtube.com/embed/kOhmv9uj1mI" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    <iframe width="714" height="420" src="https://www.youtube.com/embed/kOhmv9uj1mI" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
                 </v-flex>
             </v-layout>
         </div>
