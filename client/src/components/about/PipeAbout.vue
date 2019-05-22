@@ -1,10 +1,11 @@
 <template>
     <v-container>
-        <v-toolbar flat color="#fff" floating>
+        <v-toolbar flat color="#F9F9F9" floating>
             <v-btn
                 flat block
                 href="https://github.com/pipeos-one/pipeline"
                 target="_blank"
+                v-bind:class="['normaltxt']"
             >
                 github
             </v-btn>
@@ -12,6 +13,7 @@
                 flat block
                 href="https://gitter.im/pipeos-one/pipeline"
                 target="_blank"
+                v-bind:class="['normaltxt']"
             >
                 gitter
             </v-btn>
@@ -19,6 +21,7 @@
                 flat block
                 href="https://www.youtube.com/watch?v=kOhmv9uj1mI&list=PL323JufuD9JAyaYCEvrnQ5yOAc3ukuNyF&index=9&t=1s"
                 target="_blank"
+                v-bind:class="['normaltxt']"
             >
                 youtube
             </v-btn>
@@ -36,7 +39,7 @@
                 </v-avatar>
                 Pipeline: The Visual IDE
             </div>
-            <v-layout row wrap>
+            <v-layout row wrap class="text-xs-center caption font-weight-medium">
                 <v-flex xs12>
                     <br>
                     If you know this video: maximize the window:
@@ -50,7 +53,7 @@
                         width="33"
                     ></img>
                 </v-flex>
-                <v-flex xs12>
+                <v-flex xs12 style="margin-bottom: 20px">
                     <br>
                     You can try out the old Pipeline with +4k contracts by loading <pre class="font-weight-bold">{"title":"Pipeline2","url":"https://pipeline-old.pipeos.one"}</pre> as a Remix plugin.
                 </v-flex>
