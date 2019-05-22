@@ -22,6 +22,10 @@
     text-align: center;
     color: #2c3e50;
 }
+
+.v-expansion-panel__header {
+    padding-top: 0px;
+    padding-bottom: 0px;
 }
 
 .event {
