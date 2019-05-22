@@ -176,7 +176,7 @@ const packageApi = Pipeos.pipeserver.api.package;
 
 let filterOptions = {
     offset: 0,
-    limit: 7,
+    limit: 20,
     skip: 0,
 };
 
