@@ -18,7 +18,7 @@
             ></v-text-field>
             <p>Set deployment address to load the {{contractName}} contract into the Pipeline plugin.</p>
         </v-tooltip>
-        <p class="text-xs-left caption font-weight-medium">To change what contracts to load, compile another file in Remix.</p>
+        <p class="text-xs-left caption font-weight-medium wrap">To change what contracts to load, compile another file in Remix.</p>
         <SimpleModal
             :active="modalIsActive"
             :msg="modalMessage"
