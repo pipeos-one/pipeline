@@ -267,5 +267,6 @@ export default {
     height: 87%;
     width: 100%;
     font-family: monospace;
+    font-size: 12px;
 }
 </style>

@@ -6,6 +6,7 @@
                     block depressed large
                     :color="funcColor"
                     @click="runFunction"
+                    v-bind:class="['normaltxt']"
                 >
                     {{abi.name}}
                 </v-btn>
