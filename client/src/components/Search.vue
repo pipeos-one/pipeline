@@ -8,8 +8,9 @@
         hide-details
         item-text="name"
         return-object
-        label="Search"
+        placeholder="Search"
         multiple
+        dense
       >
         <template
             slot="selection"

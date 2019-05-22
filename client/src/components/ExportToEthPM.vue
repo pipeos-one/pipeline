@@ -4,7 +4,6 @@
             <v-text-field
                 v-model="name"
                 outline
-                height="60%"
                 type="text"
                 label="package name"
                 placeholder="Package Name"
