@@ -5,14 +5,14 @@
         </swiper-slide>
         <swiper-slide class="swiper-margin no-swipe">
                 <v-layout row wrap>
-                    <v-flex xs4 style="margin-top: 70px;">
+                    <v-flex xs4 style="margin-top: 50px;">
                         <Search
                             v-on:select="onSearchSelect"
                             v-on:search="onSearchQuery"
                             v-on:remove="onSearchRemove"
                         />
-                        <LoadFromEthpm v-on:change="onLoadFromEthpm"/>
-                        <RemixLoadContract
+                        <LoadFromEthpm v-on:change="onLoadFromEthpm" style="margin-top: 5px;"/>
+                        <RemixLoadContract style="margin-top: -19px;"
                             v-if="isRemix"
                             v-on:load-from-remix="loadFromRemixWrap"
                             v-on:provider-changed="setNetworkInfo"
@@ -176,7 +176,7 @@ const packageApi = Pipeos.pipeserver.api.package;
 
 let filterOptions = {
     offset: 0,
-    limit: 7,
+    limit: 20,
     skip: 0,
 };
 
@@ -724,7 +724,6 @@ body {
     height: 100%;
     margin: 0;
     padding: 0;
-    font-family: sans-serif;
 }
 .swiper-slide {
     width: 100%!important;
@@ -752,5 +751,30 @@ body {
 }
 .nav.next {
     right: 3px!important;
+}
+
+.v-input__icon .v-icon {
+    font-size: 16px;
+}
+.v-text-field {
+    padding: 0;
+}
+.v-select__selections, .v-input__slot {
+    font-size: 12px;
+}
+.wrap {
+    word-break: break-all;
+    white-space: normal;
+}
+.v-expansion-panel__header {
+    padding-left: 0;
+    min-height: 35px;
+}
+.v-list__tile {
+    height: 30px !important;
+}
+.v-list__tile__title {
+    padding-left: 30px;
+    font-size: 12px;
 }
 </style>

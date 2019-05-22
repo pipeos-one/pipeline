@@ -6,8 +6,8 @@
             persistent
         >
             <v-card>
-                <v-card-text>{{modalMessage}}</v-card-text>
-                <v-container v-if="modalInput">
+                <v-card-text class="text-xs-left caption font-weight-medium wrap">{{modalMessage}}</v-card-text>
+                <v-container v-if="modalInput.label">
                     <v-flex xs12>
                         <v-text-field
                             v-model="inputValue"

@@ -1,11 +1,11 @@
 <template>
-    <div class="load-ethpm">
+    <div>
             <v-select
                 v-model="selectType"
                 :items="['swarm', 'ipfs']"
                 :error="selectError"
                 :error-messages="selectErrorMsg"
-                label="Load EthPM package"
+                placeholder="Load EthPM package"
             ></v-select>
             <v-tooltip bottom>
                 <v-text-field
@@ -13,15 +13,14 @@
                     v-if="selectType"
                     :error="inputError"
                     :error-messages="inputErrorMsg"
-                    label="ipfs/swarm hash"
-                    placeholder="QmcBYqgY6R7aGaqG8EXg4YvQp7L5vriuLdaEvXQ2atdqRT"
+                    :placeholder="selectType === 'swarm' ? 'swarm hash' : 'ipfs hash'"
                     append-icon="fa-download"
                     @click:append="loadFromEthpm"
                     slot="activator"
+                    style="margin-top: -15px"
                 ></v-text-field>
                 <p>EthPM ipfs/swarm url</p>
             </v-tooltip>
-        </v-layout>
     </div>
 </template>
 
@@ -64,9 +63,3 @@ export default {
     }
 }
 </script>
-
-<style>
-.load-ethpm {
-    margin-top: 25px;
-}
-</style>

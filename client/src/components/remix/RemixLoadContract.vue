@@ -1,24 +1,24 @@
 <template>
-    <div class="load-remix">
+    <div>
         <v-select
             v-model="selectContract"
             :items="contracts"
-            label="Load from Remix"
+            placeholder="Load from Remix"
         ></v-select>
-        <p>To change what contracts to load, compile another file in Remix.</p>
         <v-tooltip bottom>
             <v-text-field
                 ref="addr_input"
                 v-if="contractName"
-                :label="contractName + ' - deployed on ' + chainName"
                 placeholder="0x0000000000000000000000000000000000000000"
                 append-icon="fa-download"
                 @click:append="loadFromRemix(contractName)"
                 slot="activator"
                 :rules="rules"
+                style="margin-top: -15px"
             ></v-text-field>
             <p>Set deployment address to load the {{contractName}} contract into the Pipeline plugin.</p>
         </v-tooltip>
+        <p class="text-xs-left caption font-weight-medium">To change what contracts to load, compile another file in Remix.</p>
         <SimpleModal
             :active="modalIsActive"
             :msg="modalMessage"
@@ -161,9 +161,3 @@ export default {
     }
 }
 </script>
-
-<style>
-.load-remix {
-    margin-top: 5px;
-}
-</style>
