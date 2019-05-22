@@ -762,7 +762,7 @@ body {
 .v-select__selections, .v-input__slot {
     font-size: 12px;
 }
-.wrap {
+.wraptxt {
     word-break: break-all;
     white-space: normal;
 }

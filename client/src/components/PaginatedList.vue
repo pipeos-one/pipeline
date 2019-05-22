@@ -9,9 +9,9 @@
           ></v-pagination>
       </div>
     <div v-if="items.length === 0">
-        <p>Pipeline database does not contain contracts deployed on this chain.
+        <p class="text-xs-left caption font-weight-medium">Pipeline database does not contain contracts deployed on this chain.
         To see & play with Pipeline stored contracts, change to Ropsten, Rinkeby or Kovan.</p>
-        <p>Otherwise, import your own deployed contracts from Remix.</p>
+        <p class="text-xs-left caption font-weight-medium">Otherwise, import your own deployed contracts from Remix.</p>
     </div>
     <v-list two-line v-if="items.length > 0">
         <PipeTree
