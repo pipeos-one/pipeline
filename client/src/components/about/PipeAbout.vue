@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <v-container>
         <v-toolbar flat color="#fff" floating>
             <v-btn
                 flat block
@@ -54,14 +54,27 @@
                     <br>
                     You can try out the old Pipeline with +4k contracts by loading <pre class="font-weight-bold">{"title":"Pipeline2","url":"https://pipeline-old.pipeos.one"}</pre> as a Remix plugin.
                 </v-flex>
-                <v-flex xs12>
-                    <br>
-                    <iframe width="714" height="420" src="https://www.youtube.com/embed/kOhmv9uj1mI" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
-                </v-flex>
             </v-layout>
+            <div class="videoWrapper">
+                <iframe width="714" height="420" src="https://www.youtube.com/embed/kOhmv9uj1mI" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
         </div>
-    </div>
+    </v-container>
 </template>
 
 <style>
+.videoWrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 */
+    padding-top: 25px;
+    margin-right: 35px;
+    height: 0;
+}
+.videoWrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
 </style>
