@@ -16,7 +16,7 @@ import {
   requestBody,
   HttpErrors,
 } from '@loopback/rest';
-import {PClass, SolClass, JsClass, PFunction, PClassI, SolInstance} from '../models';
+import {PClass, SolClass, JsClass, PFunction, PClassI, SolInstance, SolFunction} from '../models';
 import {PClassRepository} from '../repositories';
 import {PFunctionController, PClassIController} from '../controllers';
 import {AbiFunctionInput, AbiFunction} from '../interfaces/gapi';
@@ -183,23 +183,35 @@ export class PClassController {
   async createFunctions(
     @requestBody() pclass: PClass,
   ): Promise<PClass> {
+    let newPclass: any;
     // For a Solidity smart contract, if we only have the source, we try to compile it
     // so we can store the abi, natspec
     pclass.pclass = this.tryCompileSolClass(
         pclass.name,
         (<SolClass>pclass.pclass)
     );
+
     if (!pclass.pclass) {
         throw new HttpErrors.InternalServerError('PClass instance does not contain pclass');
     }
 
-    let newPclass = await this.create(pclass);
-
-    this.createFunctionsFromPClass(newPclass).catch((e: Error) => {
-        console.log('createFunctionsFromPClass', e);
-        this.deletePClassFunctions(newPclass._id);
-        return this.deleteById(newPclass._id);
+    // If there is a duplicate, we don't insert anything, but return the record
+    let alreadyInserted = await this.find({where: {name: pclass.name}});
+    console.log('alreadyInserted', alreadyInserted.length);
+    newPclass = alreadyInserted.find((inserted: any) => {
+        return JSON.stringify(inserted.pclass.gapi) == JSON.stringify(pclass.pclass.gapi);
     });
+
+    if (!newPclass) {
+        newPclass = await this.create(pclass).catch(e => console.log('create err', pclass.name, e));
+        if (!newPclass) {
+            throw new Error('no newPclass inserted ' + pclass.name);
+        }
+        await this.createFunctionsFromPClass((<PClass>newPclass)).catch((e: Error) => {
+            this.deletePClassFunctions((<PClass>newPclass)._id);
+            return this.deleteById((<PClass>newPclass)._id);
+        });
+    }
     return newPclass;
   }
 
@@ -215,13 +227,26 @@ export class PClassController {
       @requestBody() pclassi: PClassI,
   ): Promise<PClassI> {
     let pclassiRepository = await this.pclassRepository.pclassi;
+    let pfunctionRepository = await this.pclassRepository.pfunctions;
     let pclass = await this.findById(pclassi.pclassid);
 
     pclass.chainids = pclass.chainids || [];
     if (!pclass.chainids.includes((<SolInstance>pclassi.pclassi).chainid)) {
         pclass.chainids.push((<SolInstance>pclassi.pclassi).chainid);
         await this.updateById(pclassi.pclassid, {chainids: pclass.chainids});
+        // Update all functions chainids
+        // Updating internal attributes doesn't work in loopback now
+        let funcToUpdate = await pfunctionRepository.find({where: {pclassid: pclassi.pclassid}});
+        console.log('funcToUpdate', funcToUpdate.length);
+        for (let i = 0; i < funcToUpdate.length; i++) {
+            (<SolFunction>funcToUpdate[i].pfunction).chainids = pclass.chainids;
+            await pfunctionRepository.updateById(funcToUpdate[i]._id, {pfunction: funcToUpdate[i].pfunction});
+        }
     }
+    // Bad, bad dev
+    const pclassFilter: any = JSON.parse(JSON.stringify({where: {"pclassi.address": (<SolInstance>pclassi.pclassi).address, "pclassi.chainid": (<SolInstance>pclassi.pclassi).chainid}}));
+    const pclassiExists = await pclassiRepository.find(pclassFilter);
+    if (pclassiExists &&  pclassiExists[0]) return pclassiExists[0];
     return await pclassiRepository.create(pclassi);
   }
 
@@ -309,15 +334,15 @@ export class PClassController {
                         pclass.devdoc || metadata.output.devdoc,
                         pclass.userdoc || metadata.output.userdoc
                     );
-                } catch {
-                    console.log('Metadata could not be parsed: ', compiled.contracts[`:${contractName}`].metadata);
+                } catch(e) {
+                    console.log(`Metadata could not be parsed: ${e}, ${compiled.contracts[`:${contractName}`].metadata}`);
                 }
-            } else if (compiled.errors[0].includes('ParserError: Expected pragma')) {
+            } else if (compiled.errors && compiled.errors[0].includes('ParserError: Expected pragma')) {
                 pclass.flatsource = '// No source code available.';
             }
         }
         if (pclass.flatsource && !pclass.gapi) {
-            console.log(contractName + ' not inserted.');
+            console.log(contractName + ' not inserted, no ABI.');
             return;
         }
         delete pclass.devdoc;
