@@ -40,19 +40,6 @@
                 Pipeline: The Visual IDE
             </div>
             <v-layout row wrap class="text-xs-center caption font-weight-medium">
-                <v-flex xs12>
-                    <br>
-                    If you know this video: maximize the window:
-                    <img src="/maximize.png"
-                        height="32"
-                        width="32"
-                    ></img> and click next:
-                    <img
-                        src="/next.png"
-                        height="33"
-                        width="33"
-                    ></img>
-                </v-flex>
                 <v-flex xs12 style="margin-bottom: 20px">
                     <br>
                     You can try out the old Pipeline with +4k contracts by loading <pre class="font-weight-bold">{"title":"Pipeline2","url":"https://pipeline-old.pipeos.one"}</pre> as a Remix plugin.
