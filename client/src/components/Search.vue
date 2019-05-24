@@ -18,14 +18,14 @@
         >
             <v-chip
                 :selected="data.selected"
-                close
+                close small
                 class="chip--select-multi"
                 @input="remove(data.item)"
             >
-                <v-avatar>
-                  <img v-if="data.item.icon" :src="data.item.icon">
-                  <v-icon v-else-if="data.item.tag">fa-tag</v-icon>
-                  <v-icon v-else>fa-circle</v-icon>
+                <v-avatar size="24px">
+                  <img v-if="data.item.icon" :src="data.item.icon" height="24px">
+                  <v-icon v-else-if="data.item.tag" small>fa-tag</v-icon>
+                  <v-icon v-else small>fa-circle</v-icon>
                 </v-avatar>
                 {{ data.item.name }}
             </v-chip>
@@ -38,10 +38,10 @@
                 <v-list-tile-content v-text="data.item"></v-list-tile-content>
             </template>
             <template v-else>
-                <v-list-tile-avatar>
-                  <img v-if="data.item.icon" :src="data.item.icon">
-                  <v-icon v-else-if="data.item.tag">fa-tag</v-icon>
-                  <v-icon v-else>fa-circle</v-icon>
+                <v-list-tile-avatar size="24px">
+                  <img v-if="data.item.icon" :src="data.item.icon" height="24px">
+                  <v-icon v-else-if="data.item.tag" small>fa-tag</v-icon>
+                  <v-icon v-else small>fa-circle</v-icon>
                 </v-list-tile-avatar>
                 <v-list-tile-content>
                   <v-list-tile-title v-html="data.item.name"></v-list-tile-title>
@@ -116,3 +116,9 @@ export default {
     }
 }
 </script>
+
+<style>
+.v-list__tile__avatar {
+    min-width: 24px;
+}
+</style>
