@@ -6,3 +6,4 @@ export * from './pclassi.repository';
 export * from './openapi.repository';
 export * from './project.repository';
 export * from './package.repository';
+export * from './migration.repository';

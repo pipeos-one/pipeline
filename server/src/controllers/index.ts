@@ -6,3 +6,4 @@ export * from './pclassi.controller';
 export * from './openapi.controller';
 export * from './project.controller';
 export * from './package.controller';
+export * from './migration.controller';
