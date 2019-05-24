@@ -240,6 +240,7 @@ export default {
         },
     };
     data.simpleModal = Object.assign({}, data.simpleModalDefault);
+    data.modalQueue = [];
     return data;
   },
   mounted() {
@@ -500,15 +501,27 @@ export default {
         });
     },
     loadToRemixCall: function(name, source) {
-        this.simpleModal.active = true;
-        this.simpleModal.msg = `Click "OK" if you want to load the "${name}" contract in Remix. You can change the name.`;
-        this.simpleModal.choice = true;
-        this.simpleModal.setBy = ['loadToRemixCall', source];
-        this.simpleModal.input = {
-            label: name,
-            placeholder: name,
-            value: name,
+        this.modalQueue.push(Object.assign({}, this.simpleModalDefault, {
+            msg: `Click "OK" if you want to load the "${name}" contract in Remix. You can change the name.`,
+            choice: true,
+            setBy: ['loadToRemixCall', source],
+            input: {
+                label: name,
+                placeholder: name,
+                value: name,
+            },
+        }));
+        this.runModalQueue();
+    },
+    runModalQueue: function() {
+        if (this.modalQueue[0] && !this.simpleModal.active) {
+            this.simpleModal = this.modalQueue[0];
+            this.simpleModal.active = true;
         }
+    },
+    shiftModalQueue: function() {
+        this.modalQueue.shift();
+        this.simpleModal = Object.assign({}, this.simpleModalDefault);
     },
     simpleModalChange: function(choice, inputValue) {
         if (this.simpleModal.setBy[0] === 'loadToRemixCall' && choice === true && inputValue) {
@@ -530,7 +543,8 @@ export default {
         if (this.simpleModal.setBy[0] === 'pipedLoadToRemix'  && choice === true) {
             this.saveFromRemix(...this.simpleModal.setBy[1]);
         }
-        this.simpleModal = Object.assign({}, this.simpleModalDefault);
+        this.shiftModalQueue();
+        this.runModalQueue();
     },
     loadFromRemix: function(container, deployment) {
         container._id = randomId();
