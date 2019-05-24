@@ -14,4 +14,9 @@ export class DStorage extends Model {
        required: true,
     })
     type: DStorageType;
+
+    @property({
+       type: 'string',
+    })
+    protocol: 'bzz' | 'bzzr' | 'bzz-raw' | 'ipfs';
 }
