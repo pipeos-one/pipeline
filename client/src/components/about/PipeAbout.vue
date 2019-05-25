@@ -27,7 +27,7 @@
             </v-btn>
         </v-toolbar>
         <div>
-            <div class="display-1">
+            <div class="display-1" style="padding-bottom:25px">
                 <v-avatar>
                     <v-img
                         :src="`/pipeline.png`"
@@ -39,14 +39,8 @@
                 </v-avatar>
                 Pipeline: The Visual IDE
             </div>
-            <v-layout row wrap class="text-xs-center caption font-weight-medium">
-                <v-flex xs12 style="margin-bottom: 20px">
-                    <br>
-                    You can try out the old Pipeline with +4k contracts by loading <pre class="font-weight-bold">{"title":"Pipeline2","url":"https://pipeline-old.pipeos.one"}</pre> as a Remix plugin.
-                </v-flex>
-            </v-layout>
             <div class="videoWrapper">
-                <iframe width="714" height="420" src="https://www.youtube.com/embed/kOhmv9uj1mI" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                <iframe width="714" height="420" src="https://www.youtube.com/embed/8xwoyQkYm5U" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
             </div>
         </div>
     </v-container>
