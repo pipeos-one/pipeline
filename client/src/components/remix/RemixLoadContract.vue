@@ -153,9 +153,19 @@ export default {
         },
         deployPipeProxy() {
             if (this.chain === 'JavaScriptVM') {
-                deployOnJVM(Pipeos.contracts.PipeProxy.compiled.bytecode, '300000', (result) => {
-                    Pipeos.contracts.PipeProxy.addresses['JavaScriptVM'] = result.createdAddress;
-                });
+                let count =  0;
+                let iid = setInterval(() => {
+                    count ++;
+                    if (count > 5) {
+                        clearInterval(iid);
+                    }
+                    deployOnJVM(Pipeos.contracts.PipeProxy.compiled.bytecode, '300000', (result) => {
+                        if (result && result.createdAddress) {
+                            Pipeos.contracts.PipeProxy.addresses['JavaScriptVM'] = result.createdAddress;
+                            clearInterval(iid);
+                        }
+                    });
+                }, 4000);
             }
         },
     }
