@@ -19,7 +19,7 @@
             </v-btn>
             <v-btn
                 flat block
-                href="https://www.youtube.com/watch?v=kOhmv9uj1mI&list=PL323JufuD9JAyaYCEvrnQ5yOAc3ukuNyF&index=9&t=1s"
+                href="https://www.youtube.com/playlist?list=PL323JufuD9JAyaYCEvrnQ5yOAc3ukuNyF"
                 target="_blank"
                 v-bind:class="['normaltxt']"
             >
