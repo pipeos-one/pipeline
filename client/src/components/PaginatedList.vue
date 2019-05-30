@@ -4,7 +4,7 @@
           <v-pagination
             :length="pages"
             :value="currentPage"
-            total-visible="7"
+            total-visible="11"
             v-on:input="changePage"
           ></v-pagination>
       </div>
@@ -87,5 +87,22 @@ li {
   content: '⚬ ';
   font-weight: bold;
   color: slategray;
+}
+.v-pagination>li {
+    margin: 0 !important;
+}
+.v-pagination__item, .v-pagination__navigation {
+    max-width: 20px;
+    max-height: 20px;
+    min-width: 22px !important;
+    padding: 0 !important;
+    margin: 0 2px !important;
+    font-size: 10px;
+}
+.v-pagination__navigation .v-icon {
+    font-size: 14px !important;
+}
+.paginatedlist .v-list {
+    padding: 0;
 }
 </style>
