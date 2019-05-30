@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="80px" height="80px" viewBox="0 0 80 80" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 51.2 (57519) - http://www.bohemiancoding.com/sketch -->
+    <title>logo1</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="logo1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="01" transform="translate(20.000000, 19.000000)">
+            <polygon id="M-Copy-2" fill="#0D4583" transform="translate(29.000000, 13.000000) scale(-1, 1) translate(-29.000000, -13.000000) " points="24 26 17 26 17 0 25.04 0 29.2 13.72 34 0 41 0 41 26 35 26 35 9.36 31.8 20.12 27 20.12 24 9.44"></polygon>
+            <polygon id="Rectangle-9-Copy-10" fill="#160656" points="17 26 24 26 8 41 0 41"></polygon>
+            <polygon id="Rectangle-9-Copy-11" fill="#160656" points="34 26 41 26 24 41 17 41"></polygon>
+            <polygon id="M-Copy-3" fill="#007AFF" transform="translate(12.000000, 28.000000) scale(-1, 1) translate(-12.000000, -28.000000) " points="7 41 0 41 0 15 8.04 15 12.2 28.72 16.36 15 24 15 24 41 18 41 18 24.36 14.8 35.12 10 35.12 7 24.44"></polygon>
+            <polygon id="Rectangle-9-Copy-12" fill="#6BB2FF" points="17 0 24 0 8 15 0 15"></polygon>
+            <polygon id="Rectangle-9-Copy-14" fill="#6BB2FF" points="33 0 41 0 24 15 16 15"></polygon>
+        </g>
+    </g>
+</svg>
