@@ -23,7 +23,7 @@
                 @input="remove(data.item)"
             >
                 <v-avatar size="24px">
-                  <img v-if="data.item.icon" :src="data.item.icon" height="24px">
+                  <img v-if="data.item.icon" :src="`/img/project_icons/${data.item.icon}`" height="24px">
                   <v-icon v-else-if="data.item.tag" small>fa-tag</v-icon>
                   <v-icon v-else small>fa-circle</v-icon>
                 </v-avatar>
@@ -39,7 +39,7 @@
             </template>
             <template v-else>
                 <v-list-tile-avatar size="24px">
-                  <img v-if="data.item.icon" :src="data.item.icon" height="24px">
+                  <img v-if="data.item.icon" :src="`/img/project_icons/${data.item.icon}`" height="24px">
                   <v-icon v-else-if="data.item.tag" small>fa-tag</v-icon>
                   <v-icon v-else small>fa-circle</v-icon>
                 </v-list-tile-avatar>
