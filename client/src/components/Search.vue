@@ -1,6 +1,7 @@
 <template>
       <v-autocomplete
         v-model="select"
+        ref="searchAutocomplete"
         :items="items"
         :loading="loading"
         :search-input.sync="search"
@@ -9,7 +10,6 @@
         item-text="name"
         return-object
         placeholder="Search"
-        multiple
         dense
       >
         <template
@@ -70,32 +70,47 @@ export default {
             items: [],
             search: null,
             select: null,
-            items: [],
             searchQueryIsDirty: false,
-            isCalculating: false
+            isCalculating: false,
+            searchCache: null,
         }
     },
     watch: {
         search (val) {
-            this.searchQueryIsDirty = true;
-            this.debouncedSearch();
+            // We want the search input to maintain value when user does not
+            // select something and clicks outside the autocomplete
+            if (this.search === null) {
+                this.search = this.searchCache;
+
+                this.forceInputValue();
+                setTimeout(this.forceInputValue, 200);
+                setTimeout(this.forceInputValue, 500);
+                return;
+            }
+            if (this.search !== this.searchCache) {
+                this.searchQueryIsDirty = true;
+                this.debouncedSearch();
+            }
         },
         select (selected) {
-            this.search = null;
+            this.search = '';
             this.$emit('select', selected);
         },
     },
     methods: {
+        forceInputValue() {
+            this.$refs.searchAutocomplete.$refs.input.value = this.searchCache;
+        },
         debouncedSearch: debounce(function() {
             this.isCalculating = true;
             setTimeout(function () {
                 this.isCalculating = false;
                 this.searchQueryIsDirty = false;
-
+                this.searchCache = this.search;
                 this.search && this.search !== this.select && this.querySelections(this.search);
                 this.$emit('search', this.search);
             }.bind(this), 1000);
-        }, 500),
+        }, 1000),
         remove (item) {
             const index = this.select.findIndex((it) => {
                 return it.name === item.name;
