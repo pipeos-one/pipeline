@@ -27,7 +27,7 @@
                         v-bind:tags="selectedTags"
                         v-on:item-toggle="onTreeToggle"
                         v-on:subitem-toggle=""
-                        v-on:change-page="changePage"
+                        v-on:change-page="changePageLoad"
                         v-on:load-remix="loadToRemix"
                     />
                     </v-flex>
@@ -365,6 +365,7 @@ export default {
         this.graphInstance.addFunction(pfunction, index);
     },
     onSearchSelect: function (searchSelected) {
+        this.changePage(1);
         let tags = [], projects = [];
         searchSelected.forEach((selected) => {
             if (selected.tag) tags.push(selected.name);
@@ -375,7 +376,10 @@ export default {
         this.loadData();
     },
     onSearchQuery: function(searchQuery) {
-        searchQuery = searchQuery.length > 3 ? searchQuery : null;
+        this.changePage(1);
+        if (searchQuery) {
+            searchQuery = searchQuery.length > 3 ? searchQuery : null;
+        }
         if (!this.searchQuery && !searchQuery) return;
         this.searchQuery = searchQuery;
         this.loadData();
@@ -404,6 +408,9 @@ export default {
         if (0 < newPage <= this.pages) {
             this.currentPage = newPage;
         }
+    },
+    changePageLoad: function(page) {
+        this.changePage(page);
         this.loadData();
     },
     onFunctionToggle: function (pfunction) {
