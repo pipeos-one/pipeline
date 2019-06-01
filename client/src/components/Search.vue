@@ -78,6 +78,7 @@ export default {
             this.$emit('search', val);
         },
         select (selected) {
+            this.search = null;
             this.$emit('select', selected);
         },
     },
