@@ -54,6 +54,7 @@
 <script>
 import Vue from 'vue';
 import Pipeos from '../namespace/namespace';
+import {debounce} from '../utils/utils';
 
 const tagsApi = Pipeos.pipeserver.api.tag;
 const projectApi = Pipeos.pipeserver.api.project;
@@ -70,18 +71,31 @@ export default {
             search: null,
             select: null,
             items: [],
+            searchQueryIsDirty: false,
+            isCalculating: false
         }
     },
     watch: {
         search (val) {
-            val && val !== this.select && this.querySelections(val);
-            this.$emit('search', val);
+            this.searchQueryIsDirty = true;
+            this.debouncedSearch();
         },
         select (selected) {
+            this.search = null;
             this.$emit('select', selected);
         },
     },
     methods: {
+        debouncedSearch: debounce(function() {
+            this.isCalculating = true;
+            setTimeout(function () {
+                this.isCalculating = false;
+                this.searchQueryIsDirty = false;
+
+                this.search && this.search !== this.select && this.querySelections(this.search);
+                this.$emit('search', this.search);
+            }.bind(this), 1000);
+        }, 500),
         remove (item) {
             const index = this.select.findIndex((it) => {
                 return it.name === item.name;
