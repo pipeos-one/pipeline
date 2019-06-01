@@ -378,7 +378,7 @@ export default {
     onSearchQuery: function(searchQuery) {
         this.changePage(1);
         if (searchQuery) {
-            searchQuery = searchQuery.length > 3 ? searchQuery : null;
+            searchQuery = searchQuery.length > 1 ? searchQuery : null;
         }
         if (!this.searchQuery && !searchQuery) return;
         this.searchQuery = searchQuery;
