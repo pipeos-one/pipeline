@@ -150,6 +150,7 @@ export default {
             } catch (e) {
                 throw e;
             }
+            return [];
         },
         deployPipeProxy() {
             if (this.chain === 'JavaScriptVM') {
