@@ -39,7 +39,7 @@ For the initial centralized version, we will provide publicly available database
 
 As mentioned, we will migrate to a decentralized database/storage system.
 
-We are also building dType (https://github.com/pipeos-one/dType), a distributed type system. dType can enable fine-grained searches, based on the types used by the contracts.
+We are also building dType (https://github.com/pipeos-one/dType), a decentralized type system. dType can enable fine-grained searches, based on the types used by the contracts.
 
 ### Integration with other Remix plugins
 
