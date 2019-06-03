@@ -7,8 +7,7 @@
                 <v-layout row wrap>
                     <v-flex xs4 style="margin-top: 50px;">
                         <Search
-                            v-on:select="onSearchSelect"
-                            v-on:search="onSearchQuery"
+                            v-on:query="onSearchSelectQuery"
                             v-on:remove="onSearchRemove"
                         />
                         <LoadFromEthpm v-on:change="onLoadFromEthpm" style="margin-top: 5px;"/>
@@ -238,6 +237,7 @@ export default {
             input: {label: '', placeholder: '', value: ''},
             setBy: null,
         },
+        filterCache: null,
     };
     data.simpleModal = Object.assign({}, data.simpleModalDefault);
     data.modalQueue = [];
@@ -279,26 +279,29 @@ export default {
 
         return query;
     },
-    loadData: function(whereQuery = {}) {
+    loadData: function(whereQuery = {}, forced) {
         let query, containersQuery;
-        this.countPClasses();
 
         let filter = this.filterOptions;
         filter.where = this.buildContainersQuery(whereQuery);
         filter = '?filter=' + JSON.stringify(filter);
-        console.log('filter', filter);
+        console.log('loadData filter', filter);
 
-        Vue.axios.get(containerFunctionsApi + filter).then((response) => {
-            console.log('response', response);
-            let pclasses = response.data.pclasses.map(pclass => {
-                pclass.deployment = response.data.pclassii.find(depl => depl.pclassid == pclass._id);
-                if (!pclass.deployment) {
-                    pclass.deployment = {pclassi: {address: `Deployment address for ${pclass.name} not found.`}};
-                }
-                return pclass;
+        if (this.filterCache !== filter || forced) {
+            this.filterCache = filter;
+            this.countPClasses();
+            Vue.axios.get(containerFunctionsApi + filter).then((response) => {
+                console.log('loadData response', response);
+                let pclasses = response.data.pclasses.map(pclass => {
+                    pclass.deployment = response.data.pclassii.find(depl => depl.pclassid == pclass._id);
+                    if (!pclass.deployment) {
+                        pclass.deployment = {pclassi: {address: `Deployment address for ${pclass.name} not found.`}};
+                    }
+                    return pclass;
+                });
+                this.linkContainersFunctions(response.data.pfunctions, pclasses);
             });
-            this.linkContainersFunctions(response.data.pfunctions, pclasses);
-        });
+        }
     },
     countPClasses: function() {
         let where = this.buildContainersQuery();
@@ -364,8 +367,14 @@ export default {
     addToCanvas: function(pfunction, index) {
         this.graphInstance.addFunction(pfunction, index);
     },
-    onSearchSelect: function (searchSelected) {
+    onSearchSelectQuery: function(query) {
+        console.log('onSearchSelectQuery', query);
         this.changePage(1);
+        this.onSearchSelect(query.select);
+        this.onSearchQuery(query.search);
+        this.loadData();
+    },
+    onSearchSelect: function (searchSelected) {
         let tags = [], projects = [];
         searchSelected.forEach((selected) => {
             if (selected.tag) tags.push(selected.name);
@@ -373,16 +382,13 @@ export default {
         });
         this.selectedTags = tags;
         this.selectedProjects = projects;
-        this.loadData();
     },
     onSearchQuery: function(searchQuery) {
-        this.changePage(1);
         if (searchQuery) {
             searchQuery = searchQuery.length > 1 ? searchQuery : null;
         }
         if (!this.searchQuery && !searchQuery) return;
         this.searchQuery = searchQuery;
-        this.loadData();
     },
     onSearchRemove: function(searchRemove) {
         this.searchQuery = null;
@@ -590,7 +596,8 @@ export default {
         }).then((response) => {
             console.log('posted deployment', response);
             // Reload data after insert, to include information in the paginated list
-            this.loadData();
+            // TODO: insert this locally without a server request
+            this.loadData(forced = true);
         }).catch(function (error) {
             console.log(error);
         });

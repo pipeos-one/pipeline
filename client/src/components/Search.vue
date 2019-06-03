@@ -77,6 +77,7 @@ export default {
     },
     watch: {
         search (val) {
+            if (this.select) return;
             // We want the search input to maintain value when user does not
             // select something and clicks outside the autocomplete
             if (this.search === null) {
@@ -94,10 +95,17 @@ export default {
         },
         select (selected) {
             this.search = '';
-            this.$emit('select', selected);
+            this.searchCache = '';
+            this.emitQuery();
         },
     },
     methods: {
+        emitQuery() {
+            this.$emit('query', {
+                search: this.search,
+                select: this.select ? [this.select] : [],
+            });
+        },
         forceInputValue() {
             this.$refs.searchAutocomplete.$refs.input.value = this.searchCache;
         },
@@ -108,15 +116,17 @@ export default {
                 this.searchQueryIsDirty = false;
                 this.searchCache = this.search;
                 this.search && this.search !== this.select && this.querySelections(this.search);
-                this.$emit('search', this.search);
+                this.emitQuery();
             }.bind(this), 1000);
         }, 1000),
         remove (item) {
-            const index = this.select.findIndex((it) => {
-                return it.name === item.name;
-            });
-            if (index >= 0) this.select.splice(index, 1);
-            this.select = this.select;
+            // const index = this.select.findIndex((it) => {
+            //     return it.name === item.name;
+            // });
+            // if (index >= 0) this.select.splice(index, 1);
+            // this.select = this.select;
+
+            this.select = '';
             this.$emit('remove', item);
         },
         querySelections (searchText) {
