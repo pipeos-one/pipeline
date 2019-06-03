@@ -19,9 +19,10 @@
             <p>Set deployment address to load the {{contractName}} contract into the Pipeline plugin.</p>
         </v-tooltip>
         <p class="text-xs-left caption font-weight-medium wrap">To change what contracts to load, compile another file in Remix.</p>
+        <p v-if="remixInterfaceWarning.active" class="text-xs-left caption font-weight-medium wrap red">{{remixInterfaceWarning.msg}}</p>
         <SimpleModal
-            :active="modalIsActive"
-            :msg="modalMessage"
+            :modalIsActive="modalIsActive"
+            :modalMessage="modalMessage"
         />
     </div>
 </template>
@@ -52,6 +53,7 @@ export default {
             ],
             modalIsActive: false,
             modalMessage: '',
+            remixInterfaceWarning: {active: false, msg: ''},
         }
     },
     async mounted() {
@@ -74,7 +76,9 @@ export default {
     },
     methods: {
         async setData() {
+            let onload = false;
             Pipeos.remixClient.onload().then(async (resp) => {
+                onload = true;
                 await this.listenNetworkInfo();
                 this.setContractsFromRemix();
 
@@ -82,6 +86,12 @@ export default {
                     this.setContractsFromRemix();
                 });
             });
+            setTimeout(() => {
+                if (!onload) {
+                    this.remixInterfaceWarning.active = true;
+                    this.remixInterfaceWarning.msg = 'Switch to the new Remix interface! in the Compile Tab, otherwise Pipeline will not work properly.';
+                }
+            }, 6000);
         },
         ethaddressInput() {
             return this.$refs['addr_input'];
