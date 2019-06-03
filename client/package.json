@@ -15,6 +15,7 @@
     "jquery": "^3.3.1",
     "ramda": "^0.25.0",
     "register-service-worker": "^1.0.0",
+    "remix-plugin": "0.0.2-alpha.8",
     "roboto-fontface": "*",
     "svg.draggable.js": "^2.2.1",
     "svg.js": "^2.6.6",
@@ -23,7 +24,7 @@
     "vue-form-generator": "^2.3.0",
     "vue-multiselect": "^2.1.3",
     "vue-router": "^3.0.1",
-    "vuetify": "^1.3.3"
+    "vuetify": "^1.5.14"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.0.4",

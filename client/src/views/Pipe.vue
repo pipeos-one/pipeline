@@ -5,14 +5,14 @@
         </swiper-slide>
         <swiper-slide class="swiper-margin no-swipe">
                 <v-layout row wrap>
-                    <v-flex xs4 style="margin-top: 70px;">
+                    <v-flex xs4 style="margin-top: 50px;">
                         <Search
-                            v-on:select="onSearchSelect"
-                            v-on:search="onSearchQuery"
+                            v-on:query="onSearchSelectQuery"
                             v-on:remove="onSearchRemove"
                         />
-                        <LoadFromEthpm v-on:change="onLoadFromEthpm"/>
-                        <RemixLoadContract
+                        <LoadFromEthpm v-on:change="onLoadFromEthpm" style="margin-top: 5px;"/>
+                        <RemixLoadContract style="margin-top: -19px;"
+                            v-if="isRemix"
                             v-on:load-from-remix="loadFromRemixWrap"
                             v-on:provider-changed="setNetworkInfo"
                         />
@@ -26,7 +26,7 @@
                         v-bind:tags="selectedTags"
                         v-on:item-toggle="onTreeToggle"
                         v-on:subitem-toggle=""
-                        v-on:change-page="changePage"
+                        v-on:change-page="changePageLoad"
                         v-on:load-remix="loadToRemix"
                     />
                     </v-flex>
@@ -131,6 +131,13 @@
         >
             <v-icon>fa-chevron-right</v-icon>
         </v-btn>
+        <SimpleModal
+            :modalIsActive="simpleModal.active"
+            :modalMessage="simpleModal.msg"
+            :hasChoice="simpleModal.choice"
+            :modalInput="simpleModal.input"
+            v-on:change="simpleModalChange"
+        />
     </swiper>
 </template>
 
@@ -146,6 +153,7 @@ import RemixLoadContract from '../components/remix/RemixLoadContract';
 import LoadFromEthpm from '../components/LoadFromEthpm';
 import Search from '../components/Search';
 import ExportToEthPM from '../components/ExportToEthPM';
+import SimpleModal from '../components/modals/SimpleModal';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
 import {
@@ -167,7 +175,7 @@ const packageApi = Pipeos.pipeserver.api.package;
 
 let filterOptions = {
     offset: 0,
-    limit: 7,
+    limit: 20,
     skip: 0,
 };
 
@@ -182,9 +190,10 @@ export default {
     RemixLoadContract,
     LoadFromEthpm,
     ExportToEthPM,
+    SimpleModal,
   },
   data() {
-    return {
+    const data = {
         isRemix: window.self !== window.top,
         web3: null,
         chain: null,
@@ -221,7 +230,18 @@ export default {
         ethpmDialog: false,
         exportToEthpmResult: null,
         exportToEthpmError: null,
+        simpleModalDefault: {
+            active: false,
+            msg: '',
+            choice: false,
+            input: {label: '', placeholder: '', value: ''},
+            setBy: null,
+        },
+        filterCache: null,
     };
+    data.simpleModal = Object.assign({}, data.simpleModalDefault);
+    data.modalQueue = [];
+    return data;
   },
   mounted() {
     this.loadData();
@@ -235,7 +255,9 @@ export default {
         this.loadData();
         setTimeout(() => {
             if (this.chain === '1') {
-                alert('Pipeline is Work In Progress. Do not deploy Pipeline created contracts on mainnet.');
+                this.simpleModal.active = true;
+                this.simpleModal.msg = 'Pipeline is Work In Progress. Do not deploy Pipeline created contracts on mainnet.';
+                this.simpleModal.setBy = ['default'];
             }
         }, 3000);
     },
@@ -257,26 +279,29 @@ export default {
 
         return query;
     },
-    loadData: function(whereQuery = {}) {
+    loadData: function(whereQuery = {}, forced) {
         let query, containersQuery;
-        this.countPClasses();
 
         let filter = this.filterOptions;
         filter.where = this.buildContainersQuery(whereQuery);
         filter = '?filter=' + JSON.stringify(filter);
-        console.log('filter', filter);
+        console.log('loadData filter', filter);
 
-        Vue.axios.get(containerFunctionsApi + filter).then((response) => {
-            console.log('response', response);
-            let pclasses = response.data.pclasses.map(pclass => {
-                pclass.deployment = response.data.pclassii.find(depl => depl.pclassid == pclass._id);
-                if (!pclass.deployment) {
-                    pclass.deployment = {pclassi: {address: `Deployment address for ${pclass.name} not found.`}};
-                }
-                return pclass;
+        if (this.filterCache !== filter || forced) {
+            this.filterCache = filter;
+            this.countPClasses();
+            Vue.axios.get(containerFunctionsApi + filter).then((response) => {
+                console.log('loadData response', response);
+                let pclasses = response.data.pclasses.map(pclass => {
+                    pclass.deployment = response.data.pclassii.find(depl => depl.pclassid == pclass._id);
+                    if (!pclass.deployment) {
+                        pclass.deployment = {pclassi: {address: `Deployment address for ${pclass.name} not found.`}};
+                    }
+                    return pclass;
+                });
+                this.linkContainersFunctions(response.data.pfunctions, pclasses);
             });
-            this.linkContainersFunctions(response.data.pfunctions, pclasses);
-        });
+        }
     },
     countPClasses: function() {
         let where = this.buildContainersQuery();
@@ -342,6 +367,13 @@ export default {
     addToCanvas: function(pfunction, index) {
         this.graphInstance.addFunction(pfunction, index);
     },
+    onSearchSelectQuery: function(query) {
+        console.log('onSearchSelectQuery', query);
+        this.changePage(1);
+        this.onSearchSelect(query.select);
+        this.onSearchQuery(query.search);
+        this.loadData();
+    },
     onSearchSelect: function (searchSelected) {
         let tags = [], projects = [];
         searchSelected.forEach((selected) => {
@@ -350,13 +382,13 @@ export default {
         });
         this.selectedTags = tags;
         this.selectedProjects = projects;
-        this.loadData();
     },
     onSearchQuery: function(searchQuery) {
-        searchQuery = searchQuery.length > 3 ? searchQuery : null;
+        if (searchQuery) {
+            searchQuery = searchQuery.length > 1 ? searchQuery : null;
+        }
         if (!this.searchQuery && !searchQuery) return;
         this.searchQuery = searchQuery;
-        this.loadData();
     },
     onSearchRemove: function(searchRemove) {
         this.searchQuery = null;
@@ -382,12 +414,17 @@ export default {
         if (0 < newPage <= this.pages) {
             this.currentPage = newPage;
         }
+    },
+    changePageLoad: function(page) {
+        this.changePage(page);
         this.loadData();
     },
     onFunctionToggle: function (pfunction) {
         if (pfunction.pfunction.gapi.type === 'event') {
             if (this.graphInstance.containsEvent(this.activeCanvas)) {
-                alert('There can only be one event per graph/tab. You can add another graph/tab by clicking the + button.');
+                this.simpleModal.active = true;
+                this.simpleModal.msg = 'There can only be one event per graph/tab. You can add another graph/tab by clicking the + button.';
+                this.simpleModal.setBy = ['default'];
                 return;
             }
         }
@@ -477,20 +514,50 @@ export default {
         });
     },
     loadToRemixCall: function(name, source) {
-        let fileName;
-
-        var newContractName = prompt(`Click "OK" if you want to load the "${name}" contract in Remix. You can change the name here: `, name);
-
-        // newContractName is null if user clicks Cancel
-        if (newContractName) {
-            fileName = `browser/${newContractName}`;
-            Pipeos.remix.call(
-                'editor',
+        this.modalQueue.push(Object.assign({}, this.simpleModalDefault, {
+            msg: `Click "OK" if you want to load the "${name}" contract in Remix. You can change the name.`,
+            choice: true,
+            setBy: ['loadToRemixCall', source],
+            input: {
+                label: name,
+                placeholder: name,
+                value: name,
+            },
+        }));
+        this.runModalQueue();
+    },
+    runModalQueue: function() {
+        if (this.modalQueue[0] && !this.simpleModal.active) {
+            this.simpleModal = this.modalQueue[0];
+            this.simpleModal.active = true;
+        }
+    },
+    shiftModalQueue: function() {
+        this.modalQueue.shift();
+        this.simpleModal = Object.assign({}, this.simpleModalDefault);
+    },
+    simpleModalChange: function(choice, inputValue) {
+        if (this.simpleModal.setBy[0] === 'loadToRemixCall' && choice === true && inputValue) {
+            let fileName = `browser/${inputValue}`;
+            Pipeos.remixClient.call(
+                'fileManager',
                 'setFile',
-                [fileName, source],
-                function (error, result) { console.log(error, result) }
+                fileName,
+                this.simpleModal.setBy[1],
             );
         }
+        if (this.simpleModal.setBy[0] === 'loadFromRemixWrap') {
+            if (choice === true) {
+                this.saveFromRemix(...this.simpleModal.setBy[1]);
+            } else {
+                this.loadFromRemix(...this.simpleModal.setBy[1]);
+            }
+        }
+        if (this.simpleModal.setBy[0] === 'pipedLoadToRemix'  && choice === true) {
+            this.saveFromRemix(...this.simpleModal.setBy[1]);
+        }
+        this.shiftModalQueue();
+        this.runModalQueue();
     },
     loadFromRemix: function(container, deployment) {
         container._id = randomId();
@@ -529,7 +596,8 @@ export default {
         }).then((response) => {
             console.log('posted deployment', response);
             // Reload data after insert, to include information in the paginated list
-            this.loadData();
+            // TODO: insert this locally without a server request
+            this.loadData(forced = true);
         }).catch(function (error) {
             console.log(error);
         });
@@ -539,7 +607,9 @@ export default {
             let ppackage = response.data;
             this.loadData({packageid: ppackage._id});
         }).catch(error => {
-            alert(`Could not import package: ${error}`);
+            this.simpleModal.active = true;
+            this.simpleModal.msg = `Could not import package: ${error}`;
+            this.simpleModal.setBy = ['default'];
         });
     },
     exportToEthpmUI: function() {
@@ -549,7 +619,9 @@ export default {
     },
     exportToEthpm: function(ppackage) {
         if (!this.selectedTreeContainers.length) {
-            alert('There are no contracts loaded in the right side tree');
+            this.simpleModal.active = true;
+            this.simpleModal.msg = 'There are no contracts loaded in the right side tree';
+            this.simpleModal.setBy = ['default'];
         }
         this.exportToEthpmResult = null;
         this.exportToEthpmError = null;
@@ -609,16 +681,19 @@ export default {
             Loading ${compiled_contract.name} (deployed at ${deployment_info.pclassi.address} on chain ${deployment_info.pclassi.chain_id}) to Pipeline.
         `;
         if (deployment_info.pclassi.chain_id === 'JavaScriptVM') {
-            alert(`${message} The contract will only load in the plugin client and will disappear on Refresh.`);
+            this.simpleModal.active = true;
+            this.simpleModal.msg = `${message} The contract will only load in the plugin client and will disappear on Refresh.`;
+            this.simpleModal.setBy = ['default'];
+
             this.loadFromRemix(compiled_contract, deployment_info);
-        } else if (confirm(`
-            ${message}
-            Click "OK" if you want to save it on the Pipeos server.
-            Click "Cancel" and the contract will only load in the plugin client and will disappear on Refresh.`)
-        ) {
-            this.saveFromRemix(compiled_contract, deployment_info);
         } else {
-            this.loadFromRemix(compiled_contract, deployment_info);
+            this.simpleModal.active = true;
+            this.simpleModal.msg = `
+                ${message}
+                Click "OK" if you want to save it on the Pipeos server.
+                Click "Cancel" and the contract will only load in the plugin client and will disappear on Refresh.`;
+            this.simpleModal.choice = true;
+            this.simpleModal.setBy = ['loadFromRemixWrap', [compiled_contract, deployment_info]];
         }
     },
     pipedLoadToRemix: function() {
@@ -629,37 +704,37 @@ export default {
 
         if (this.chain === 'JavaScriptVM') return;
 
-        Pipeos.remix.listen('txlistener', 'newTransaction', (data) => {
-            console.log('txlistener newTransaction', data);
-            Pipeos.remix.call(
-                'compiler',
-                'getCompilationResult',
-                [],
-                (error, result) => {
-                    console.log(error, result);
-                    if (error) {
-                        throw new Error(error);
-                    }
-                    if (result[0].source.target)
-                    compiledContractProcess(result[0], function(contract) {
-                        contract.tags.push('piped');
-                        console.log('contract', contract);
-                        if (self.pipedContracts[contract.name]) {
-                            if (confirm(`
-                                You have deployed ${contract.name}.
-                                Click "OK" if you want to save it on the Pipeos server.`)
-                            ) {
-                                self.saveFromRemix(contract, {
-                                    deployed: {
-                                        address: data[0].contractAddress,
-                                        chain_id: this.chain,
-                                    }
-                                });
-                            }
-                        }
-                    });
-                }
+        Pipeos.remixClient.on('udapp', 'newTransaction', async (data) => {
+            console.log('pipedLoadToRemix newTransaction', data);
+            const result = await Pipeos.remixClient.call(
+                'solidity',
+                'getCompilationResult'
             );
+            console.log(error, result);
+            if (error) {
+                throw new Error(error);
+            }
+            if (!result[0].source.target) return;
+            compiledContractProcess(result[0]).forEach((contract) => {
+                contract.tags.push('piped');
+                console.log('contract', contract);
+                if (this.pipedContracts[contract.name]) {
+                    this.simpleModal.active = true;
+                    this.simpleModal.msg = `
+                        You have deployed ${contract.name}.
+                        Click "OK" if you want to save it on the Pipeos server.`;
+                    this.simpleModal.choice = true;
+                    this.simpleModal.setBy = [
+                        'pipedLoadToRemix',
+                        [contract, {
+                            deployed: {
+                                address: data[0].contractAddress,
+                                chain_id: this.chain,
+                            }
+                        }]
+                    ];
+                }
+            });
         });
     },
   }
@@ -677,7 +752,6 @@ body {
     height: 100%;
     margin: 0;
     padding: 0;
-    font-family: sans-serif;
 }
 .swiper-slide {
     width: 100%!important;
@@ -705,5 +779,30 @@ body {
 }
 .nav.next {
     right: 3px!important;
+}
+
+.v-input__icon .v-icon {
+    font-size: 16px;
+}
+.v-text-field {
+    padding: 0;
+}
+.v-select__selections, .v-input__slot {
+    font-size: 12px;
+}
+.wraptxt {
+    word-break: break-all;
+    white-space: normal;
+}
+.v-expansion-panel__header {
+    padding-left: 0;
+    min-height: 35px;
+}
+.v-list__tile {
+    height: 30px !important;
+}
+.v-list__tile__title {
+    padding-left: 30px;
+    font-size: 12px;
 }
 </style>

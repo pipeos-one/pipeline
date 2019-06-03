@@ -266,6 +266,7 @@ export default {
 .source-txtar {
     height: 87%;
     width: 100%;
-    font-family: monospace;
+    font-family: Monaco,Menlo,"Ubuntu Mono",Consolas,source-code-pro,monospace;
+    font-size: 12px;
 }
 </style>

@@ -1,52 +1,65 @@
 <template>
-    <div class="load-ethpm">
+    <div>
             <v-select
                 v-model="selectType"
                 :items="['swarm', 'ipfs']"
-                label="Load EthPM package"
+                :error="selectError"
+                :error-messages="selectErrorMsg"
+                placeholder="Load EthPM package"
             ></v-select>
             <v-tooltip bottom>
                 <v-text-field
-                    ref="hash_input"
+                    v-model="hashInput"
                     v-if="selectType"
-                    label="ipfs/swarm hash"
-                    placeholder="QmcBYqgY6R7aGaqG8EXg4YvQp7L5vriuLdaEvXQ2atdqRT"
+                    :error="inputError"
+                    :error-messages="inputErrorMsg"
+                    :placeholder="selectType === 'swarm' ? 'swarm hash' : 'ipfs hash'"
                     append-icon="fa-download"
                     @click:append="loadFromEthpm"
                     slot="activator"
+                    style="margin-top: -15px"
                 ></v-text-field>
                 <p>EthPM ipfs/swarm url</p>
             </v-tooltip>
-        </v-layout>
     </div>
 </template>
 
 <script>
 export default {
     data() {
-        return {selectType: null};
+        return {
+            selectType: null,
+            selectError: false,
+            selectErrorMsg:[],
+            hashInput: null,
+            inputError: false,
+            inputErrorMsg: [],
+        };
     },
     methods: {
         loadFromEthpm: function() {
-            let hash = this.$refs['hash_input'].internalValue;
             if  (!this.selectType) {
-                alert('Please select a storage type: ipfs or swarm');
+                this.selectError = true;
+                this.selectErrorMsg = ['Please select a storage type: ipfs or swarm'];
+                return;
+            } else {
+                this.selectError = false;
+                this.selectErrorMsg = [];
             }
-            if (!hash) {
-                alert('Please provide a content hash');
+            if (!this.hashInput) {
+                this.inputError = true;
+                this.inputErrorMsg = 'Please provide a content hash';
+                return;
+            } else {
+                this.inputError = false;
+                this.inputErrorMsg = [];
             }
             this.$emit(
                 'change',
                 this.selectType,
-                this.$refs['hash_input'].internalValue
+                this.hashInput,
             );
-        }
+        },
     }
 }
 </script>
-
-<style>
-.load-ethpm {
-    margin-top: 25px;
-}
-</style>

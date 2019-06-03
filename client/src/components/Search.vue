@@ -1,6 +1,7 @@
 <template>
       <v-autocomplete
         v-model="select"
+        ref="searchAutocomplete"
         :items="items"
         :loading="loading"
         :search-input.sync="search"
@@ -8,8 +9,8 @@
         hide-details
         item-text="name"
         return-object
-        label="Search"
-        multiple
+        placeholder="Search"
+        dense
       >
         <template
             slot="selection"
@@ -17,14 +18,14 @@
         >
             <v-chip
                 :selected="data.selected"
-                close
+                close small
                 class="chip--select-multi"
                 @input="remove(data.item)"
             >
-                <v-avatar>
-                  <img v-if="data.item.icon" :src="data.item.icon">
-                  <v-icon v-else-if="data.item.tag">fa-tag</v-icon>
-                  <v-icon v-else>fa-circle</v-icon>
+                <v-avatar size="24px">
+                  <img v-if="data.item.icon" :src="`/img/project_icons/${data.item.icon}`" height="24px">
+                  <v-icon v-else-if="data.item.tag" small>fa-tag</v-icon>
+                  <v-icon v-else small>fa-circle</v-icon>
                 </v-avatar>
                 {{ data.item.name }}
             </v-chip>
@@ -37,10 +38,10 @@
                 <v-list-tile-content v-text="data.item"></v-list-tile-content>
             </template>
             <template v-else>
-                <v-list-tile-avatar>
-                  <img v-if="data.item.icon" :src="data.item.icon">
-                  <v-icon v-else-if="data.item.tag">fa-tag</v-icon>
-                  <v-icon v-else>fa-circle</v-icon>
+                <v-list-tile-avatar size="24px">
+                  <img v-if="data.item.icon" :src="`/img/project_icons/${data.item.icon}`" height="24px">
+                  <v-icon v-else-if="data.item.tag" small>fa-tag</v-icon>
+                  <v-icon v-else small>fa-circle</v-icon>
                 </v-list-tile-avatar>
                 <v-list-tile-content>
                   <v-list-tile-title v-html="data.item.name"></v-list-tile-title>
@@ -53,6 +54,7 @@
 <script>
 import Vue from 'vue';
 import Pipeos from '../namespace/namespace';
+import {debounce} from '../utils/utils';
 
 const tagsApi = Pipeos.pipeserver.api.tag;
 const projectApi = Pipeos.pipeserver.api.project;
@@ -68,25 +70,63 @@ export default {
             items: [],
             search: null,
             select: null,
-            items: [],
+            searchQueryIsDirty: false,
+            isCalculating: false,
+            searchCache: null,
         }
     },
     watch: {
         search (val) {
-            val && val !== this.select && this.querySelections(val);
-            this.$emit('search', val);
+            if (this.select) return;
+            // We want the search input to maintain value when user does not
+            // select something and clicks outside the autocomplete
+            if (this.search === null) {
+                this.search = this.searchCache;
+
+                this.forceInputValue();
+                setTimeout(this.forceInputValue, 200);
+                setTimeout(this.forceInputValue, 500);
+                return;
+            }
+            if (this.search !== this.searchCache) {
+                this.searchQueryIsDirty = true;
+                this.debouncedSearch();
+            }
         },
         select (selected) {
-            this.$emit('select', selected);
+            this.search = '';
+            this.searchCache = '';
+            this.emitQuery();
         },
     },
     methods: {
-        remove (item) {
-            const index = this.select.findIndex((it) => {
-                return it.name === item.name;
+        emitQuery() {
+            this.$emit('query', {
+                search: this.search,
+                select: this.select ? [this.select] : [],
             });
-            if (index >= 0) this.select.splice(index, 1);
-            this.select = this.select;
+        },
+        forceInputValue() {
+            this.$refs.searchAutocomplete.$refs.input.value = this.searchCache;
+        },
+        debouncedSearch: debounce(function() {
+            this.isCalculating = true;
+            setTimeout(function () {
+                this.isCalculating = false;
+                this.searchQueryIsDirty = false;
+                this.searchCache = this.search;
+                this.search && this.search !== this.select && this.querySelections(this.search);
+                this.emitQuery();
+            }.bind(this), 1000);
+        }, 1000),
+        remove (item) {
+            // const index = this.select.findIndex((it) => {
+            //     return it.name === item.name;
+            // });
+            // if (index >= 0) this.select.splice(index, 1);
+            // this.select = this.select;
+
+            this.select = '';
             this.$emit('remove', item);
         },
         querySelections (searchText) {
@@ -115,3 +155,9 @@ export default {
     }
 }
 </script>
+
+<style>
+.v-list__tile__avatar {
+    min-width: 24px;
+}
+</style>

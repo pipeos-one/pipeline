@@ -1,33 +1,42 @@
 <template>
-    <div class="load-remix">
+    <div>
         <v-select
             v-model="selectContract"
             :items="contracts"
-            label="Load from Remix"
-        ></v-select
-        <p>To change what contracts to load, compile another file in Remix.</p>
+            placeholder="Load from Remix"
+        ></v-select>
         <v-tooltip bottom>
             <v-text-field
                 ref="addr_input"
                 v-if="contractName"
-                :label="contractName + ' - deployed on ' + chainName"
                 placeholder="0x0000000000000000000000000000000000000000"
                 append-icon="fa-download"
                 @click:append="loadFromRemix(contractName)"
                 slot="activator"
                 :rules="rules"
+                style="margin-top: -15px"
             ></v-text-field>
             <p>Set deployment address to load the {{contractName}} contract into the Pipeline plugin.</p>
         </v-tooltip>
+        <p class="text-xs-left caption font-weight-medium wrap">To change what contracts to load, compile another file in Remix.</p>
+        <p v-if="remixInterfaceWarning.active" class="text-xs-left caption font-weight-medium wrap red">{{remixInterfaceWarning.msg}}</p>
+        <SimpleModal
+            :modalIsActive="modalIsActive"
+            :modalMessage="modalMessage"
+        />
     </div>
 </template>
 
 <script>
 import Pipeos from '../../namespace/namespace';
+import SimpleModal from '../modals/SimpleModal';
 import {compiledContractProcess} from '../../utils/utils';
 import {deployOnJVM} from './utils.js';
 
 export default {
+    components: {
+        SimpleModal,
+    },
     data() {
         let validationError = 'Invalid address';
         return {
@@ -42,18 +51,17 @@ export default {
                 v => v ? (v.length === 42 || validationError) : '',
                 v => v ? (v.substring(0, 2) === '0x' || validationError) : '',
             ],
+            modalIsActive: false,
+            modalMessage: '',
+            remixInterfaceWarning: {active: false, msg: ''},
         }
     },
-    mounted() {
-        this.setNetworkInfo();
-        this.setContractsFromRemix();
-
-        Pipeos.remix.listen('compiler', 'compilationFinished', ([success, data, source]) => {
-            console.log('compiler compilationFinished', success, data, source);
-            this.setNetworkInfo();
-            this.setContractsFromRemix();
-        });
+    async mounted() {
+        this.setData();
     },
+    // beforeUpdate() {
+    //     this.setData();
+    // },
     watch: {
         chain(newValue) {
             if (newValue === 'JavaScriptVM') {
@@ -67,44 +75,53 @@ export default {
         }
     },
     methods: {
+        async setData() {
+            let onload = false;
+            Pipeos.remixClient.onload().then(async (resp) => {
+                onload = true;
+                await this.listenNetworkInfo();
+                this.setContractsFromRemix();
+
+                Pipeos.remixClient.on('solidity', 'compilationFinished', (target, source, version, data) => {
+                    this.setContractsFromRemix();
+                });
+            });
+            setTimeout(() => {
+                if (!onload) {
+                    this.remixInterfaceWarning.active = true;
+                    this.remixInterfaceWarning.msg = 'Switch to the new Remix interface! in the Compile Tab, otherwise Pipeline will not work properly.';
+                }
+            }, 6000);
+        },
         ethaddressInput() {
             return this.$refs['addr_input'];
         },
-        setNetworkInfo() {
-            Pipeos.remix.call(
-                'app',
-                'getExecutionContextProvider',
-                [],
-                (error, [provider]) => {
-                    console.log('getExecutionContextProvider', error, provider);
-                    // provider = injected | web3 | vm
-                    if (provider === 'vm') {
-                        this.chain = 'JavaScriptVM';
-                        this.deployPipeProxy();
-                    } else if (provider === 'injected') {
-                        this.web3 = window.web3;
-                        this.chain = this.web3.version.network;
-                    } else {
-                        alert('Use an injected provider. Node by endpoint is not supported.');
-                        // Pipeos.remix.call(
-                        //     'app',
-                        //     'getProviderEndpoint',
-                        //     [],
-                        //     (error, provider) => {
-                        //         console.log('getProviderEndpoint', error, provider);
-                        //     }
-                        // );
-                    }
-                    this.$emit('provider-changed', this.chain, this.web3);
-                }
+        async listenNetworkInfo() {
+            const provider = await Pipeos.remixClient.call(
+                'network',
+                'getNetworkProvider'
             );
+            this.setNetworkInfo(provider);
+            Pipeos.remixClient.on('network', 'providerChanged', this.setNetworkInfo);
+        },
+        setNetworkInfo(provider) {
+            // provider = injected | web3 | vm
+            if (provider === 'vm') {
+                this.chain = 'JavaScriptVM';
+                this.deployPipeProxy();
+            } else if (provider === 'injected') {
+                this.web3 = window.web3;
+                this.chain = this.web3.version.network;
+            } else {
+                this.modalIsActive = true;
+                this.modalMessage = 'Use an injected provider. Node by endpoint is not supported.';
+            }
+            this.$emit('provider-changed', this.chain, this.web3);
         },
         setContractsFromRemix() {
-            let contracts = [];
-            this.getDataFromRemix(function(container) {
-                contracts.push(container.name);
+            this.getDataFromRemix().then((containers) => {
+                this.contracts = containers.map(container => container.name);
             });
-            this.contracts = contracts;
         },
         loadFromRemix(contractName) {
             let input = this.ethaddressInput();
@@ -122,39 +139,46 @@ export default {
                 }
             };
 
-            this.getDataFromRemix((container) => {
-                if (container.name == contractName) {
-                    this.$emit('load-from-remix', container, deployment_info);
-                }
+            this.getDataFromRemix().then((containers) => {
+                containers.forEach((container) => {
+                    if (container.name == contractName) {
+                        this.$emit('load-from-remix', container, deployment_info);
+                    }
+                });
             });
         },
-        getDataFromRemix(callback) {
-            Pipeos.remix.call(
-                'compiler',
-                'getCompilationResult',
-                [],
-                function(error, result) {
-                    console.log(error, result);
-                    if (error) {
-                        throw new Error(error);
-                    }
-                    compiledContractProcess(result[0], callback);
+        async getDataFromRemix() {
+            let result;
+            try {
+                result = await Pipeos.remixClient.call(
+                    'solidity',
+                    'getCompilationResult'
+                );
+                if (result.data && result.source) {
+                    return compiledContractProcess(result);
                 }
-            );
+            } catch (e) {
+                throw e;
+            }
+            return [];
         },
         deployPipeProxy() {
             if (this.chain === 'JavaScriptVM') {
-                deployOnJVM(Pipeos.contracts.PipeProxy.compiled.bytecode, '300000', (result) => {
-                    Pipeos.contracts.PipeProxy.addresses['JavaScriptVM'] = result.createdAddress;
-                });
+                let count =  0;
+                let iid = setInterval(() => {
+                    count ++;
+                    if (count > 5) {
+                        clearInterval(iid);
+                    }
+                    deployOnJVM(Pipeos.contracts.PipeProxy.compiled.bytecode, '300000', (result) => {
+                        if (result && result.createdAddress) {
+                            Pipeos.contracts.PipeProxy.addresses['JavaScriptVM'] = result.createdAddress;
+                            clearInterval(iid);
+                        }
+                    });
+                }, 4000);
             }
         },
     }
 }
 </script>
-
-<style>
-.load-remix {
-    margin-top: 5px;
-}
-</style>
