@@ -7,8 +7,7 @@
                 <v-layout row wrap>
                     <v-flex xs4 style="margin-top: 50px;">
                         <Search
-                            v-on:select="onSearchSelect"
-                            v-on:search="onSearchQuery"
+                            v-on:query="onSearchSelectQuery"
                             v-on:remove="onSearchRemove"
                         />
                         <LoadFromEthpm v-on:change="onLoadFromEthpm" style="margin-top: 5px;"/>
@@ -368,8 +367,14 @@ export default {
     addToCanvas: function(pfunction, index) {
         this.graphInstance.addFunction(pfunction, index);
     },
-    onSearchSelect: function (searchSelected) {
+    onSearchSelectQuery: function(query) {
+        console.log('onSearchSelectQuery', query);
         this.changePage(1);
+        this.onSearchSelect(query.select);
+        this.onSearchQuery(query.search);
+        this.loadData();
+    },
+    onSearchSelect: function (searchSelected) {
         let tags = [], projects = [];
         searchSelected.forEach((selected) => {
             if (selected.tag) tags.push(selected.name);
@@ -377,16 +382,13 @@ export default {
         });
         this.selectedTags = tags;
         this.selectedProjects = projects;
-        this.loadData();
     },
     onSearchQuery: function(searchQuery) {
-        this.changePage(1);
         if (searchQuery) {
             searchQuery = searchQuery.length > 1 ? searchQuery : null;
         }
         if (!this.searchQuery && !searchQuery) return;
         this.searchQuery = searchQuery;
-        this.loadData();
     },
     onSearchRemove: function(searchRemove) {
         this.searchQuery = null;
