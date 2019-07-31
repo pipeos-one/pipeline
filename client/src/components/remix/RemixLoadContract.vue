@@ -23,6 +23,7 @@
         <SimpleModal
             :modalIsActive="modalIsActive"
             :modalMessage="modalMessage"
+            @change="recheckNetwork"
         />
     </div>
 </template>
@@ -76,22 +77,15 @@ export default {
     },
     methods: {
         async setData() {
-            let onload = false;
-            Pipeos.remixClient.onload().then(async (resp) => {
-                onload = true;
-                await this.listenNetworkInfo();
-                this.setContractsFromRemix();
+            await Pipeos.remixClient.onload();
+            if (Pipeos.remixClient.isLoaded) {
+              await this.listenNetworkInfo();
+              this.setContractsFromRemix();
 
-                Pipeos.remixClient.on('solidity', 'compilationFinished', (target, source, version, data) => {
-                    this.setContractsFromRemix();
-                });
-            });
-            setTimeout(() => {
-                if (!onload) {
-                    this.remixInterfaceWarning.active = true;
-                    this.remixInterfaceWarning.msg = 'Switch to the new Remix interface! in the Compile Tab, otherwise Pipeline will not work properly.';
-                }
-            }, 6000);
+              Pipeos.remixClient.solidity.on('compilationFinished', (target, source, version, data) => {
+                  this.setContractsFromRemix();
+              })
+            }
         },
         ethaddressInput() {
             return this.$refs['addr_input'];
@@ -106,17 +100,29 @@ export default {
         },
         setNetworkInfo(provider) {
             // provider = injected | web3 | vm
+            if (!provider) {
+                this.modalIsActive = true;
+                this.modalMessage = 'Load Deploy & Run Transactions plugin.';
+                return;
+            }
+            if (provider == 'web3') {
+                this.modalIsActive = true;
+                this.modalMessage = 'Use an injected provider. Node by endpoint is not supported.';
+                return;
+            }
             if (provider === 'vm') {
                 this.chain = 'JavaScriptVM';
                 this.deployPipeProxy();
             } else if (provider === 'injected') {
                 this.web3 = window.web3;
                 this.chain = this.web3.version.network;
-            } else {
-                this.modalIsActive = true;
-                this.modalMessage = 'Use an injected provider. Node by endpoint is not supported.';
             }
+            this.modalIsActive = false;
+            this.modalMessage = '';
             this.$emit('provider-changed', this.chain, this.web3);
+        },
+        recheckNetwork() {
+            this.listenNetworkInfo();
         },
         setContractsFromRemix() {
             this.getDataFromRemix().then((containers) => {

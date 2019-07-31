@@ -1,4 +1,4 @@
-import {createIframeClient} from 'remix-plugin';
+import {createIframeClient} from '@remixproject/plugin';
 
 const pipeserverIp = process.env.VUE_APP_PIPESERVER_IP;
 const remixClient = createIframeClient();
