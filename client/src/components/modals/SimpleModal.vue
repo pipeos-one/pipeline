@@ -5,10 +5,10 @@
             max-width="300"
             persistent
         >
-            <v-card v-if="modalInput">
+            <v-card>
                 <v-card-text class="text-xs-left caption font-weight-medium wraptxt">{{modalMessage}}</v-card-text>
-                <v-container v-if="modalInput.label">
-                    <v-flex xs12>
+                <v-container v-if="modalInput">
+                    <v-flex xs12 v-if="modalInput.label">
                         <v-text-field
                             v-model="inputValue"
                             :label="modalInput.label"
