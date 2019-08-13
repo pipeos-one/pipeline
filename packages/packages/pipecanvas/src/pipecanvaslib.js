@@ -104,11 +104,7 @@ export default class Graphs {
         }
         this.idGen++
 
-
         proc1()
-
-
-
     }
 
     activeTab(ndx){
@@ -130,9 +126,6 @@ export default class Graphs {
     }
 }
 
-
-
-
 // Expects functions as an array of pfunction objects, each with a `container` key for the pclass.
 const loadAll = function loadAll(domids, functions, graphs) {
     pipe2.functions = functions.concat(FIXTURES.ports.map(port => {
@@ -143,7 +136,6 @@ const loadAll = function loadAll(domids, functions, graphs) {
     // console.log('pipecanvaslib.pipe2.functions', pipe2.functions);
     // console.log('pipecanvaslib.pipe2.graph', JSON.stringify(pipe2.graph));
 
-    // return true;
     if (draw == undefined) {
         draw = SVG(domids[gndx]);
         edges = draw.group();
@@ -157,7 +149,6 @@ function find2(idVal, obj3) {
     if (obj3 && '_id' in obj3 && obj3._id == idVal) return obj3;
     return false;
 }
-
 
 const findById = R.converge(
     R.find,
@@ -173,7 +164,6 @@ const findByI = R.converge(
     R.find,
     [R.pipe(R.nthArg(0), R.propEq('i')), R.nthArg(1)]
 );
-
 
 const filterWithKeys = (pred, obj) => R.pipe(
     R.toPairs,
@@ -217,9 +207,6 @@ function proc1() {
     // console.log(pipe2.graphs[grIndex]);
     // console.log(gre);
 
-
-
-
     // bring edges data inside nodes
     R.map((x) => {
         // console.log(JSON.stringify(pipe2.cgraphs[grIndex].n), x);
@@ -250,7 +237,6 @@ function proc1() {
 
     }, pipe2.graphs[grIndex].e);
 
-
     funcs = pipe2.functions;
 
     // gr is the nodes + function data
@@ -277,27 +263,12 @@ function proc1() {
         }
     }, pipe2.cgraphs[grIndex].n);
 
-
-
-
-
-  //return true;
-
     // add ports
     proc4(pipe2.cgraphs[grIndex].n);
 
-
-
-
-
-
     // console.log("gr after proc4", pipe2.cgraphs[grIndex].n)
-
     // gr is the nodes + function data
-
-
     // console.log(pipe2.cgraphs[grIndex])
-
 
     gra = {}
     // re-index
@@ -308,26 +279,12 @@ function proc1() {
     pipe2.cgraphs[grIndex].n = gra
 
     // console.log("gr after proc4 1", pipe2.cgraphs[grIndex].n)
-
-
     // pipe2.cgraphs[grIndex].n = R.mapObjIndexed((x, key, all) => R.merge(x, { func: findById(x.id, funcs) }), pipe2.cgraphs[grIndex].n);
-
     // console.log("gr after proc4 2", pipe2.cgraphs[grIndex].n)
-
-
-
-
-    //console.log("grrrrra",JSON.stringify(gra))
-    // console.log("gra",gra)
-    //if (window.stop) return true;
 
     proc2(pipe2.cgraphs[grIndex].n);
 
-
-
-
     // console.log(funcs)
-
     // console.log(cont)
 }
 
@@ -343,8 +300,6 @@ function proc2(gr) {
     // proc4(gr)
     // console.log('proc2', gr)
     // return true;
-
-
 
     // console.log("gr",gr)
     //console.log("grrrrr",JSON.stringify(gr))
@@ -366,19 +321,7 @@ function proc2(gr) {
     // gra[x.i] = {links: x.links, func: x.func}
     }, gr);
 
-
-
-    //console.log("grrrrr",JSON.stringify(gr))
-
-    //console.log("grrrrra",JSON.stringify(gra))
-    // console.log("gra",gra)
-
-
-    // return true
-
     proc_e(gr);
-
-
 
     pipe2.cgraphs[grIndex].n = gr
 
@@ -400,17 +343,12 @@ function proc2(gr) {
         let pg = x.n
         let n={}
 
-
-
-
-
         R.mapObjIndexed((x1, key1, all1) => {
             if (x1.func.pfunction.gapi.name == 'PortIn') n[key1] = true;
             if (x1.func.pfunction.gapi.inputs.length === 0) n[key1] = true;
         }, pg)
-        // console.log("pg",pg)
-        grIndex = parseInt(key)
 
+        grIndex = parseInt(key)
 
         proc_d(pg, [{}], 0, {}, n, visitors);
 
@@ -423,33 +361,25 @@ function proc2(gr) {
             }
         },visitors)
 
-
-
-
-
     },pipe2.cgraphs)
 
     grIndex = ndx
 
+    // const pg = clone(gr);
+    // incre = 1;
+    // let n={}
+    //
+    // R.mapObjIndexed((x, key, all) => {
+    //     if (x.func.pfunction.gapi.name == 'PortIn') n[key] = true;
+    // }, pg)
+    //
+    // let visitors = [ new GraphVisitor(visOptions.graphRender), new GraphVisitor(visOptions.solidity)]
+    //
+    //
+    //
+    // //console.log(n)
+    // proc_d(pg, [{}], 0, {}, n, visitors);
 
-
-
-/*
-    const pg = clone(gr);
-    incre = 1;
-    let n={}
-
-    R.mapObjIndexed((x, key, all) => {
-        if (x.func.pfunction.gapi.name == 'PortIn') n[key] = true;
-    }, pg)
-
-    let visitors = [ new GraphVisitor(visOptions.graphRender), new GraphVisitor(visOptions.solidity)]
-
-
-
-    //console.log(n)
-    proc_d(pg, [{}], 0, {}, n, visitors);
-*/
     R.map( (x)=>{
         if (x.ops.type == "source") {
             // console.log(x.getGen())
@@ -458,7 +388,6 @@ function proc2(gr) {
         if (x.ops.type == "visual") {
             langs["graphs"] = pipe2.graphs
         }
-
 
     },visitors)
 
@@ -471,7 +400,6 @@ function proc_e(gr) {
     //graph.nodes = gr;
     // console.log(gr)
     // console.log(gre)
-
 
     R.mapObjIndexed((x, key, all) => {
     // x.ndx = key
@@ -507,7 +435,6 @@ function proc_e(gr) {
 */
 }
 
-
 function clone(obj) {
     const out = {};
     R.mapObjIndexed((x, key, all) => {
@@ -517,9 +444,6 @@ function clone(obj) {
 }
 
 var incre = 1;
-
-
-
 
 function proc_d(grf, tabl, row, known, next, vis) {
     //console.log("proc_D grf: ", grf, "row",row,"known", known, "next",next)
@@ -568,21 +492,16 @@ function proc_d(grf, tabl, row, known, next, vis) {
         }
         delete next[parseInt(key)]
 
-
     }, next);
 
     next1 = Object.assign(next,next1)
     known1 = Object.assign(known,known1)
-
-
-
 
     //console.log(tabl, known, grf, Object.assign(next,next1));
     // console.log('proc_d2', grf); if (incre < 5)
 
     proc_d(grf, tabl, row + 1, known1, next1, vis);
 }
-
 
 function proc3() {
     const n = g.nodes();
@@ -606,7 +525,6 @@ function addPortFunc(i, o1, state1){
     // console.log('addPortFunc', out.state)
     // console.log('addPortFunc', JSON.stringify(out2))
     return out2
-
 }
 
 function addPortOut(i, o1, state1){
@@ -633,13 +551,8 @@ function proc4(gr) {
             let state1 = {name: "i_"+name+"_"+kkey, type: port.type, value: undefined}
             x.state = state1;
             // console.log("pp",x,"state",state1)
-
-
         }
-
-
     }, gr);
-
 
     // console.log(pipe2.graph.e)
     // return true
@@ -714,11 +627,6 @@ function proc4(gr) {
     // add optionaal data
     // procDat(gr, incr)
 
-    //console.log(JSON.stringify(gr))
-    //console.log(JSON.stringify(gre))
-
-    // console.log('-----gr after addPort', gr)
-
     // proc_e()
 }
 
@@ -736,8 +644,6 @@ function procDat(gr, incr){
         gr[incr]= t
 
     }, addl)
-
-
 }
 
 
@@ -766,7 +672,6 @@ class Smooth {
         this.diff2 = { x: dff2.x, y: dff2.y - 6 };
         this.dir = 1;
 
-
         this.draw();
     }
 
@@ -780,7 +685,6 @@ class Smooth {
         const p2 = { x: this.point2.x + this.diff2.x, y: this.point2.y + this.diff2.y };
         const middle = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
         const self = this;
-
 
         if (!this.element) {
             // console.log(edges)
@@ -797,7 +701,6 @@ class Smooth {
                 return proc1();
             });
         }
-
 
         // console.log(this)
         this.path.plot([
@@ -964,12 +867,7 @@ class FuncBox {
             });
 
             */
-
-
         }
-
-
-
 
         R.mapObjIndexed((x, key, all) => {
             // console.log(x, key)
@@ -985,10 +883,8 @@ class FuncBox {
 
             // let point = getPort(self.obj, "in", 1+parseInt(key))
 
-
             let port = self.el.circle(10).center(point.x, point.y).attr({"fill-opacity":0.5});
             self.el.text(x.name).attr({ 'text-anchor': 'middle', 'font-size': 8, 'font-family': 'Roboto' }).move(point.x - 8, point.y - 12).transform({ rotation: -30 });
-
 
             if (types[x.type] === undefined){
                 types[x.type] = []
@@ -996,9 +892,6 @@ class FuncBox {
             }
 
             types[x.type].push(port)
-
-
-
 
             port.mouseover(() => {
                 self.note.text(x.type);
@@ -1096,7 +989,6 @@ class FuncBox {
             });
         }, this.obj.func.pfunction.gapi.outputs);
 
-
         /*
          this.el.draggable(function(nx, ny){
              //console.log(nx)
@@ -1115,7 +1007,6 @@ class FuncBox {
         // console.log(n)
         n.x = parseInt(matrix[4]);
         n.y = parseInt(matrix[5]);
-
 
         R.map((l) => {
             // console.log(l)
@@ -1173,7 +1064,6 @@ function smoothDrag(obj,init, target){
         });
     } else {
         out = obj
-
     }
     out.plot([
         ['M', init.x, init.y],
@@ -1262,8 +1152,6 @@ class GraphVisitor{
             placeY = startLineY
         }
 
-
-
         pipe2.rgraphs[grIndex][parseInt(funcObj.i)].redraw(this.pointer, placeY);
 
         if (pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.pfunction.gapi.name == "PortOut"){
@@ -1271,14 +1159,8 @@ class GraphVisitor{
             this.maxY = Math.max(this.maxY, placeY)
         }
 
-
-
         // console.log(pipe2.cgraphs[grIndex])
         this.pointer += (1 + w) * xr;
-
-
-
-
     }
 
     genContainer(grs){
@@ -1380,7 +1262,6 @@ class GraphVisitor{
                 });
 
             });
-
         });
 
         langs['abi'][grIndex] = {
@@ -1532,8 +1413,6 @@ class GraphVisitor{
 
         return out
     }
-
-
 }
 
 function callInternalFunctionSolidity(funcName, inputset, funcObj) {
