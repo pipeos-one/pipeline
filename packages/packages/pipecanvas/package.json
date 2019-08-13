@@ -1,0 +1,36 @@
+{
+  "name": "@pipeos/pipecanvas",
+  "version": "0.0.1",
+  "description": "Pipecanvas takes a Pipeline graph and graph data and outputs code sources in different languages (Solidity, Javascript)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "jquery": "^3.3.1",
+    "ramda": "^0.25.0",
+    "svg.draggable.js": "^2.2.1",
+    "svg.js": "^2.6.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pipeos-one/pipeline.git"
+  },
+  "keywords": [
+    "pipeline",
+    "graph",
+    "Solidity",
+    "Javascript"
+  ],
+  "author": "\"Loredana Cirstea <loredana.cirstea@gmail.com>",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/pipeos-one/pipeline/issues"
+  },
+  "homepage": "https://github.com/pipeos-one/pipeline#readme",
+  "devDependencies": {
+    "eslint": "^6.1.0",
+    "eslint-config-airbnb-base": "^14.0.0",
+    "eslint-plugin-import": "^2.18.2"
+  }
+}

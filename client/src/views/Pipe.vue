@@ -143,6 +143,7 @@
 
 <script>
 import Vue from 'vue';
+import Graphs from '@pipeos/pipecanvas';
 import Pipeos from '../namespace/namespace';
 import PaginatedList from '../components/PaginatedList';
 import PipeTree from '../components/PipeTree';
@@ -161,7 +162,6 @@ import {
     pfunctionColorClass,
     compiledContractProcess,
 } from '../utils/utils';
-import Graphs from '../components/pipecanvas/pipecanvaslib.js';
 
 Vue.use(VueAwesomeSwiper);
 

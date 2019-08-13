@@ -2,7 +2,6 @@
 import SVG from 'svg.js';
 import 'svg.draggable.js';
 import './svg.foreignobject';
-import dagre from 'dagre';
 import $ from 'jquery';
 
 const R = require('ramda');
@@ -327,13 +326,7 @@ const loadAll = function loadAll(domids, functions, graphs) {
         draw = SVG(domids[gndx]);
         edges = draw.group();
     }
-    /*
-    g = new dagre.graphlib.Graph();
 
-    g.setGraph({ rankdir: 'TB', align: 'UL' });
-    // edgesep: xr, nodesep:xr, ranksep:xr,
-    g.setDefaultEdgeLabel(() => ({}));
-    */
     proc1();
 };
 
@@ -567,17 +560,6 @@ function proc2(gr) {
 
     pipe2.cgraphs[grIndex].n = gr
 
-
-
-
-    // console.log(render)
-
-    //dagre.layout(g);
-    // return true
-
-    // redraw from dagre
-    // proc3()
-
     let visitors = [
         new GraphVisitor(visOptions.graphRender),
         new GraphVisitor(visOptions.solidity),
@@ -781,7 +763,6 @@ function proc_d(grf, tabl, row, known, next, vis) {
 
 
 function proc3() {
-    // redraw from dagre
     const n = g.nodes();
     R.map((x) => {
         const t = gra[x].render;
