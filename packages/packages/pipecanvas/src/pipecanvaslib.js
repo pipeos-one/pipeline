@@ -2,7 +2,6 @@
 import SVG from 'svg.js';
 import 'svg.draggable.js';
 import './svg.foreignobject';
-import $ from 'jquery';
 
 const R = require('ramda');
 
@@ -1053,7 +1052,10 @@ class FuncBox {
         this.text = this.el.foreignObject(w * xr, h * 2);
         const id = this.text.attr('id');
         this.text.appendChild('div', { id: `${id}_div` });
-        $(`#${id}_div`).html(`<div >${txt}</div>`).addClass(clas);
+
+        document.getElementById(`${id}_div`).innerHTML = `<div>${txt}</div>`;
+        document.getElementById(`${id}_div`).className = clas;
+
         this.x = Math.random() * 5 * xr;
         this.y = Math.random() * 5 * xr;
         this.note = this.el.text('');
@@ -1282,9 +1284,9 @@ class FuncBox {
     }
 
     onDrag(e) {
-        let matrix = $(e.target).attr('transform');
+        let matrix = e.target.getAttribute('transform');
+        const id = e.target.getAttribute('id');
 
-        const id = $(e.target).attr('id');
         matrix = matrix.replace('matrix(', '').replace(')', '').split(',');
         const n = pipe2.rgraphs[grIndex][id];
         // console.log(n)
