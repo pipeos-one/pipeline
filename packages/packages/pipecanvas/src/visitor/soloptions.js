@@ -1,5 +1,7 @@
 /* eslint-disable */
 
+import {WEI_VALUE} from '../constants';
+
 function callInternalFunctionSolidity(funcName, inputset, funcObj) {
     let payable = '';
     if (funcObj.func.pfunction.gapi.payable) {

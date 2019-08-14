@@ -143,7 +143,7 @@
 
 <script>
 import Vue from 'vue';
-import Graphs from '@pipeos/pipecanvas';
+import PipeGraphs from '@pipeos/pipecanvas';
 import Pipeos from '../namespace/namespace';
 import PaginatedList from '../components/PaginatedList';
 import PipeTree from '../components/PipeTree';
@@ -314,7 +314,7 @@ export default {
         });
     },
     loadCanvas: function() {
-        this.graphInstance = new Graphs(
+        this.graphInstance = new PipeGraphs(
             this.selectedFunctions,
             {
                 onGraphChange: () => {

@@ -1,8 +1,12 @@
 /* eslint-disable */
 
 import solidityVisitorOptions from './soloptions.js';
-
-const DEPLOYMENT_VAR = 'deployment';
+import {
+  DEPLOYMENT_VAR,
+  UNNAMED_INPUT,
+  UNNAMED_OUTPUT,
+  WEI_VALUE,
+} from '../constants';
 
 function callInternalFunctionJs(funcName, inputset, funcObj) {
     let result = '';
