@@ -1,3 +1,7 @@
+/* eslint-disable */
+
+import SVG from 'svg.js';
+
 SVG.ForiegnObject = function() {
   this.constructor.call(this, SVG.create('foreignObject'))
 

@@ -2,19 +2,18 @@
 import SVG from 'svg.js';
 import 'svg.draggable.js';
 import './svg.foreignobject';
-import dagre from 'dagre';
-import $ from 'jquery';
+import * as FIXTURES from './fixtures.js';
+import {visitorOptions, GraphVisitor} from './visitor';
+import {
+  STRIP_COMMENTS,
+  ARGUMENT_NAMES,
+  UNNAMED_INPUT,
+  UNNAMED_OUTPUT,
+  WEI_VALUE,
+} from './constants';
+import {pfunctionColorClass} from './utils';
 
 const R = require('ramda');
-
-// import {contracts, functions, graphh} from './graphs.js';
-
-const STRIP_COMMENTS = /((\/\/.*$)|(\/\*[\s\S]*?\*\/))/mg;
-const ARGUMENT_NAMES = /([^\s,]+)/g;
-const UNNAMED_INPUT = 'i_unnamed';
-const UNNAMED_OUTPUT = 'o_unnamed';
-const WEI_VALUE  = 'wei_value';
-const DEPLOYMENT_VAR = 'deployment';
 
 function getParamNames(func) {
     const fnStr = func.toString().replace(STRIP_COMMENTS, '');
@@ -25,183 +24,6 @@ function getParamNames(func) {
 
     return result;
 }
-
-const ports = [
-    {
-        _id: '5bc59e192817116e84bdd830',
-        pclassid: '5bc59d5d2817116e84bdd82e',
-        pclass: { name: 'PipeOS' },
-        pfunction: {
-            gapi: {
-                constant: true,
-                inputs: [
-                    {
-                        name: 'in',
-                        type: '*',
-                    },
-                ],
-                name: 'PortOut',
-                outputs: [],
-                payable: false,
-                stateMutability: 'view',
-                type: 'port',
-            },
-            signature: 'PortOut(*)',
-        },
-        timestamp: '2018-10-16T08:10:33.614Z',
-    },
-    {
-        _id: '5bc59e192817116e84bdd831',
-        pclassid: '5bc59d5d2817116e84bdd82e',
-        pclass: { name: 'PipeOS' },
-        pfunction: {
-            gapi: {
-                constant: true,
-                inputs: [],
-                name: 'PortIn',
-                outputs: [
-                    {
-                        name: 'out',
-                        type: '*',
-                    },
-                ],
-                payable: false,
-                stateMutability: 'view',
-                type: 'port',
-            },
-            signature: 'PortIn()',
-        },
-        timestamp: '2018-10-16T08:10:33.614Z',
-    },
-    {
-        _id: '5bc59e192817116e84bdd832',
-        pclassid: '5bc59d5d2817116e84bdd82e',
-        pclass: { name: 'PipeOS' },
-        pfunction: {
-            gapi: {
-                constant: true,
-                inputs: [],
-                name: 'MsgData',
-                outputs: [
-                    {
-                        name: 'data',
-                        type: 'bytes',
-                    },
-                    {
-                        name: 'sender',
-                        type: 'address',
-                    },
-                    {
-                        name: 'sig',
-                        type: 'bytes4',
-                    },
-                    {
-                        name: 'value',
-                        type: 'uint256',
-                    },
-                ],
-                payable: false,
-                stateMutability: 'view',
-                type: 'data',
-            },
-            signature: 'MsgData()',
-        },
-        timestamp: '2018-10-16T08:10:33.614Z',
-    },
-    {
-        _id: '5bc59e192817116e84bdd833',
-        pclassid: '5bc59d5d2817116e84bdd82e',
-        pclass: { name: 'PipeOS' },
-        pfunction: {
-            gapi: {
-                constant: true,
-                inputs: [],
-                name: 'BlockData',
-                outputs: [
-                    {
-                        name: 'coinbase',
-                        type: 'address',
-                    },
-                    {
-                        name: 'dificulty',
-                        type: 'uint256',
-                    },
-                    {
-                        name: 'gaslimit',
-                        type: 'uint256',
-                    },
-                    {
-                        name: 'number',
-                        type: 'uint256',
-                    },
-                    {
-                        name: 'timestamp',
-                        type: 'uint256',
-                    },
-                ],
-                payable: false,
-                stateMutability: 'view',
-                type: 'data',
-            },
-            signature: 'BlockData()',
-        },
-        timestamp: '2018-10-16T08:10:33.614Z',
-    },
-    {
-        _id: '5bc59e192817116e84bdd834',
-        pclassid: '5bc59d5d2817116e84bdd82e',
-        pclass: { name: 'PipeOS' },
-        pfunction: {
-            gapi: {
-                constant: true,
-                inputs: [],
-                name: 'MiscData',
-                outputs: [
-                    {
-                        name: 'gasleft',
-                        type: 'uint256',
-                    },
-                    {
-                        name: 'now',
-                        type: 'uint256',
-                    },
-                    {
-                        name: 'tx.gasprice',
-                        type: 'uint256',
-                    },
-                    {
-                        name: 'tx.origin',
-                        type: 'address',
-                    },
-                ],
-                payable: false,
-                stateMutability: 'view',
-                type: 'data',
-            },
-            signature: 'MiscData()',
-        },
-        timestamp: '2018-10-16T08:10:33.614Z',
-    },
-
-];
-
-const containers = [
-    {
-        _id: '5bc59d5d2817116e84bdd82e',
-        name: 'PipeOS',
-        pclass: {
-            gapi: [{
-                constant: true, inputs: [{ name: 'in', type: '*' }], name: 'PortOut', outputs: [], payable: false, stateMutability: 'view', type: 'port',
-            }, {
-                constant: true, inputs: [], name: 'PortIn', outputs: [{ name: 'out', type: '*' }], payable: false, stateMutability: 'view', type: 'port',
-            }],
-            natspec: { methods: {}, title: 'PipeOS Utils.' },
-            bytecode: '',
-            flatsource: ' ',
-        },
-        timestamp: '2018-10-16T08:10:33.614Z',
-    },
-];
 
 let pipe2 = {};
 let grIndex = 0
@@ -221,14 +43,11 @@ let containsEvent = {};
 
 const graph = {"n": [], "e": []};
 
+const EMPTY_FUNC = () => {};
+
 export default class Graphs {
 
-    constructor(functions, callbacks){
-        // console.log("constr", functions)
-        pipe2.functions = functions.concat(ports.map(port => {
-            port.container = containers[0];
-            return port;
-        }));
+    constructor(functions, callbacks = {}, visitors){
         pipe2.graphs = []
         pipe2.draws =[]
         pipe2.domids =[]
@@ -237,9 +56,14 @@ export default class Graphs {
         pipe2.cgraphs = []
         this.idGen = 0
         pipe2.callbacks = {
-            onGraphChange: callbacks.onGraphChange,
-            onGraphFunctionRemove: callbacks.onGraphFunctionRemove,
+            onGraphChange: callbacks.onGraphChange || EMPTY_FUNC,
+            onGraphFunctionRemove: callbacks.onGraphFunctionRemove || EMPTY_FUNC,
         };
+        pipe2.visitors = visitors || Object.keys(visitorOptions);
+        pipe2.functions = functions.map(funcData => this.prepareFunction(funcData)).concat(FIXTURES.ports.map(port => {
+            port.container = FIXTURES.containers[0];
+            return port;
+        }));
     }
 
     getGraphs() {
@@ -266,15 +90,21 @@ export default class Graphs {
         proc1();
     }
 
-    addFunction( funcData, grIndex1){
+    prepareFunction(funcData) {
+      if (funcData.pfunction.gapi.payable) {
+          funcData.pfunction.gapi.inputs.push({
+              name: `${funcData.pfunction.gapi.name}_${this.idGen}_${WEI_VALUE}`,
+              type: 'uint256'
+          });
+      }
+      funcData.styleClasses = pfunctionColorClass(funcData.pfunction.gapi);
+      return funcData;
+    }
+
+    addFunction(funcData, grIndex1) {
         console.log("add", funcData, grIndex1)
         // console.log("gr", pipe2)
-        if (funcData.pfunction.gapi.payable) {
-            funcData.pfunction.gapi.inputs.push({
-                name: `${funcData.pfunction.gapi.name}_${this.idGen}_${WEI_VALUE}`,
-                type: 'uint256'
-            });
-        }
+        funcData = this.prepareFunction(funcData);
         grIndex = grIndex1
         pipe2.functions.push(funcData)
         pipe2.graphs[grIndex].n[this.idGen] = {
@@ -283,11 +113,7 @@ export default class Graphs {
         }
         this.idGen++
 
-
         proc1()
-
-
-
     }
 
     activeTab(ndx){
@@ -309,40 +135,11 @@ export default class Graphs {
     }
 }
 
-
-
-
-// Expects functions as an array of pfunction objects, each with a `container` key for the pclass.
-const loadAll = function loadAll(domids, functions, graphs) {
-    pipe2.functions = functions.concat(ports.map(port => {
-        port.container = containers[0];
-        return port;
-    }));
-    pipe2.graphs = graphs;
-    // console.log('pipecanvaslib.pipe2.functions', pipe2.functions);
-    // console.log('pipecanvaslib.pipe2.graph', JSON.stringify(pipe2.graph));
-
-    // return true;
-    if (draw == undefined) {
-        draw = SVG(domids[gndx]);
-        edges = draw.group();
-    }
-    /*
-    g = new dagre.graphlib.Graph();
-
-    g.setGraph({ rankdir: 'TB', align: 'UL' });
-    // edgesep: xr, nodesep:xr, ranksep:xr,
-    g.setDefaultEdgeLabel(() => ({}));
-    */
-    proc1();
-};
-
 function find2(idVal, obj3) {
     // console.log(obj3)
     if (obj3 && '_id' in obj3 && obj3._id == idVal) return obj3;
     return false;
 }
-
 
 const findById = R.converge(
     R.find,
@@ -358,7 +155,6 @@ const findByI = R.converge(
     R.find,
     [R.pipe(R.nthArg(0), R.propEq('i')), R.nthArg(1)]
 );
-
 
 const filterWithKeys = (pred, obj) => R.pipe(
     R.toPairs,
@@ -402,9 +198,6 @@ function proc1() {
     // console.log(pipe2.graphs[grIndex]);
     // console.log(gre);
 
-
-
-
     // bring edges data inside nodes
     R.map((x) => {
         // console.log(JSON.stringify(pipe2.cgraphs[grIndex].n), x);
@@ -435,7 +228,6 @@ function proc1() {
 
     }, pipe2.graphs[grIndex].e);
 
-
     funcs = pipe2.functions;
 
     // gr is the nodes + function data
@@ -462,27 +254,12 @@ function proc1() {
         }
     }, pipe2.cgraphs[grIndex].n);
 
-
-
-
-
-  //return true;
-
     // add ports
     proc4(pipe2.cgraphs[grIndex].n);
 
-
-
-
-
-
     // console.log("gr after proc4", pipe2.cgraphs[grIndex].n)
-
     // gr is the nodes + function data
-
-
     // console.log(pipe2.cgraphs[grIndex])
-
 
     gra = {}
     // re-index
@@ -493,26 +270,12 @@ function proc1() {
     pipe2.cgraphs[grIndex].n = gra
 
     // console.log("gr after proc4 1", pipe2.cgraphs[grIndex].n)
-
-
     // pipe2.cgraphs[grIndex].n = R.mapObjIndexed((x, key, all) => R.merge(x, { func: findById(x.id, funcs) }), pipe2.cgraphs[grIndex].n);
-
     // console.log("gr after proc4 2", pipe2.cgraphs[grIndex].n)
-
-
-
-
-    //console.log("grrrrra",JSON.stringify(gra))
-    // console.log("gra",gra)
-    //if (window.stop) return true;
 
     proc2(pipe2.cgraphs[grIndex].n);
 
-
-
-
     // console.log(funcs)
-
     // console.log(cont)
 }
 
@@ -521,68 +284,50 @@ let render = {};
 function proc2(gr) {
     //render = {};
     // console.log(grIndex, pipe2.draws[grIndex])
-    pipe2.draws[grIndex].clear();
-    edges = pipe2.draws[grIndex].group();
-    menu();
 
-    // proc4(gr)
-    // console.log('proc2', gr)
-    // return true;
+    if (pipe2.visitors.includes('graphRender')) {
+        pipe2.draws[grIndex].clear();
+        edges = pipe2.draws[grIndex].group();
+        menu();
 
 
+        // proc4(gr)
+        // console.log('proc2', gr)
+        // return true;
 
-    // console.log("gr",gr)
-    //console.log("grrrrr",JSON.stringify(gr))
+        // console.log("gr",gr)
+        //console.log("grrrrr",JSON.stringify(gr))
 
-    // draw nodes
-    R.mapObjIndexed((x, key, all) => {
-    //console.log("grrrrra",JSON.stringify(x))
-    // graph.nodes[x.i] ={ render:new FuncBox( x ), links: { in: R.repeat("", x.func.pfunction.gapi.inputs.length), out:R.repeat("", "outputs" in x.func.pfunction.gapi? x.func.pfunction.gapi.outputs.length: [])}}
-        //x.state = {}
-        // console.log(JSON.stringify(x))
-        pipe2.rgraphs[grIndex][x.i] = new FuncBox(x);
-        //gra[x.i] = x;
-        let outl = 0;
-        if (x.func.pfunction.gapi.outputs !== undefined) {
-            outl = x.func.pfunction.gapi.outputs.length;
-        }
-        //const w = Math.max(x.func.pfunction.gapi.inputs.length, outl);
-        //g.setNode(x.i, { label: x.i, width: w * xr, height: xr });
-    // gra[x.i] = {links: x.links, func: x.func}
-    }, gr);
+        // draw nodes
+        R.mapObjIndexed((x, key, all) => {
+        //console.log("grrrrra",JSON.stringify(x))
+        // graph.nodes[x.i] ={ render:new FuncBox( x ), links: { in: R.repeat("", x.func.pfunction.gapi.inputs.length), out:R.repeat("", "outputs" in x.func.pfunction.gapi? x.func.pfunction.gapi.outputs.length: [])}}
+            //x.state = {}
+            // console.log(JSON.stringify(x))
+            pipe2.rgraphs[grIndex][x.i] = new FuncBox(x);
+            //gra[x.i] = x;
+            let outl = 0;
+            if (x.func.pfunction.gapi.outputs !== undefined) {
+                outl = x.func.pfunction.gapi.outputs.length;
+            }
+            //const w = Math.max(x.func.pfunction.gapi.inputs.length, outl);
+            //g.setNode(x.i, { label: x.i, width: w * xr, height: xr });
+        // gra[x.i] = {links: x.links, func: x.func}
+        }, gr);
 
-
-
-    //console.log("grrrrr",JSON.stringify(gr))
-
-    //console.log("grrrrra",JSON.stringify(gra))
-    // console.log("gra",gra)
-
-
-    // return true
-
-    proc_e(gr);
-
-
+        proc_e(gr);
+    }
 
     pipe2.cgraphs[grIndex].n = gr
 
-
-
-
-    // console.log(render)
-
-    //dagre.layout(g);
-    // return true
-
-    // redraw from dagre
-    // proc3()
-
-    let visitors = [
-        new GraphVisitor(visOptions.graphRender),
-        new GraphVisitor(visOptions.solidity),
-        new GraphVisitor(visOptions.js),
-    ]
+    let visitors = pipe2.visitors.map((visitor) => new GraphVisitor(
+        visitorOptions[visitor],
+        pipe2,
+        xr,
+        grIndex,
+        containsEvent,
+        langs)
+    );
 
     R.map( (x)=>{
         if (x.ops.type == "source") {
@@ -596,17 +341,12 @@ function proc2(gr) {
         let pg = x.n
         let n={}
 
-
-
-
-
         R.mapObjIndexed((x1, key1, all1) => {
             if (x1.func.pfunction.gapi.name == 'PortIn') n[key1] = true;
             if (x1.func.pfunction.gapi.inputs.length === 0) n[key1] = true;
         }, pg)
-        // console.log("pg",pg)
-        grIndex = parseInt(key)
 
+        grIndex = parseInt(key)
 
         proc_d(pg, [{}], 0, {}, n, visitors);
 
@@ -619,33 +359,25 @@ function proc2(gr) {
             }
         },visitors)
 
-
-
-
-
     },pipe2.cgraphs)
 
     grIndex = ndx
 
+    // const pg = clone(gr);
+    // incre = 1;
+    // let n={}
+    //
+    // R.mapObjIndexed((x, key, all) => {
+    //     if (x.func.pfunction.gapi.name == 'PortIn') n[key] = true;
+    // }, pg)
+    //
+    // let visitors = [ new GraphVisitor(visitorOptions.graphRender), new GraphVisitor(visitorOptions.solidity)]
+    //
+    //
+    //
+    // //console.log(n)
+    // proc_d(pg, [{}], 0, {}, n, visitors);
 
-
-
-/*
-    const pg = clone(gr);
-    incre = 1;
-    let n={}
-
-    R.mapObjIndexed((x, key, all) => {
-        if (x.func.pfunction.gapi.name == 'PortIn') n[key] = true;
-    }, pg)
-
-    let visitors = [ new GraphVisitor(visOptions.graphRender), new GraphVisitor(visOptions.solidity)]
-
-
-
-    //console.log(n)
-    proc_d(pg, [{}], 0, {}, n, visitors);
-*/
     R.map( (x)=>{
         if (x.ops.type == "source") {
             // console.log(x.getGen())
@@ -654,7 +386,6 @@ function proc2(gr) {
         if (x.ops.type == "visual") {
             langs["graphs"] = pipe2.graphs
         }
-
 
     },visitors)
 
@@ -667,7 +398,6 @@ function proc_e(gr) {
     //graph.nodes = gr;
     // console.log(gr)
     // console.log(gre)
-
 
     R.mapObjIndexed((x, key, all) => {
     // x.ndx = key
@@ -703,7 +433,6 @@ function proc_e(gr) {
 */
 }
 
-
 function clone(obj) {
     const out = {};
     R.mapObjIndexed((x, key, all) => {
@@ -713,9 +442,6 @@ function clone(obj) {
 }
 
 var incre = 1;
-
-
-
 
 function proc_d(grf, tabl, row, known, next, vis) {
     //console.log("proc_D grf: ", grf, "row",row,"known", known, "next",next)
@@ -764,14 +490,10 @@ function proc_d(grf, tabl, row, known, next, vis) {
         }
         delete next[parseInt(key)]
 
-
     }, next);
 
     next1 = Object.assign(next,next1)
     known1 = Object.assign(known,known1)
-
-
-
 
     //console.log(tabl, known, grf, Object.assign(next,next1));
     // console.log('proc_d2', grf); if (incre < 5)
@@ -779,9 +501,7 @@ function proc_d(grf, tabl, row, known, next, vis) {
     proc_d(grf, tabl, row + 1, known1, next1, vis);
 }
 
-
 function proc3() {
-    // redraw from dagre
     const n = g.nodes();
     R.map((x) => {
         const t = gra[x].render;
@@ -803,7 +523,6 @@ function addPortFunc(i, o1, state1){
     // console.log('addPortFunc', out.state)
     // console.log('addPortFunc', JSON.stringify(out2))
     return out2
-
 }
 
 function addPortOut(i, o1, state1){
@@ -830,13 +549,8 @@ function proc4(gr) {
             let state1 = {name: "i_"+name+"_"+kkey, type: port.type, value: undefined}
             x.state = state1;
             // console.log("pp",x,"state",state1)
-
-
         }
-
-
     }, gr);
-
 
     // console.log(pipe2.graph.e)
     // return true
@@ -911,11 +625,6 @@ function proc4(gr) {
     // add optionaal data
     // procDat(gr, incr)
 
-    //console.log(JSON.stringify(gr))
-    //console.log(JSON.stringify(gre))
-
-    // console.log('-----gr after addPort', gr)
-
     // proc_e()
 }
 
@@ -933,8 +642,6 @@ function procDat(gr, incr){
         gr[incr]= t
 
     }, addl)
-
-
 }
 
 
@@ -963,7 +670,6 @@ class Smooth {
         this.diff2 = { x: dff2.x, y: dff2.y - 6 };
         this.dir = 1;
 
-
         this.draw();
     }
 
@@ -977,7 +683,6 @@ class Smooth {
         const p2 = { x: this.point2.x + this.diff2.x, y: this.point2.y + this.diff2.y };
         const middle = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
         const self = this;
-
 
         if (!this.element) {
             // console.log(edges)
@@ -994,7 +699,6 @@ class Smooth {
                 return proc1();
             });
         }
-
 
         // console.log(this)
         this.path.plot([
@@ -1072,7 +776,10 @@ class FuncBox {
         this.text = this.el.foreignObject(w * xr, h * 2);
         const id = this.text.attr('id');
         this.text.appendChild('div', { id: `${id}_div` });
-        $(`#${id}_div`).html(`<div >${txt}</div>`).addClass(clas);
+
+        document.getElementById(`${id}_div`).innerHTML = `<div>${txt}</div>`;
+        document.getElementById(`${id}_div`).className = clas;
+
         this.x = Math.random() * 5 * xr;
         this.y = Math.random() * 5 * xr;
         this.note = this.el.text('');
@@ -1158,12 +865,7 @@ class FuncBox {
             });
 
             */
-
-
         }
-
-
-
 
         R.mapObjIndexed((x, key, all) => {
             // console.log(x, key)
@@ -1179,10 +881,8 @@ class FuncBox {
 
             // let point = getPort(self.obj, "in", 1+parseInt(key))
 
-
             let port = self.el.circle(10).center(point.x, point.y).attr({"fill-opacity":0.5});
             self.el.text(x.name).attr({ 'text-anchor': 'middle', 'font-size': 8, 'font-family': 'Roboto' }).move(point.x - 8, point.y - 12).transform({ rotation: -30 });
-
 
             if (types[x.type] === undefined){
                 types[x.type] = []
@@ -1190,9 +890,6 @@ class FuncBox {
             }
 
             types[x.type].push(port)
-
-
-
 
             port.mouseover(() => {
                 self.note.text(x.type);
@@ -1290,7 +987,6 @@ class FuncBox {
             });
         }, this.obj.func.pfunction.gapi.outputs);
 
-
         /*
          this.el.draggable(function(nx, ny){
              //console.log(nx)
@@ -1301,15 +997,14 @@ class FuncBox {
     }
 
     onDrag(e) {
-        let matrix = $(e.target).attr('transform');
+        let matrix = e.target.getAttribute('transform');
+        const id = e.target.getAttribute('id');
 
-        const id = $(e.target).attr('id');
         matrix = matrix.replace('matrix(', '').replace(')', '').split(',');
         const n = pipe2.rgraphs[grIndex][id];
         // console.log(n)
         n.x = parseInt(matrix[4]);
         n.y = parseInt(matrix[5]);
-
 
         R.map((l) => {
             // console.log(l)
@@ -1367,7 +1062,6 @@ function smoothDrag(obj,init, target){
         });
     } else {
         out = obj
-
     }
     out.plot([
         ['M', init.x, init.y],
@@ -1375,576 +1069,4 @@ function smoothDrag(obj,init, target){
         ['C', target.x, middle.y, target.x, target.y - (shapness * dir) - arrowSize, target.x, target.y],
     ])
     return out
-}
-
-class GraphVisitor{
-    constructor(options){
-        // language specific templates
-        this.ops = options
-        // generated source
-        this.genC = ""
-        // public variables from constructor arguments (contract addresses)
-        this.genConstr1 = []
-        // code for constructor arguments (contract addresses)
-        this.genConstr2 = []
-        // code for constructor function, setting the public variables from arguments
-        this.genConstr3 = []
-        // _ids for constructor arguments in order (pclass ids)
-        this.genConstr4 = {}
-        this.genG = []
-        // function sources that should be made available - js
-        this.funcsources = []
-        // function definition + initial variable definition
-        this.genF = []
-        this.genF1 = []
-        // function returns
-        this.genF2 = []
-        // inputs
-        this.in = []
-        this.abi = {inputs: [], outputs: []}
-        this.pointer = xr;
-        this.row = -1
-        // outputs
-        this.out = []
-        // outputs
-        this.outtype = []
-        // outpout code in function definition
-        this.returns = []
-        this.outports=[]
-        this.maxY = 0
-        this.minX = {}
-        this.isPayable = false
-        this.isNotConstant = false
-    }
-
-    renderFunc(funcObj, row){
-        let startLineY = xr/2
-        let startLineX = xr/2
-        let w = Math.max(pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.pfunction.gapi.inputs.length, pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.pfunction.gapi.outputs.length)
-        if (this.row < row){
-            this.row = row
-            this.pointer = startLineX
-            this.minX[row] = 30000
-        }
-
-        if (row !== 0) {
-            let anchor = pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].links.in["1"]
-            if (Object.keys(anchor).length > 0){
-                // console.log(pipe2.rgraphs[grIndex][Object.keys(anchor[0])[0]].x  + xr*w -2, "<", this.minX[row], "pointer",this.pointer)
-
-                let x = pipe2.rgraphs[grIndex][Object.keys(anchor[0])[0]].x
-
-                /*
-                if (x  + xr*w -2 < this.minX[row]) {
-
-                    pipe2.rgraphs[grIndex][parseInt(funcObj.i)].redraw(x, placeY);
-                    this.minX[row] = x
-                    this.pointer += (1 + w) * xr;
-                    return;
-                }
-                */
-
-                this.pointer = Math.max(this.pointer,x)
-                // console.log(this.pointer)
-            }
-        }
-
-        this.minX[row] = Math.min(this.minX[row], this.pointer)
-        let placeY = 2*(row + 1) * xr
-
-        if (pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.pfunction.gapi.name == "PortIn"){
-            placeY = startLineY
-        }
-
-
-
-        pipe2.rgraphs[grIndex][parseInt(funcObj.i)].redraw(this.pointer, placeY);
-
-        if (pipe2.cgraphs[grIndex].n[parseInt(funcObj.i)].func.pfunction.gapi.name == "PortOut"){
-            this.outports.push(pipe2.rgraphs[grIndex][parseInt(funcObj.i)])
-            this.maxY = Math.max(this.maxY, placeY)
-        }
-
-
-
-        // console.log(pipe2.cgraphs[grIndex])
-        this.pointer += (1 + w) * xr;
-
-
-
-
-    }
-
-    genContainer(grs){
-        this.genC += this.ops.file_p0
-        this.genC += this.ops.proxy
-        this.genC += this.ops.contract_p0
-        this.genC += this.ops.contract_p1
-    }
-
-    setGraph(g){
-        this.row = 0
-        this.pointer = xr
-        R.map((x)=>{
-            x.redraw(x.x, this.maxY)
-        },this.outports)
-    }
-
-    genGraph(g){
-        let cannotBeGenerated = Object.values(g).find((funcObject) => {
-            if (!funcObject.func.pclass.type) return false;
-            let isSolidity = this.ops.pclassType === visOptions.solidity.pclassType;
-
-            return (
-                isSolidity && (
-                    funcObject.func.pclass.type != this.ops.pclassType ||
-                    funcObject.func.pfunction.gapi.type === 'event'
-                )
-            );
-        });
-        if (cannotBeGenerated) {
-            this.genF[grIndex] = '';
-            this.in = [];
-            this.out = [];
-            this.genConstr1 = [];
-            this.genConstr2 = [];
-            this.genConstr3 = [];
-            return;
-        }
-        let ini = this.genF[grIndex]
-
-        // Generating pipeline function definition (inputs + modifiers)
-        this.genF[grIndex] = this.ops.intro1 + grIndex+ this.ops.intro11 + this.in.join(", ") + this.ops.function_pp1
-
-        // For js we temporarily define free inputs outside the function
-        // TODO: replace with user inputs directly in diagram component
-        if (this.ops.intro0) {
-            this.genConstr1 = this.genConstr1.concat(
-                this.in.map((input) => {
-                    return this.ops.intro0 + input + this.ops.intro01;
-                })
-            );
-        }
-
-        // Generating pipeline function definition (returns)
-        if (this.outtype.length > 0 && this.ops.function_ret0) {
-            this.genF[grIndex] = this.genF[grIndex] + this.ops.function_ret0
-            this.genF[grIndex] = this.genF[grIndex] + this.returns.join(",")
-            this.genF[grIndex] = this.genF[grIndex] +  this.ops.function_ret1
-        }
-
-        // Generating pipeline function common variables
-        // Attaching function body
-        this.genF[grIndex] = this.genF[grIndex] +  this.ops.function_p2 + ini
-        // this.genF1[grIndex] =
-
-        // Generating function return
-        this.genF2[grIndex] = ""
-        if (this.out.length >0){
-            this.genF2[grIndex] += this.ops.function_ret2(this.out, grIndex);
-        }
-
-        // Code generation ends here
-        // Adding function returns
-        this.genF[grIndex] += this.genF2[grIndex]
-
-        // Ending event promise if present
-        if (containsEvent[grIndex] && this.ops.function_ret3) {
-            this.genF[grIndex] += this.ops.function_ret3;
-        }
-
-        // Function end
-        this.genF[grIndex] += this.ops.function_ret4
-
-        // For js, we also call the function in place
-        if (this.ops.function_ret5) {
-            this.genF[grIndex] += this.ops.function_ret5 + this.in.join(", ") + this.ops.function_ret51
-        }
-
-        // Fill the abi with other fields from the original abis
-        Object.values(g).forEach((funcObject) => {
-            funcObject.func.pfunction.gapi.inputs.forEach((input) => {
-                let name = `i_${input.name}_${funcObject.i}`;
-                this.abi.inputs.forEach((pipedin, i) => {
-                    if (pipedin.name === name) {
-                        this.abi.inputs[i] = Object.assign(
-                            JSON.parse(JSON.stringify(input)), this.abi.inputs[i]
-                        );
-                    }
-                });
-
-            });
-
-        });
-
-        langs['abi'][grIndex] = {
-            name: `PipedFunction${grIndex}`,
-            type: 'function',
-            constant: !this.isNotConstant,
-            payable: this.isPayable,
-            stateMutability: this.isPayable ? 'payable' : (this.isNotConstant ? 'nonpayable' : 'view'),
-            inputs: this.abi.inputs,
-            outputs:this.abi.outputs,
-        }
-
-        this.in= []
-        this.out = []
-        this.outtype = []
-    }
-
-    genFunc(funcObj, row) {
-        this.genF[grIndex] = this.genF[grIndex] || '';
-
-        if (funcObj.func.pfunction.gapi.type == "port") {
-            this.genFuncIO(funcObj);
-            return;
-        }
-        if (
-            ["function", "event"].indexOf(funcObj.func.pfunction.gapi.type) < 0 &&
-            !this.ops.validateFunc(funcObj.func.pclass.type, this.ops.pclassType)
-        ) {
-            return;
-        }
-
-        this.genFuncFunction(funcObj, row);
-    }
-
-    prepFuncName(name) {
-        return name.replace(/:/g, '').replace(/-/g, '');
-    }
-
-    genFuncFunction(funcObj, row) {
-        let funcName = this.prepFuncName(funcObj.func.pfunction.gapi.name) + "_" + funcObj.i;
-
-        if (funcObj.func.pfunction.gapi.payable) {
-            this.isPayable = true;
-        }
-
-        if (!funcObj.func.pfunction.gapi.constant) {
-            this.isNotConstant = true;
-        }
-
-        let source = funcObj.func.pfunction.source;
-        if (!source && this.ops.addSource) {
-            source = this.ops.addSource(funcName, funcObj);
-        }
-        if (source) {
-            this.funcsources.push(`const ${funcName} = ${source}`);
-        }
-        // public variables from constructor arguments (contract addresses)
-        if (this.ops.genConstr1) {
-            this.genConstr1.push(this.ops.genConstr1 + funcName + " ;");
-        }
-        // code for constructor arguments (contract addresses)
-        if (this.ops.genConstr2) {
-            this.genConstr2.push(this.ops.genConstr2 + funcName);
-        }
-        // code for constructor function, setting the public variables from arguments
-        if (this.ops.genConstr3) {
-            this.genConstr3.push(this.ops.genConstr3(funcName, funcObj));
-        }
-        // _ids for constructor arguments in order (pclass ids)
-        this.genConstr4[funcName] = funcObj.func._id;
-
-        let f = this.genF[grIndex] || "";
-        this.genF[grIndex] = f + "\n";
-        if (this.ops.sigFunc1) {
-            this.genF[grIndex] += this.ops.sigFunc1 + funcObj.func.pfunction.signature + this.ops.sigFunc2 + "\n";
-        }
-
-        let inputset = R.mapObjIndexed((x, key, all) => {
-            let o = "i_"+x.name+ "_"+funcObj.i
-            // console.log('*********', funcObj.state[parseInt(key)+1])
-            if (funcObj.state[parseInt(key)+1]){
-                o = funcObj.state[parseInt(key)+1].name
-            }
-            return o
-        }, funcObj.func.pfunction.gapi.inputs
-        )
-
-        if (this.ops.inputSig) {
-            this.genF[grIndex] += this.ops.inputSig(inputset, funcObj);
-        }
-
-        this.genF[grIndex] += this.ops.ansProxy(funcName, inputset, funcObj);
-        let outAssem = []
-        let outputset = R.map((x)=>{
-            // console.log(x)
-            let name = (x.name !== undefined)? x.name: ""
-            outAssem.push("o_" + name + "_"+ funcObj.i+this.ops.assem)
-            return this.ops.outputset(x.type, name, funcObj.i);
-        }, funcObj.func.pfunction.gapi.outputs)
-        let o = ""
-        if (funcObj.func.pfunction.gapi.outputs.length > 0) {
-            o = this.ops.restFunc(outputset, outAssem, funcName, funcObj);
-        }
-
-        this.genF[grIndex] = this.genF[grIndex] + o + "\n";
-    }
-
-    genFuncIO(funcObj) {
-        if (funcObj.func.pfunction.gapi.name == "PortIn") {
-            let input = this.ops.function_in(funcObj.state.type, funcObj.state.name);
-            this.in.push(input);
-            this.abi.inputs.push({type: funcObj.state.type, name: input});
-        }
-
-        if (funcObj.func.pfunction.gapi.name == "PortOut") {
-            this.out.push(funcObj.state.name)
-            this.outtype.push(this.ops.function_outtype(funcObj.state.type, funcObj.state.name));
-            this.returns.push(this.ops.function_returns(funcObj.state.type, funcObj.state.name));
-            this.abi.outputs.push({type: funcObj.state.type, name: funcObj.state.name});
-        }
-    }
-
-    getGen(){
-        let out = ""
-        //out = out + this.intro1
-        //console.log(this.in)
-        out = out + this.genC
-
-        if (this.ops.intro0) out += "\n\n";
-        out = out + this.genConstr1.join("\n")+ "\n"
-        out = out + this.ops.const1 +this.genConstr2.join(", ") + this.ops.const2
-        out = out + this.genConstr3.join("\n") + "\n"
-        out = out + this.ops.const3
-
-        // Add helper functions - js
-        if (this.funcsources.length) {
-            out += "\n" + this.funcsources.join(';\n') + ';';
-            this.funcsources = [];
-        }
-
-        // Add piped functions
-        out += this.genF.join("\n")
-
-        // Constructor arguments in order
-        langs["constructor"] = this.genConstr4
-
-        //out = out + this.outro
-        out = out + this.ops.contract_p2
-
-        return out
-    }
-
-
-}
-
-function callInternalFunctionSolidity(funcName, inputset, funcObj) {
-    let payable = '';
-    if (funcObj.func.pfunction.gapi.payable) {
-        let weiInput = Object.values(inputset).find(input => input.indexOf(WEI_VALUE) > -1);
-        payable = `.value(${weiInput})`;
-    }
-    return `    answer42 = pipe_proxy.proxy${payable}(${funcName}, input42, 400000);\n`;
-}
-
-function setCallFuncSignature(inputset, funcObj) {
-
-    let inputs = '';
-    if (Object.values(inputset).length > 0) {
-        inputs += ', ';
-    }
-    if (funcObj.func.pfunction.gapi.payable) {
-        inputs += Object.values(inputset).filter(input => input.indexOf(WEI_VALUE) < 0).join(", ");
-    } else {
-        inputs += Object.values(inputset).join(", ");
-    }
-    return `input42 = abi.encodeWithSelector(signature42${inputs});\n`;
-}
-
-function callInternalFunctionJs(funcName, inputset, funcObj) {
-    let result = '';
-    if (funcObj.func.pfunction.gapi.type === 'event') {
-        return result;
-    }
-    if (funcObj.func.pclass.deployment.pclassi.openapiid) {
-        result += `
-    baseUrl = ${DEPLOYMENT_VAR}_${funcName};
-`
-    }
-    result += `    result = await ${funcName}(${Object.values(inputset).join(",")});
-`;
-    return result;
-}
-
-function genFuncReturnDestructuring(outputset, outAssem, funcName, funcObj) {
-    let outputs = funcObj.func.pfunction.gapi.outputs;
-    if (funcObj.func.pfunction.gapi.type === 'function') {
-        return outAssem.map((out, i) => `    const ${out} = result.${outputs[i].name || `${UNNAMED_OUTPUT}_i`};`).join('\n');
-    }
-    if (funcObj.func.pfunction.gapi.type === 'event') {
-        let eventName = funcObj.func.pfunction.gapi.name;
-        return `
-contract_${funcName}.on("${eventName}", async (${Object.values(outAssem).join(",")}, filterObject) => {
-`
-    }
-}
-
-function addSourceJsFromSolidity(funcName, funcObj) {
-    if (funcObj.func.pclass.type  != visOptions.solidity.pclassType) {
-        return;
-    }
-    if (funcObj.func.pfunction.gapi.type === 'event') {
-        return;
-    }
-    let payable = '', functionInputs;
-    let gapi = funcObj.func.pfunction.gapi;
-    let inputs = gapi.inputs.map((input, i) => input.name || `${UNNAMED_INPUT}_i`);
-    let outputs = gapi.outputs.map((output, i) => output.name || `${UNNAMED_OUTPUT}_i`);
-    let returnValue = '';
-    if (outputs.length === 1) {
-        returnValue = ` {${outputs[0]}: output}`;
-    } else if (outputs.length > 1) {
-        returnValue = ` output`;
-    }
-    functionInputs = inputs.join(', ');
-    if (gapi.payable) {
-        let index = inputs.findIndex(input => input.indexOf(WEI_VALUE) > -1);
-        payable = `, {value: ${inputs[index]}}`;
-        inputs.splice(index, 1);
-    }
-    return `async function(${functionInputs}) {
-    const output = await contract_${funcName}.${gapi.name}(${inputs.join(', ')}${payable});
-    return${returnValue};
-}`;
-}
-
-function buildPClassVarsJs(funcName, funcObj) {
-    let pclassi = funcObj.func.pclass.deployment.pclassi;
-    if (pclassi.openapiid) {
-        return `const ${DEPLOYMENT_VAR}_${funcName} = "http://${pclassi.host}${pclassi.basePath}";\n`;
-    }
-    const abi = funcObj.func.pclass.pclass.gapi;
-    return `
-const abi_${funcName} = ${JSON.stringify(abi)};
-const ${DEPLOYMENT_VAR}_${funcName} = "${pclassi.address}";
-const contract_${funcName} = new ethers.Contract(${DEPLOYMENT_VAR}_${funcName}, abi_${funcName}, signer);
-`;
-}
-
-var visOptions={
-    solidity: {
-        type: "source",
-        lang: "solidity",
-        pclassType: "sol",
-        validateFunc: (type, pclassType) => type === pclassType,
-        addSource: null,
-        "file_p0" : `pragma solidity ^0.4.24;
-pragma experimental ABIEncoderV2;
-
-`,
-"proxy": `
-interface PipeProxy {
-    function proxy(
-        address _to,
-        bytes input_bytes,
-        uint256 gas_value
-    )
-        payable
-        external
-        returns (bytes);
-}
-`,
-        "contract_p0": "\ncontract PipedContract",
-        "contract_p1": " {\n    PipeProxy public pipe_proxy;\n",
-        "contract_p2": "}\n",
-        "genConstr1": "    address public ",
-        "genConstr2": "address _",
-        "genConstr3": (funcName, funcObj) => `${funcName} = _${funcName};`,
-        "function_pp1": ") public payable ",
-        // function returns from definition
-        "function_ret0": " returns (",
-        "function_ret1": ")",
-        // actual function return
-        "function_ret2": (outs) => `return (${outs.join(", ")});\n`,
-        // input format
-        "function_in": (type, name) => `${type} ${name}`,
-        // outputs format
-        "function_outtype": (type, name) => `${type} ${name}`,
-        "function_returns": (type, name) => `${type} r_${name}`,
-        // function end
-        "function_ret4": "}",
-        "function_p2": ` {\n    bytes4 signature42;\n    bytes memory input42;\n    bytes memory answer42;\n    address tx_sender = msg.sender;\n`,
-        "sigFunc1": "signature42 = bytes4(keccak256(\"",
-        "sigFunc2": "\"));",
-        "inputSig": setCallFuncSignature,
-        "ansProxy": callInternalFunctionSolidity,
-        "outputset": (type, name, i) => `${type} o_${name}_${i};`,
-        "restFunc": (outputset, outAssem) => `${outputset.join("\n")}\nassembly {\n${outAssem.join("\n")}\n}\n`,
-        "assem": " := mload(add(answer42, 32))",
-        "intro1": "\n\nfunction PipedFunction",
-        "intro11": "(",
-        "const1": "constructor(address _pipe_proxy, ",
-        "const2": `
-        ) public {
-            pipe_proxy = PipeProxy(_pipe_proxy);
-        `,
-        "const3": "}\n",
-    },
-    js: {
-        type: "source",
-        lang: "javascript",
-        pclassType: "js",
-        validateFunc: (type, pclassType) => type === pclassType || type === visOptions.solidity.pclassType,
-        addSource: addSourceJsFromSolidity,
-        "file_p0" : `
-let baseUrl;
-const httpClient = axios;
-const callback = PipedScriptCallback;
-
-// Metamask
-const provider = new ethers.providers.Web3Provider(web3.currentProvider);
-const signer = provider.getSigner();
-`,
-        "proxy": ``,
-        "contract_p0": "",
-        "contract_p1": ``,
-        "contract_p2": "",
-        "genConstr3": buildPClassVarsJs,
-        "function_pp1": ") {\n",
-        // empty, we don't need to have returns in function definition
-        "function_ret0": "",
-        "function_ret1": "",
-        // actual function return
-        "function_ret2": (outs, i) => `
-    console.log(${outs.join(", ")});
-    PipedScriptCallback('PipedFunction${i}', {${outs.join(", ")}});
-`,
-        // if an event is present, then we need to close it
-        "function_ret3": '});',
-        // function end
-        "function_ret4": `
-})`,
-        "function_ret5": "(",
-        "function_ret51": ");",
-        // input format
-        "function_in": (type, name) => `${name}`,
-        // outputs format
-        "function_outtype": (type, name) => `${name}`,
-        "function_returns": (type, name) => ` r_${name}`,
-        // empty, we don't need to have common variables for openapi
-        "function_p2": `
-    let result;
-`,
-        "sigFunc1": "",
-        "sigFunc2": "",
-        "inputSig1": "",
-        "inputSig2": "",
-        "ansProxy": callInternalFunctionJs,
-        "outputset": (type, name, i) => `o_${name}_${i};`,
-        "restFunc": genFuncReturnDestructuring,
-        "assem": "",
-        "intro0": `let `,
-        "intro01": ` = null;`,
-        "intro1": `
-(async function PipedFunction`,
-        "intro11": "(",
-        "const1": "",
-        "const2": ``,
-        "const3": "",
-    },
-    graphRender: {
-        type: "visual"
-    }
 }
