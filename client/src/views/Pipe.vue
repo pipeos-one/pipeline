@@ -144,6 +144,7 @@
 <script>
 import Vue from 'vue';
 import PipeGraphs from '@pipeos/pipecanvas';
+import {pfunctionColorClass} from '@pipeos/pipecanvas/src/utils';
 import Pipeos from '../namespace/namespace';
 import PaginatedList from '../components/PaginatedList';
 import PipeTree from '../components/PipeTree';
@@ -159,7 +160,6 @@ import VueAwesomeSwiper from 'vue-awesome-swiper';
 import 'swiper/dist/css/swiper.css';
 import {
     randomId,
-    pfunctionColorClass,
     compiledContractProcess,
 } from '../utils/utils';
 
@@ -315,7 +315,7 @@ export default {
     },
     loadCanvas: function() {
         this.graphInstance = new PipeGraphs(
-            this.selectedFunctions,
+            this.selectedFunctions.reduce((flattened, subarray) => flattened.concat(subarray), []),
             {
                 onGraphChange: () => {
                     let deployment_info;

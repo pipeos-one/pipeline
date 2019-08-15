@@ -11,6 +11,7 @@ import {
   UNNAMED_OUTPUT,
   WEI_VALUE,
 } from './constants';
+import {pfunctionColorClass} from './utils';
 
 const R = require('ramda');
 
@@ -47,11 +48,6 @@ const EMPTY_FUNC = () => {};
 export default class Graphs {
 
     constructor(functions, callbacks = {}, visitors){
-        // console.log("constr", functions)
-        pipe2.functions = functions.concat(FIXTURES.ports.map(port => {
-            port.container = FIXTURES.containers[0];
-            return port;
-        }));
         pipe2.graphs = []
         pipe2.draws =[]
         pipe2.domids =[]
@@ -64,6 +60,10 @@ export default class Graphs {
             onGraphFunctionRemove: callbacks.onGraphFunctionRemove || EMPTY_FUNC,
         };
         pipe2.visitors = visitors || Object.keys(visitorOptions);
+        pipe2.functions = functions.map(funcData => this.prepareFunction(funcData)).concat(FIXTURES.ports.map(port => {
+            port.container = FIXTURES.containers[0];
+            return port;
+        }));
     }
 
     getGraphs() {
@@ -90,15 +90,21 @@ export default class Graphs {
         proc1();
     }
 
-    addFunction( funcData, grIndex1){
+    prepareFunction(funcData) {
+      if (funcData.pfunction.gapi.payable) {
+          funcData.pfunction.gapi.inputs.push({
+              name: `${funcData.pfunction.gapi.name}_${this.idGen}_${WEI_VALUE}`,
+              type: 'uint256'
+          });
+      }
+      funcData.styleClasses = pfunctionColorClass(funcData.pfunction.gapi);
+      return funcData;
+    }
+
+    addFunction(funcData, grIndex1) {
         console.log("add", funcData, grIndex1)
         // console.log("gr", pipe2)
-        if (funcData.pfunction.gapi.payable) {
-            funcData.pfunction.gapi.inputs.push({
-                name: `${funcData.pfunction.gapi.name}_${this.idGen}_${WEI_VALUE}`,
-                type: 'uint256'
-            });
-        }
+        funcData = this.prepareFunction(funcData);
         grIndex = grIndex1
         pipe2.functions.push(funcData)
         pipe2.graphs[grIndex].n[this.idGen] = {
@@ -128,24 +134,6 @@ export default class Graphs {
         return containsEvent[index];
     }
 }
-
-// Expects functions as an array of pfunction objects, each with a `container` key for the pclass.
-const loadAll = function loadAll(domids, functions, graphs) {
-    pipe2.functions = functions.concat(FIXTURES.ports.map(port => {
-        port.container = FIXTURES.containers[0];
-        return port;
-    }));
-    pipe2.graphs = graphs;
-    // console.log('pipecanvaslib.pipe2.functions', pipe2.functions);
-    // console.log('pipecanvaslib.pipe2.graph', JSON.stringify(pipe2.graph));
-
-    if (draw == undefined) {
-        draw = SVG(domids[gndx]);
-        edges = draw.group();
-    }
-
-    proc1();
-};
 
 function find2(idVal, obj3) {
     // console.log(obj3)
