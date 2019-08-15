@@ -163,8 +163,10 @@ export default class GraphVisitor {
 
         // Generating function return
         this.genF2[this.grIndex] = ""
-        if (this.out.length >0){
+        if (this.out.length > 0){
             this.genF2[this.grIndex] += this.ops.function_ret2(this.out, this.grIndex);
+        } else {
+          this.genF2[this.grIndex] += this.ops.function_ret22(this.grIndex);
         }
 
         // Code generation ends here

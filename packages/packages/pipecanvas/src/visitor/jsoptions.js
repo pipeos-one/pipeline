@@ -47,12 +47,12 @@ function addSourceJsFromSolidity(funcName, funcObj) {
     let gapi = funcObj.func.pfunction.gapi;
     let inputs = gapi.inputs.map((input, i) => input.name || `${UNNAMED_INPUT}_i`);
     let outputs = gapi.outputs.map((output, i) => output.name || `${UNNAMED_OUTPUT}_i`);
-    let returnValue = '';
+
+    let returnValue = 'output';
     if (outputs.length === 1) {
-        returnValue = ` {${outputs[0]}: output}`;
-    } else if (outputs.length > 1) {
-        returnValue = ` output`;
+        returnValue = `{${outputs[0]}: output}`;
     }
+
     functionInputs = inputs.join(', ');
     if (gapi.payable) {
         let index = inputs.findIndex(input => input.indexOf(WEI_VALUE) > -1);
@@ -61,7 +61,7 @@ function addSourceJsFromSolidity(funcName, funcObj) {
     }
     return `async function(${functionInputs}) {
     const output = await contract_${funcName}.${gapi.name}(${inputs.join(', ')}${payable});
-    return${returnValue};
+    return ${returnValue};
 }`;
 }
 
@@ -106,6 +106,9 @@ const signer = provider.getSigner();
         "function_ret2": (outs, i) => `
     console.log(${outs.join(", ")});
     PipedScriptCallback('PipedFunction${i}', {${outs.join(", ")}});
+`,
+        "function_ret22": (i) => `
+    PipedScriptCallback('PipedFunction${i}', result);
 `,
         // if an event is present, then we need to close it
         "function_ret3": '});',
