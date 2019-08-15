@@ -1,6 +1,6 @@
 {
   "name": "@pipeos/pipecanvas",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Pipecanvas takes a Pipeline graph and graph data and outputs code sources in different languages (Solidity, Javascript)",
   "main": "index.js",
   "scripts": {
