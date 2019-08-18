@@ -60,6 +60,7 @@ function proxy(
     "function_ret1": ")",
     // actual function return
     "function_ret2": (outs) => `return (${outs.join(", ")});\n`,
+    "function_ret22": (i) => '',
     // input format
     "function_in": (type, name) => `${type} ${name}`,
     // outputs format
