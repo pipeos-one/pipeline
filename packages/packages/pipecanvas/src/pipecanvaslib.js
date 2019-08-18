@@ -60,7 +60,8 @@ export default class Graphs {
             onGraphFunctionRemove: callbacks.onGraphFunctionRemove || EMPTY_FUNC,
         };
         pipe2.visitors = visitors || Object.keys(visitorOptions);
-        pipe2.functions = functions.map(funcData => this.prepareFunction(funcData)).concat(FIXTURES.ports.map(port => {
+        functions = JSON.parse(JSON.stringify(functions));
+        pipe2.functions = functions.map((funcData, i) => this.prepareFunction(funcData, i)).concat(FIXTURES.ports.map(port => {
             port.container = FIXTURES.containers[0];
             return port;
         }));
@@ -90,10 +91,10 @@ export default class Graphs {
         proc1();
     }
 
-    prepareFunction(funcData) {
+    prepareFunction(funcData, idGen) {
       if (funcData.pfunction.gapi.payable) {
           funcData.pfunction.gapi.inputs.push({
-              name: `${funcData.pfunction.gapi.name}_${this.idGen}_${WEI_VALUE}`,
+              name: `${funcData.pfunction.gapi.name}_${idGen}_${WEI_VALUE}`,
               type: 'uint256'
           });
       }
@@ -104,7 +105,7 @@ export default class Graphs {
     addFunction(funcData, grIndex1) {
         console.log("add", funcData, grIndex1)
         // console.log("gr", pipe2)
-        funcData = this.prepareFunction(funcData);
+        funcData = this.prepareFunction(funcData, this.idGen);
         grIndex = grIndex1
         pipe2.functions.push(funcData)
         pipe2.graphs[grIndex].n[this.idGen] = {
