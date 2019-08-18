@@ -9,9 +9,11 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.0.0-rc.1",
+    "@chenfengyuan/vue-qrcode": "^1.0.1",
     "@fortawesome/fontawesome-free": "^5.4.2",
     "@pipeos/pipecanvas": "file:../packages/packages/pipecanvas",
     "@remixproject/plugin": "^0.1.9",
+    "decorated-markdown": "file:../packages/packages/decorated-markdown",
     "ethers": "^4.0.26",
     "register-service-worker": "^1.0.0",
     "roboto-fontface": "*",

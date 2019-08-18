@@ -5,6 +5,7 @@
             <v-tab ripple key="deployment">Deployment</v-tab>
             <v-tab ripple key="js">Js</v-tab>
             <v-tab ripple key="graph">Graph</v-tab>
+            <v-tab ripple key="qrcode">QRCode</v-tab>
             <v-tab-item
                 key="solidity"
                 class="fullheight swiper-margin"
@@ -88,7 +89,7 @@
                             </v-btn>
                             <!-- <span>Run source</span>
                         </v-tooltip> -->
-                        <v-card>
+                        <v-card v-if="dialog">
                             <v-flex xs12
                                 v-for="(instance, i) in deploymentInfoMap"
                                 :key="`deployment_${i}`"
@@ -131,6 +132,35 @@
                         </v-btn>
                         <span>Copy to clipboard</span>
                     </v-tooltip>
+                    <div class="text-center">
+                      <v-dialog
+                        v-model="dialogGraph"
+                        width="70%"
+                      >
+                        <template v-slot:activator="{ on }">
+                          <v-btn
+                              small flat fab
+                              slot="activator"
+                              v-on="on"
+                          >
+                              <v-icon>fa-save</v-icon>
+                          </v-btn>
+                        </template>
+                        <v-card v-if="dialogGraph">
+                          <v-card-actions>
+                            <v-btn
+                                small flat fab
+                                @click="savePipeGraph"
+                            >
+                                <v-icon>fa-save</v-icon>
+                            </v-btn>
+                          </v-card-actions>
+                          <v-card-text>
+                            <PipeGraph v-model="pipegraphData" :abi="graphsAbi[0]" @change="jsArgumentsChange"/>
+                          </v-card-text>
+                        </v-card>
+                      </v-dialog>
+                    </div>
                 </v-toolbar>
                 <textarea
                     ref='graphSource'
@@ -138,18 +168,38 @@
                     v-on:change="setGraphs"
                 >{{graphSourceLast}}</textarea>
             </v-tab-item>
+            <v-tab-item
+                key="qrcode"
+                class="fullheight swiper-margin"
+            >
+              <v-layout>
+                <v-flex xs12 v-if="qrcodeValue">
+                  <qrcode :value="qrcodeValue" :options="{ width: 200 }"></qrcode>
+                </v-flex>
+              </v-layout>
+            </v-tab-item>
         </v-tabs>
     </div>
 </template>
 
 <script>
+import Vue from 'vue';
+import axios from 'axios';
 import { ethers } from 'ethers';
+import VueQrcode from '@chenfengyuan/vue-qrcode';
 import {AbiFunction} from 'vue-ethabi';
+import PipeGraph from './PipeGraph';
+import Pipeos from '../../namespace/namespace';
+
+Vue.component(VueQrcode.name, VueQrcode);
+
 window.ethers = ethers;
 
 export default {
     components: {
         AbiFunction,
+        PipeGraph,
+        VueQrcode,
     },
     props: ['contractSource', 'graphSource', 'jsSource', 'deploymentInfo', 'graphsAbi'],
     data: () => ({
@@ -159,6 +209,10 @@ export default {
         deploymentInfoLast: '',
         deploymentInfoMap: '',
         dialog: false,
+        dialogGraph: false,
+        pipegraphId: null,
+        pipegraphData: null,
+        qrcodeValue: null,
     }),
     created: function() {
         this.setInitialData();
@@ -185,6 +239,12 @@ export default {
                 elements[i].innerHTML = '';
             };
         },
+        dialogGraph() {
+          this.setGraphData();
+        },
+        pipegraphId() {
+          this.qrcodeValue = `${Pipeos.pipem}${this.pipegraphId}`;
+        }
     },
     methods: {
         setDeploymentInfo: function() {
@@ -201,8 +261,6 @@ export default {
             let self = this;
 
             this.PipedScriptCallback = window.PipedScriptCallback = (funcName, returnValues) => {
-                console.log('PipedScriptCallback', funcName, JSON.stringify(returnValues));
-
                 let element = document.getElementById(`output_${funcName}`);
                 element.innerHTML = '';
 
@@ -225,18 +283,20 @@ export default {
             eval(this.$refs[reference].value);
         },
         jsArgumentsChange: function(args)  {
-            this.deploymentInfoMap.forEach((deployment) => {
-                let userValue = this.$refs[deployment.funcName][0].$refs.input.value;
+            if (this.dialog) {
+              this.deploymentInfoMap.forEach((deployment) => {
+                  let userValue = this.$refs[deployment.funcName][0].$refs.input.value;
 
-                if (deployment.deployment != userValue) {
-                    let varName = `deployment_${deployment.funcName}`;
-                    let pattern1 = `const ${varName} = `;
-                    let regex = new RegExp(pattern1 + '.*;');
-                    let replacement = `const ${varName} = "${userValue}";`;
+                  if (deployment.deployment != userValue) {
+                      let varName = `deployment_${deployment.funcName}`;
+                      let pattern1 = `const ${varName} = `;
+                      let regex = new RegExp(pattern1 + '.*;');
+                      let replacement = `const ${varName} = "${userValue}";`;
 
-                    this.jsSourceLast = this.jsSourceLast.replace(regex, replacement);
-                }
-            });
+                      this.jsSourceLast = this.jsSourceLast.replace(regex, replacement);
+                  }
+              });
+            }
             args.forEach((arg, i) => {
                 if (!arg.type.includes('int') && arg.type !== 'bool') {
                     arg.value = `"${arg.value}"`;
@@ -255,7 +315,24 @@ export default {
                 // validate json & graph format (build json schema)
                 this.$emit('set-graphs', JSON.parse(graphs));
             }
-        }
+        },
+        savePipeGraph: function() {
+          const graphData = this.pipegraphData;
+          graphData.json = this.$refs['graphSource'].value;
+
+          axios.post(Pipeos.pipeserver.graph, graphData).then((response) => {
+            this.pipegraphId = response.data._id;
+            this.dialogGraph = false;
+          });
+        },
+        setGraphData() {
+          // TODO: multiple graphs here - treat them differently
+          // TODO: link graphs somehow
+          this.pipegraphData = this.pipegraphData || {
+            name: 'Graph Name',
+            markdown: '# Graph Dapp',
+          };
+        },
     },
 };
 </script>
