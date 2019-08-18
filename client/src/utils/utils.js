@@ -2,18 +2,6 @@ export function randomId() {
     return Math.floor(Math.random() * (10 ** 10));
 }
 
-export function pfunctionColorClass(gapi) {
-    let colorClass = '';
-    if (gapi.type === 'event') {
-        colorClass = 'event';
-    } else if (gapi.payable) {
-        colorClass = 'payable';
-    } else if (!gapi.constant) {
-        colorClass = 'nonconstant';
-    }
-    return colorClass;
-}
-
 export function linkReferencesSolcToEthPM(linkReferences = {}) {
     const lreferences = [];
 
@@ -31,15 +19,6 @@ export function linkReferencesSolcToEthPM(linkReferences = {}) {
     });
     return lreferences;
 }
-
-export const JsonArrayToString = function (json) {
-    let functionArgs = JSON.stringify(json);
-    functionArgs = functionArgs.substring(
-        1,
-        functionArgs.length - 1,
-    ).replace(/\\"/g, '"');
-    return functionArgs;
-};
 
 const EMPTY_NATSPEC = {methods: {}};
 
