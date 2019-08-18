@@ -109,7 +109,7 @@
                                 v-for="(funcAbi, i) in graphsAbi"
                                 :key="`function_${i}`"
                                 :abi="funcAbi"
-                                v-on:value-changed="jsArgumentsChange"
+                                @change="jsArgumentsChange"
                             />
                         </v-card>
                     </v-dialog>
@@ -143,8 +143,8 @@
 </template>
 
 <script>
-import AbiFunction from '../abi/AbiFunction';
 import { ethers } from 'ethers';
+import {AbiFunction} from 'vue-ethabi';
 window.ethers = ethers;
 
 export default {
@@ -238,6 +238,9 @@ export default {
                 }
             });
             args.forEach((arg, i) => {
+                if (!arg.type.includes('int') && arg.type !== 'bool') {
+                    arg.value = `"${arg.value}"`;
+                }
                 let pattern1 = `let ${arg.name} = `;
                 let regex = new RegExp(pattern1 + '.*;');
                 let replacement = `let ${arg.name} = ${arg.value};`;
@@ -254,7 +257,7 @@ export default {
             }
         }
     },
-}
+};
 </script>
 
 
