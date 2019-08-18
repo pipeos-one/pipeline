@@ -14,8 +14,10 @@ const Pipeos = {
             tag: `${pipeserverIp}/tag`,
             project: `${pipeserverIp}/project`,
             package: `${pipeserverIp}/package`,
+            graph: `${pipeserverIp}/graph`,
         },
     },
+    pipem: `${process.env.VUE_APP_PIPEM_IP}/#/`,
     contracts: {
         PipeProxy: {
             addresses: {
