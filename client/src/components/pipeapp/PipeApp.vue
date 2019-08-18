@@ -320,7 +320,7 @@ export default {
           const graphData = this.pipegraphData;
           graphData.json = this.$refs['graphSource'].value;
 
-          axios.post(Pipeos.pipeserver.graph, graphData).then((response) => {
+          axios.post(Pipeos.pipeserver.api.graph, graphData).then((response) => {
             this.pipegraphId = response.data._id;
             this.dialogGraph = false;
           });
