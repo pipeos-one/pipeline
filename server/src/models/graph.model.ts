@@ -28,13 +28,16 @@ export class Graph extends Entity {
     name: string;
 
     @property({
-       type: 'object',
+       type: 'string',
        required: true,
     })
-    storage: DStorage;
+    markdown: string;
 
-    @hasMany(() => PFunction, {keyTo: 'graphid'})
-    pfunctions?: PFunction[];
+    // @property({
+    //    type: 'object',
+    //    // required: true,
+    // })
+    // storage: DStorage;
 
     constructor(data?: Partial<Graph>) {
       super(data);
