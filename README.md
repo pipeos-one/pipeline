@@ -20,6 +20,7 @@ Demos: https://www.youtube.com/watch?v=sC7Hd6Sr1SI&list=PL323JufuD9JAyaYCEvrnQ5y
   - data models closely follow EthPM v2. schema
   - import and export EthPM packages
   - see [ContractFinder docs](/docs/ContractFinder.md) for more information and our plans to make it a standalone Remix plugin
+  - open data dump: [Pipeline Open Data](/data)
 
 
 ## Video Guides
