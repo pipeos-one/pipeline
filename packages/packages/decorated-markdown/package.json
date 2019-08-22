@@ -1,6 +1,6 @@
 {
   "name": "@pipeos/vue-decorated-markdown",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Vue markdown editor with controlled input and custom markdown parsing",
   "main": "./index.js",
   "scripts": {
