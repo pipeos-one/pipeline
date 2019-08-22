@@ -18,17 +18,43 @@
                         />
                     </v-flex>
                     <v-flex xs8>
-                    <PaginatedList
-                        :items="selectedContainers"
-                        :pages="pages"
-                        :currentPage="currentPage"
-                        :isRemix="isRemix"
-                        v-bind:tags="selectedTags"
-                        v-on:item-toggle="onTreeToggle"
-                        v-on:subitem-toggle=""
-                        v-on:change-page="changePageLoad"
-                        v-on:load-remix="loadToRemix"
-                    />
+                      <v-tabs v-model="tabValue" fixed-tab>
+                        <v-tab ripple key="graphlist" href="#tab-glist">
+                          <!-- <v-icon>fa-list</v-icon> -->
+                          Graphs
+                        </v-tab>
+                        <v-tab ripple key="pipecontracts" href="#tab-clist">
+                          <!-- <v-icon>fa-rocket</v-icon> -->
+                          Contracts
+                        </v-tab>
+                        <v-tab-item
+                            key="graphlist"
+                            value="tab-glist"
+                        >
+                          <GraphList
+                              :items="glist.graphs"
+                              :pages="glist.pages"
+                              @selected="onGraphSelected"
+                              @change-page="changeGraphPageLoad"
+                          />
+                        </v-tab-item>
+                        <v-tab-item
+                            key="pipecontracts"
+                            value="tab-clist"
+                        >
+                          <PaginatedList
+                              :items="selectedContainers"
+                              :pages="pages"
+                              :currentPage="currentPage"
+                              :isRemix="isRemix"
+                              v-bind:tags="selectedTags"
+                              v-on:item-toggle="onTreeToggle"
+                              v-on:subitem-toggle=""
+                              v-on:change-page="changePageLoad"
+                              v-on:load-remix="loadToRemix"
+                          />
+                        </v-tab-item>
+                      </v-tabs>
                     </v-flex>
                 </v-layout>
         </swiper-slide class="swiper-margin">
@@ -157,6 +183,7 @@ import Search from '../components/Search';
 import ExportToEthPM from '../components/ExportToEthPM';
 import SimpleModal from '../components/modals/SimpleModal';
 import VueAwesomeSwiper from 'vue-awesome-swiper';
+import GraphList from '../components/GraphList';
 import 'swiper/dist/css/swiper.css';
 import {
     randomId,
@@ -172,6 +199,7 @@ const containerFunctionsApi = Pipeos.pipeserver.api.pclass + '/pfunctions';
 const containerDeployedApi = Pipeos.pipeserver.api.pclass + '/pclassi';
 const deployedApi = Pipeos.pipeserver.api.pclassi;
 const packageApi = Pipeos.pipeserver.api.package;
+const graphApi = Pipeos.pipeserver.api.graph;
 
 let filterOptions = {
     offset: 0,
@@ -191,6 +219,7 @@ export default {
     LoadFromEthpm,
     ExportToEthPM,
     SimpleModal,
+    GraphList,
   },
   data() {
     const data = {
@@ -238,10 +267,23 @@ export default {
             setBy: null,
         },
         filterCache: null,
+        tabValue: 'tab-glist',
+        glist: {
+          filterCache: null,
+          pages: 1,
+          currentPage: 1,
+          graphs: [],
+          filterOptions: Object.assign({}, filterOptions),
+        },
     };
     data.simpleModal = Object.assign({}, data.simpleModalDefault);
     data.modalQueue = [];
     return data;
+  },
+  watch: {
+    tabValue() {
+      this.loadData();
+    },
   },
   mounted() {
     this.loadData();
@@ -279,39 +321,58 @@ export default {
 
         return query;
     },
-    loadData: function(whereQuery = {}, forced) {
+    loadData(whereQuery = {}, forced) {
+      if (this.tabValue === 'tab-clist') {
+        this.loadPipelineData(whereQuery, forced);
+      }
+      if (this.tabValue === 'tab-glist') {
+        this.loadGraphData(whereQuery, forced);
+      }
+    },
+    async loadGraphData(whereQuery = {}, forced) {
+      let filter = this.glist.filterOptions;
+      filter.where = this.buildContainersQuery(whereQuery);
+      filter = '?filter=' + JSON.stringify(filter);
+      console.log('loadGraphData filter', filter);
+
+      if (this.glist.filterCache !== filter || forced) {
+        this.glist.filterCache = filter;
+        this.glist.pages = await this.countPagination(graphApi);
+
+        Vue.axios.get(graphApi + filter).then((response) => {
+          this.glist.graphs = response.data;
+        });
+      }
+    },
+    async loadPipelineData(whereQuery = {}, forced) {
         let query, containersQuery;
 
         let filter = this.filterOptions;
         filter.where = this.buildContainersQuery(whereQuery);
         filter = '?filter=' + JSON.stringify(filter);
-        console.log('loadData filter', filter);
+        console.log('loadPipelineData filter', filter);
 
         if (this.filterCache !== filter || forced) {
             this.filterCache = filter;
-            this.countPClasses();
-            Vue.axios.get(containerFunctionsApi + filter).then((response) => {
-                console.log('loadData response', response);
-                let pclasses = response.data.pclasses.map(pclass => {
-                    pclass.deployment = response.data.pclassii.find(depl => depl.pclassid == pclass._id);
-                    if (!pclass.deployment) {
-                        pclass.deployment = {pclassi: {address: `Deployment address for ${pclass.name} not found.`}};
-                    }
-                    return pclass;
-                });
-                this.linkContainersFunctions(response.data.pfunctions, pclasses);
+            this.pages = await this.countPagination(containerApi);
+            const response = await Vue.axios.get(containerFunctionsApi + filter);
+
+            let pclasses = response.data.pclasses.map(pclass => {
+                pclass.deployment = response.data.pclassii.find(depl => depl.pclassid == pclass._id);
+                if (!pclass.deployment) {
+                    pclass.deployment = {pclassi: {address: `Deployment address for ${pclass.name} not found.`}};
+                }
+                return pclass;
             });
+            this.linkContainersFunctions(response.data.pfunctions, pclasses);
         }
     },
-    countPClasses: function() {
+    async countPagination(api) {
         let where = this.buildContainersQuery();
         where = '?where=' + JSON.stringify(where);
 
-        console.log('where', where)
-        Vue.axios.get(containerApi + '/count' + where).then((response) => {
-            this.pages = Math.ceil(response.data.count / filterOptions.limit);
-            console.log('countPFunctions', response.data, this.pages, filterOptions);
-        });
+        const response = await Vue.axios.get(api + '/count' + where);
+        return Math.ceil(response.data.count / filterOptions.limit);
     },
     loadCanvas: function() {
         this.graphInstance = new PipeGraphs(
@@ -348,7 +409,6 @@ export default {
                             return contract_address;
                         })
                     );
-                    console.log('this.deploymentInfo', this.deploymentInfo);
                 },
                 onGraphFunctionRemove: (grIndex, nodes) => {
                     console.log('onGraphFunctionRemove', grIndex, nodes);
@@ -368,7 +428,6 @@ export default {
         this.graphInstance.addFunction(pfunction, index);
     },
     onSearchSelectQuery: function(query) {
-        console.log('onSearchSelectQuery', query);
         this.changePage(1);
         this.onSearchSelect(query.select);
         this.onSearchQuery(query.search);
@@ -409,15 +468,27 @@ export default {
         }
     },
     changePage: function(page) {
-        this.filterOptions.skip = this.filterOptions.limit * (page - 1);
-        const newPage = this.filterOptions.skip / this.filterOptions.limit + 1;
-        if (0 < newPage <= this.pages) {
-            this.currentPage = newPage;
+        if (this.tabValue === 'tab-clist') {
+          this.filterOptions.skip = this.filterOptions.limit * (page - 1);
+          const newPage = this.filterOptions.skip / this.filterOptions.limit + 1;
+          if (0 < newPage <= this.pages) {
+              this.currentPage = newPage;
+          }
+        } else {
+          this.glist.filterOptions.skip = this.glist.filterOptions.limit * (page - 1);
+          const newPage = this.glist.filterOptions.skip / this.glist.filterOptions.limit + 1;
+          if (0 < newPage <= this.glist.pages) {
+              this.glist.currentPage = newPage;
+          }
         }
     },
     changePageLoad: function(page) {
         this.changePage(page);
         this.loadData();
+    },
+    changeGraphPageLoad() {
+      this.changePage(page);
+      this.loadData();
     },
     onFunctionToggle: function (pfunction) {
         if (pfunction.pfunction.gapi.type === 'event') {
@@ -431,8 +502,6 @@ export default {
 
         this.selectedFunctions[this.activeCanvas].push(pfunction);
         this.addToCanvas(pfunction, this.activeCanvas);
-        console.log('activeCanvas', this.activeCanvas);
-        console.log('this.selectedFunctions', this.selectedFunctions);
     },
     setCanvasGraph: function(graphs) {
         graphs.forEach((graph, i) => {
@@ -483,22 +552,18 @@ export default {
             container.functions = pfunctions.filter(func => func.pclassid == container._id);
             return container;
         });
-        console.log('this.selectedContainers', this.selectedContainers);
     },
     setActiveCanvas: function(value) {
-        console.log('setActiveCanvas', value);
         if (this.graphInstance.getGraphs().length <= value) {
             this.graphInstance.addGraph(`draw_${value + 1}`);
         }
         this.activeCanvas = value;
         this.graphInstance.activeTab(value)
-        console.log(this.graphInstance.getPipe())
     },
     newCanvasFunction: function() {
         let functions = this.selectedFunctions;
         functions.push([]);
         this.selectedFunctions = functions;
-        console.log('this.selectedFunctions', this.selectedFunctions)
         this.canvases += 1;
     },
     loadToRemix: function(item) {
@@ -565,8 +630,6 @@ export default {
         this.selectedContainers.push(container);
         container.functions = this.buildFunctionsFromContainer(container);
         this.selectedTreeContainers.push(container);
-        console.log('selectedContainers', this.selectedContainers);
-        console.log('selectedTreeContainers', this.selectedTreeContainers);
     },
     saveFromRemix: function(container, deployment) {
         if (!container.tags) container.tags = [];
@@ -589,12 +652,10 @@ export default {
             response.data = existant
             return response;
         }).then((response) => {
-            console.log('posted container', response);
             // Connect deployed instance with container
             deployment.pclassid = response.data._id;
             return Vue.axios.post(containerDeployedApi, deployment);
         }).then((response) => {
-            console.log('posted deployment', response);
             // Reload data after insert, to include information in the paginated list
             // TODO: insert this locally without a server request
             this.loadData(forced = true);
@@ -627,7 +688,6 @@ export default {
         this.exportToEthpmError = null;
         ppackage.package.contracts = this.selectedTreeContainers.map((pclass) => pclass._id);
         Vue.axios.post(`${packageApi}/init`, ppackage).then((response) => {
-            console.log('response', response);
             let ppackage = response.data;
             this.exportToEthpmResult = `Package was uploaded to swarm: ${JSON.stringify(ppackage.storage)}`;
         }).catch(error => {
@@ -710,14 +770,13 @@ export default {
                 'solidity',
                 'getCompilationResult'
             );
-            console.log(error, result);
             if (error) {
                 throw new Error(error);
             }
             if (!result[0].source.target) return;
             compiledContractProcess(result[0]).forEach((contract) => {
                 contract.tags.push('piped');
-                console.log('contract', contract);
+
                 if (this.pipedContracts[contract.name]) {
                     this.simpleModal.active = true;
                     this.simpleModal.msg = `
@@ -736,6 +795,20 @@ export default {
                 }
             });
         });
+    },
+    onGraphSelected(pipegraph) {
+      // console.log('onGraphSelected', pipegraph);
+      // // this.loadPipelineData({packageid: ppackage._id});
+      // // this.selectedContainers.push(container); ?
+      // // this.selectedTreeContainers.push(pclass);
+      //
+      // try {
+      //   pipegraph.json = JSON.parse(pipegraph.json);
+      // } catch (e) {
+      //   console.error('Could not parse graph');
+      // }
+      // // this.setCanvasGraph(pipegraph.json);
+      // this.graphData = pipegraph;
     },
   }
 };
