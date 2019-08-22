@@ -22,7 +22,7 @@
 </template>
 
 <script>
-import {MarkdownEdit} from 'decorated-markdown';
+import {MarkdownEdit} from '@pipeos/vue-decorated-markdown';
 import {AbiFunction} from 'vue-ethabi';
 import {getItemsFromMd} from './utils';
 

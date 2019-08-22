@@ -13,7 +13,7 @@
         To see & play with Pipeline stored contracts, change to Ropsten, Rinkeby or Kovan.</p>
         <p class="text-xs-left caption font-weight-medium">Otherwise, import your own deployed contracts from Remix.</p>
     </div>
-    <v-list two-line v-if="items.length > 0">
+    <v-list dense v-if="items.length > 0">
         <PipeTree
             :items="items"
             :loadToRemix="isRemix"
