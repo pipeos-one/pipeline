@@ -1,7 +1,7 @@
 {
-  "name": "decorated-markdown",
-  "version": "0.0.1",
-  "description": "decorated markdown",
+  "name": "@pipeos/vue-decorated-markdown",
+  "version": "0.0.0",
+  "description": "Vue markdown editor with controlled input and custom markdown parsing",
   "main": "./index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -17,6 +17,13 @@
     "src/*",
     "*.json",
     "*.js"
+  ],
+  "keywords": [
+    "pipeline",
+    "markdown",
+    "vuetify",
+    "vue",
+    "editor"
   ],
   "peerDependencies": {
     "vue": "^2.6.6",
@@ -40,5 +47,8 @@
   "bugs": {
     "url": ""
   },
-  "homepage": ""
+  "homepage": "https://github.com/pipeos-one/pipeline#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }
