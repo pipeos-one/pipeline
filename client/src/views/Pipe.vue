@@ -337,7 +337,7 @@ export default {
 
       if (this.glist.filterCache !== filter || forced) {
         this.glist.filterCache = filter;
-        this.glist.pages = await this.countPagination(graphApi);
+        this.glist.pages = await this.countPagination(graphApi, this.glist.filterOptions.limit);
 
         Vue.axios.get(graphApi + filter).then((response) => {
           this.glist.graphs = response.data;
@@ -367,12 +367,13 @@ export default {
             this.linkContainersFunctions(response.data.pfunctions, pclasses);
         }
     },
-    async countPagination(api) {
+    async countPagination(api, limit) {
+        limit = limit || filterOptions.limit;
         let where = this.buildContainersQuery();
         where = '?where=' + JSON.stringify(where);
 
         const response = await Vue.axios.get(api + '/count' + where);
-        return Math.ceil(response.data.count / filterOptions.limit);
+        return Math.ceil(response.data.count / limit);
     },
     loadCanvas: function() {
         this.graphInstance = new PipeGraphs(
@@ -486,7 +487,7 @@ export default {
         this.changePage(page);
         this.loadData();
     },
-    changeGraphPageLoad() {
+    changeGraphPageLoad(page) {
       this.changePage(page);
       this.loadData();
     },
