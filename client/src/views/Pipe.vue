@@ -133,6 +133,7 @@
 
         <swiper-slide class="swiper-margin no-swipe">
             <PipeApp
+                :chainid="chain"
                 :contractSource="contractSource"
                 :deploymentInfo="deploymentInfo"
                 :jsSource="jsSource"
@@ -140,6 +141,7 @@
                 :graphsAbi="graphsAbi"
                 v-on:load-remix="pipedLoadToRemix"
                 v-on:set-graphs="setCanvasGraph"
+                v-on:saved="onSavedGraph"
             />
         </swiper-slide>
 
@@ -337,7 +339,7 @@ export default {
 
       if (this.glist.filterCache !== filter || forced) {
         this.glist.filterCache = filter;
-        this.glist.pages = await this.countPagination(graphApi);
+        this.glist.pages = await this.countPagination(graphApi, this.glist.filterOptions.limit);
 
         Vue.axios.get(graphApi + filter).then((response) => {
           this.glist.graphs = response.data;
@@ -367,12 +369,13 @@ export default {
             this.linkContainersFunctions(response.data.pfunctions, pclasses);
         }
     },
-    async countPagination(api) {
+    async countPagination(api, limit) {
+        limit = limit || filterOptions.limit;
         let where = this.buildContainersQuery();
         where = '?where=' + JSON.stringify(where);
 
         const response = await Vue.axios.get(api + '/count' + where);
-        return Math.ceil(response.data.count / filterOptions.limit);
+        return Math.ceil(response.data.count / limit);
     },
     loadCanvas: function() {
         this.graphInstance = new PipeGraphs(
@@ -486,9 +489,9 @@ export default {
         this.changePage(page);
         this.loadData();
     },
-    changeGraphPageLoad() {
+    changeGraphPageLoad(page, forced = false) {
       this.changePage(page);
-      this.loadData();
+      this.loadGraphData({}, forced);
     },
     onFunctionToggle: function (pfunction) {
         if (pfunction.pfunction.gapi.type === 'event') {
@@ -795,6 +798,9 @@ export default {
                 }
             });
         });
+    },
+    onSavedGraph(graph) {
+      this.changeGraphPageLoad(this.glist.pages, true);
     },
     onGraphSelected(pipegraph) {
       // console.log('onGraphSelected', pipegraph);

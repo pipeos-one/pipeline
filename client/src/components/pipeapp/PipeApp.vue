@@ -201,7 +201,7 @@ export default {
         PipeGraph,
         VueQrcode,
     },
-    props: ['contractSource', 'graphSource', 'jsSource', 'deploymentInfo', 'graphsAbi'],
+    props: ['chainid', 'contractSource', 'graphSource', 'jsSource', 'deploymentInfo', 'graphsAbi'],
     data: () => ({
         contractSourceLast: '',
         graphSourceLast: '',
@@ -319,10 +319,12 @@ export default {
         savePipeGraph: function() {
           const graphData = this.pipegraphData;
           graphData.json = this.$refs['graphSource'].value;
+          graphData.chainids = [this.chainid];
 
           axios.post(Pipeos.pipeserver.api.graph, graphData).then((response) => {
             this.pipegraphId = response.data._id;
             this.dialogGraph = false;
+            this.$emit('saved', response.data);
           });
         },
         setGraphData() {
