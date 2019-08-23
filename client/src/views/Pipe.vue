@@ -133,6 +133,7 @@
 
         <swiper-slide class="swiper-margin no-swipe">
             <PipeApp
+                :chainid="chain"
                 :contractSource="contractSource"
                 :deploymentInfo="deploymentInfo"
                 :jsSource="jsSource"
@@ -140,6 +141,7 @@
                 :graphsAbi="graphsAbi"
                 v-on:load-remix="pipedLoadToRemix"
                 v-on:set-graphs="setCanvasGraph"
+                v-on:saved="onSavedGraph"
             />
         </swiper-slide>
 
@@ -487,9 +489,9 @@ export default {
         this.changePage(page);
         this.loadData();
     },
-    changeGraphPageLoad(page) {
+    changeGraphPageLoad(page, forced = false) {
       this.changePage(page);
-      this.loadData();
+      this.loadGraphData({}, forced);
     },
     onFunctionToggle: function (pfunction) {
         if (pfunction.pfunction.gapi.type === 'event') {
@@ -796,6 +798,9 @@ export default {
                 }
             });
         });
+    },
+    onSavedGraph(graph) {
+      this.changeGraphPageLoad(this.glist.pages, true);
     },
     onGraphSelected(pipegraph) {
       // console.log('onGraphSelected', pipegraph);
