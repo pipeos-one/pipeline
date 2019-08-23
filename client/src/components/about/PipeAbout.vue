@@ -1,31 +1,5 @@
 <template>
     <v-container>
-        <v-toolbar flat color="#F9F9F9" floating>
-            <v-btn
-                flat block
-                href="https://github.com/pipeos-one/pipeline"
-                target="_blank"
-                v-bind:class="['normaltxt']"
-            >
-                github
-            </v-btn>
-            <v-btn
-                flat block
-                href="https://gitter.im/pipeos-one/pipeline"
-                target="_blank"
-                v-bind:class="['normaltxt']"
-            >
-                gitter
-            </v-btn>
-            <v-btn
-                flat block
-                href="https://www.youtube.com/playlist?list=PL323JufuD9JAyaYCEvrnQ5yOAc3ukuNyF"
-                target="_blank"
-                v-bind:class="['normaltxt']"
-            >
-                youtube
-            </v-btn>
-        </v-toolbar>
         <div>
             <div class="display-1" style="padding-bottom:25px">
                 <v-avatar>
@@ -39,12 +13,50 @@
                 </v-avatar>
                 Pipeline: The Visual IDE
             </div>
+            <div style="padding-bottom:20px;">
+              <template v-for="(link, i) in infoLinks">
+                <div>{{link.name}}: <a :key="i" :href="link.url" target="_blank">{{link.url}}</a></div>
+              </template>
+            </div>
+            <div class="headline" style="padding-bottom:25px">
+              Share your dApps by QRcode!
+            </div>
+            <div class="videoWrapper">
+                <iframe width="714" height="420" src="https://www.youtube.com/embed/Op-BSbFJUR4" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+            </div>
+            <div class="headline" style="padding-bottom:25px;padding-top:25px;">
+              Learn how to create contracts and dApps with Pipeline graphs:
+            </div>
             <div class="videoWrapper">
                 <iframe width="714" height="420" src="https://www.youtube.com/embed/8xwoyQkYm5U" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
             </div>
         </div>
     </v-container>
 </template>
+
+<script>
+//https://youtu.be/Op-BSbFJUR4
+export default {
+  data() {
+    return {
+      infoLinks: [
+        {
+          name: 'github',
+          url: 'https://github.com/pipeos-one/pipeline',
+        },
+        {
+          name: 'gitter',
+          url: 'https://gitter.im/pipeos-one/pipeline',
+        },
+        {
+          name: 'youtube',
+          url: 'https://www.youtube.com/playlist?list=PL323JufuD9JAyaYCEvrnQ5yOAc3ukuNyF',
+        },
+      ],
+    };
+  },
+};
+</script>
 
 <style>
 .videoWrapper {
