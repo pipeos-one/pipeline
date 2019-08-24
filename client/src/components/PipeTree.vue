@@ -32,6 +32,7 @@
                             slot="activator"
                             class="text-xs-left caption font-weight-medium"
                             v-on:click.stop="$emit('item-toggle', item)"
+                            style="padding-left:5px;"
                         >
                             {{item.name || 'NoName'}}
                         </span>
@@ -43,7 +44,7 @@
                             <p v-if="item.devdoc.author">{{item.devdoc.author}}</p>
                         </template>
                     </v-tooltip>
-                    <span class="text-xs-left caption font-weight-medium" v-if="!loadToTree">{{item.name || 'NoName'}}</span>
+                    <span class="text-xs-left caption font-weight-medium" v-if="!loadToTree" style="padding-left:5px;">{{item.name || 'NoName'}}</span>
                 </div>
             </template>
             <v-list dense>
@@ -89,5 +90,10 @@ export default {
 }
 .treeIcon {
     font-size: 16px !important;
+}
+.v-expansion-panel__header {
+  padding-top: 0px!important;
+  padding-bottom: 0px!important;
+  padding-right: 10px!important;
 }
 </style>

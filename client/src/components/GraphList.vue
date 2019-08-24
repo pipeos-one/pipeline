@@ -1,6 +1,6 @@
 <template>
   <div class="paginatedlist">
-      <div class="text-xs-center">
+      <div class="text-xs-center" style="padding-top:10px;padding-bottom:10px;">
           <v-pagination
             :length="pages"
             :value="currentPage"
@@ -35,11 +35,6 @@
                   <v-icon small>fa-qrcode</v-icon>
               </v-btn>
             </v-list-tile-action>
-            <v-list-tile-action @click="onPipemLink(item)">
-              <v-btn small flat fab>
-                <v-icon small>fa-external-link-alt</v-icon>
-              </v-btn>
-            </v-list-tile-action>
           </v-list-tile>
         </v-list>
     </v-list>
@@ -50,7 +45,10 @@
     >
       <v-card v-if="dialogGraph && qritem">
         <v-card-text>
-          <v-layout>
+          <v-layout row wrap>
+            <v-flex xs12>
+              <a :href="pipemLink(qritem)" target="_blank">{{pipemLink(qritem)}}</a>
+            </v-flex>
             <v-flex xs12>
               <qrcode :value="pipemLink(qritem)" :options="{ width: 200 }"></qrcode>
             </v-flex>
