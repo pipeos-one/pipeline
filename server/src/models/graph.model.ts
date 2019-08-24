@@ -33,6 +33,12 @@ export class Graph extends Entity {
     })
     markdown: string;
 
+    @property({
+      type: 'array',
+      itemType: 'string',
+    })
+    chainids: string[];
+
     // @property({
     //    type: 'object',
     //    // required: true,
