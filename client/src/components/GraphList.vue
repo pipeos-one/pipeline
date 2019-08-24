@@ -47,7 +47,21 @@
         <v-card-text>
           <v-layout row wrap>
             <v-flex xs12>
+              <p class="subheading">
+                Share & run this dApp with PipEm!
+              </p>
+              <p class="caption">
+                On mobile, use a wallet (Opera Touch, Metamask) and scan the QRcode.
+              </p>
+              <p class="caption">
+                On desktop, make sure you have web3 enabled (e.g. Metamask) and go to:
+              </p>
+            </v-flex>
+            <v-flex xs12>
               <a :href="pipemLink(qritem)" target="_blank">{{pipemLink(qritem)}}</a>
+              <v-btn small icon @click="clipboardCopy(pipemLink(qritem))">
+                <v-icon small>fa-copy</v-icon>
+              </v-btn>
             </v-flex>
             <v-flex xs12>
               <qrcode :value="pipemLink(qritem)" :options="{ width: 200 }"></qrcode>
@@ -106,6 +120,14 @@ export default {
         },
         pipemLink(item) {
           return `${Pipeos.pipem}${item._id}`;
+        },
+        clipboardCopy(url) {
+          const aux = document.createElement("input");
+          aux.setAttribute("value", url);
+          document.body.appendChild(aux);
+          aux.select();
+          document.execCommand("copy");
+          document.body.removeChild(aux);
         },
     },
 };
