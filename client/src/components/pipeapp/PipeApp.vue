@@ -1,11 +1,12 @@
 <template>
-    <div class='fit'>
+    <v-layout row wrap class='fit'>
+      <v-flex xs12 class='fit'>
         <v-tabs fixed-tab left class="fullheight">
-            <v-tab ripple key="solidity">Solidity</v-tab>
-            <v-tab ripple key="deployment">Deployment</v-tab>
+            <v-tab ripple key="solidity">Sol</v-tab>
+            <v-tab ripple key="deployment">Deploy</v-tab>
             <v-tab ripple key="js">Js</v-tab>
             <v-tab ripple key="graph">Graph</v-tab>
-            <v-tab ripple key="qrcode">QRCode</v-tab>
+            <v-tab ripple key="qrcode">QR</v-tab>
             <v-tab-item
                 key="solidity"
                 class="fullheight swiper-margin"
@@ -156,7 +157,9 @@
                             </v-btn>
                           </v-card-actions>
                           <v-card-text>
-                            <PipeGraph v-model="pipegraphData" :abi="graphsAbi[0]" @change="jsArgumentsChange"/>
+                            <v-container>
+                              <PipeGraph v-model="pipegraphData" :abi="graphsAbi[0]" @change="jsArgumentsChange"/>
+                            </v-container>
                           </v-card-text>
                         </v-card>
                       </v-dialog>
@@ -179,7 +182,8 @@
               </v-layout>
             </v-tab-item>
         </v-tabs>
-    </div>
+      </v-flex>
+    </v-layout>
 </template>
 
 <script>

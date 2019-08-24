@@ -4,6 +4,7 @@
             <PipeAbout/>
         </swiper-slide>
         <swiper-slide class="swiper-margin no-swipe">
+            <v-container class="thincontainer">
                 <v-layout row wrap>
                     <v-flex xs4 style="margin-top: 50px;">
                         <Search
@@ -20,12 +21,10 @@
                     <v-flex xs8>
                       <v-tabs v-model="tabValue" fixed-tab>
                         <v-tab ripple key="graphlist" href="#tab-glist">
-                          <!-- <v-icon>fa-list</v-icon> -->
-                          Graphs
+                          <v-icon>fa-project-diagram</v-icon>
                         </v-tab>
                         <v-tab ripple key="pipecontracts" href="#tab-clist">
-                          <!-- <v-icon>fa-rocket</v-icon> -->
-                          Contracts
+                          <v-icon>fa-bars</v-icon>
                         </v-tab>
                         <v-tab-item
                             key="graphlist"
@@ -57,9 +56,11 @@
                       </v-tabs>
                     </v-flex>
                 </v-layout>
+            </v-container>
         </swiper-slide class="swiper-margin">
 
         <swiper-slide class="swiper-margin no-swipe">
+          <v-container class="thincontainer">
             <v-layout row wrap>
                 <v-flex xs12>
                     <v-toolbar flat height="48" color="white">
@@ -89,19 +90,20 @@
                         </v-toolbar-items>
                     </v-toolbar>
                 </v-flex>
-                <v-flex xs12>
-                    <v-divider></v-divider>
-                </v-flex>
             </v-layout>
-            <PipeTree
-                :items="selectedTreeContainers"
-                :removeItem="1"
-                v-on:subitem-toggle="onFunctionToggle"
-                v-on:remove-item="removeTreeItem"
-            />
+            <v-layout row wrap style="padding-top:40px;">
+              <PipeTree
+                  :items="selectedTreeContainers"
+                  :removeItem="1"
+                  v-on:subitem-toggle="onFunctionToggle"
+                  v-on:remove-item="removeTreeItem"
+              />
+            </v-layout>
+          </v-container>
         </swiper-slide>
 
         <swiper-slide class="swiper-margin-slide swiper-margin no-swipe">
+          <v-container class="thincontainer fullheight">
             <template class="fullheight">
                 <v-tabs
                     fixed-tab
@@ -112,6 +114,7 @@
                     <v-btn
                       v-on:click="newCanvasFunction"
                       flat icon
+                      style="margin-left:25px;"
                     ><v-icon>fa-plus</v-icon></v-btn>
                     <v-tab
                         v-for="n in canvases"
@@ -129,9 +132,11 @@
                     </v-tab-item>
                 </v-tabs>
             </template>
+          </v-container>
         </swiper-slide>
 
         <swiper-slide class="swiper-margin no-swipe">
+          <v-container class="thincontainer fit">
             <PipeApp
                 :chainid="chain"
                 :contractSource="contractSource"
@@ -143,6 +148,7 @@
                 v-on:set-graphs="setCanvasGraph"
                 v-on:saved="onSavedGraph"
             />
+          </v-container>
         </swiper-slide>
 
         <v-btn absolute small top left fab
@@ -824,8 +830,11 @@ export default {
 body {
     text-transform: none;
 }
+.thincontainer {
+  padding-top: 0px;
+}
 .swiper-margin {
-    margin: 2px;
+    margin: 5px;
 }
 .swiper-container {
     height: 100%;
@@ -835,11 +844,18 @@ body {
 .swiper-slide {
     width: 100%!important;
 }
-.swiper-slide:nth-child(2n), .swiper-slide:nth-child(4n) {
+.swiper-slide:nth-child(2n) {
     width: 60%!important;
 }
-.swiper-slide:nth-child(3n), .swiper-slide:nth-child(5n) {
-    width: 40%!important;
+.swiper-slide:nth-child(3n) {
+    width: 39%!important;
+    overflow-y: scroll;
+}
+.swiper-slide:nth-child(4n) {
+    width: 60%!important;
+}
+.swiper-slide:nth-child(5n) {
+    width: 39%!important;
     overflow-y: scroll;
 }
 .fullheight, .v-window, .v-window__container {

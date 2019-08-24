@@ -1,6 +1,6 @@
 <template>
   <div class="paginatedlist">
-      <div class="text-xs-center">
+      <div class="text-xs-center" style="padding-top:10px;padding-bottom:10px;">
           <v-pagination
             :length="pages"
             :value="currentPage"

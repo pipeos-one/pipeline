@@ -8,12 +8,14 @@
       ></v-text-field>
     </v-flex>
     <v-flex xs12>
-      <MarkdownEdit
-        v-model="markdownText"
-        :onPreHtml="onPreHtml"
-        :onPostHtml="onPostHtml"
-        :selectors="selectors"
-      />
+      <v-container>
+        <MarkdownEdit
+          v-model="markdownText"
+          :onPreHtml="onPreHtml"
+          :onPostHtml="onPostHtml"
+          :selectors="selectors"
+        />
+      </v-container>
     </v-flex>
     <v-flex xs12 v-if="onUpdateInputs">
       <AbiFunction :abi="abi" @change="inputChanged"/>
