@@ -10,7 +10,7 @@
             <template slot="header">
                 <div>
                     <v-btn
-                        @click="openInfo(item)"
+                        v-on:click.stop="openInfo(item)"
                         icon small
                     >
                         <v-icon light small>fa-info</v-icon>
