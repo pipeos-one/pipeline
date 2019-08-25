@@ -640,14 +640,13 @@ export default {
         container.functions = this.buildFunctionsFromContainer(container);
         this.selectedTreeContainers.push(container);
     },
-    saveFromRemix: function(container, deployment) {
+    saveFromRemix(container, deployment) {
         if (!container.tags) container.tags = [];
         container.tags.push('solidity');
         container.tags.push('uncurated');
 
-        Vue.axios.get(
-            `${containerApi}?filter[where][pclass.runtime_bytecode.bytecode]=${container.pclass.runtime_bytecode.bytecode}`
-        ).then((response) => {
+        Vue.axios.post(`${containerApi}/similar`, {bytecode: container.pclass.runtime_bytecode.bytecode})
+        .then((response) => {
             let existant = response.data[0];
             let chainid = deployment.pclassi.chainid;
 
@@ -667,7 +666,7 @@ export default {
         }).then((response) => {
             // Reload data after insert, to include information in the paginated list
             // TODO: insert this locally without a server request
-            this.loadData(forced = true);
+            this.loadData({}, true);
         }).catch(function (error) {
             console.log(error);
         });

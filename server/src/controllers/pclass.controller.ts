@@ -16,7 +16,10 @@ import {
   requestBody,
   HttpErrors,
 } from '@loopback/rest';
-import {PClass, SolClass, JsClass, PFunction, PClassI, SolInstance, SolFunction} from '../models';
+import {
+  PClass, SolClass, JsClass, PFunction, PClassI,
+  SolInstance, SolFunction, Bytecode,
+} from '../models';
 import {PClassRepository} from '../repositories';
 import {PFunctionController, PClassIController} from '../controllers';
 import {AbiFunctionInput, AbiFunction} from '../interfaces/gapi';
@@ -178,6 +181,21 @@ export class PClassController {
     return {pclasses, pclassii, pfunctions};
   }
 
+  @post('/pclass/similar', {
+    responses: {
+      '200': {
+        description: 'PClass model instance',
+        content: {'application/json': {'x-ts-type': Bytecode}},
+      },
+    },
+  })
+  async getSimilarContracts(@requestBody() bytecode: Partial<Bytecode>): Promise<PClass[]> {
+    const pclassFilter: any = JSON.parse(JSON.stringify({
+      where: {'pclass.runtime_bytecode.bytecode': bytecode.bytecode}
+    }));
+    return this.pclassRepository.find(pclassFilter);
+  }
+
   // Additional routes
   @post('/pclass/pfunctions')
   async createFunctions(
@@ -195,12 +213,9 @@ export class PClassController {
         throw new HttpErrors.InternalServerError('PClass instance does not contain pclass');
     }
 
-    // If there is a duplicate, we don't insert anything, but return the record
-    let alreadyInserted = await this.find({where: {name: pclass.name}});
-    console.log('alreadyInserted', alreadyInserted.length);
-    newPclass = alreadyInserted.find((inserted: any) => {
-        return JSON.stringify(inserted.pclass.gapi) == JSON.stringify(pclass.pclass.gapi);
-    });
+    const similar = await this.getSimilarContracts({bytecode: (<SolClass>pclass.pclass).runtime_bytecode.bytecode});
+    console.log('alreadyInserted', similar.length);
+    newPclass = similar[0];
 
     if (!newPclass) {
         newPclass = await this.create(pclass).catch(e => console.log('create err', pclass.name, e));

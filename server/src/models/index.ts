@@ -1,3 +1,5 @@
+export * from './bytecode.model';
+export * from './compiler.model';
 export * from './json-model.model';
 export * from './tag.model';
 export * from './pfunction.model';
