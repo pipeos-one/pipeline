@@ -649,7 +649,7 @@ export default {
             `${containerApi}?filter[where][pclass.runtime_bytecode.bytecode]=${container.pclass.runtime_bytecode.bytecode}`
         ).then((response) => {
             let existant = response.data[0];
-            let chainid = deployment.pclassi.chain_id;
+            let chainid = deployment.pclassi.chainid;
 
             // Insert new container only if there is no other container with the same bytecode
             if (!existant) {
@@ -747,9 +747,9 @@ export default {
     },
     loadFromRemixWrap: function(compiled_contract, deployment_info) {
         let message = `
-            Loading ${compiled_contract.name} (deployed at ${deployment_info.pclassi.address} on chain ${deployment_info.pclassi.chain_id}) to Pipeline.
+            Loading ${compiled_contract.name} (deployed at ${deployment_info.pclassi.address} on chain ${deployment_info.pclassi.chainid}) to Pipeline.
         `;
-        if (deployment_info.pclassi.chain_id === 'JavaScriptVM') {
+        if (deployment_info.pclassi.chainid === 'JavaScriptVM') {
             this.simpleModal.active = true;
             this.simpleModal.msg = `${message} The contract will only load in the plugin client and will disappear on Refresh.`;
             this.simpleModal.setBy = ['default'];
@@ -797,7 +797,7 @@ export default {
                         [contract, {
                             deployed: {
                                 address: data[0].contractAddress,
-                                chain_id: this.chain,
+                                chainid: this.chain,
                             }
                         }]
                     ];

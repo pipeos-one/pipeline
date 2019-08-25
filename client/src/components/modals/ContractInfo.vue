@@ -10,7 +10,7 @@
     </v-flex>
     <v-flex xs10 offset-xs1>
       <p>
-        <span class="subheading font-weight-bold">Deployment on chain ID: {{container.deployment.pclassi.chain_id}}</span>
+        <span class="subheading font-weight-bold">Deployment on chain ID: {{container.deployment.pclassi.chainid}}</span>
       </p>
       <p>
         <v-icon small @click="clipboardCopy(container.deployment.pclassi.address)">fa-copy</v-icon>

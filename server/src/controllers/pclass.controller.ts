@@ -165,7 +165,7 @@ export class PClassController {
     pclassi_queries = [];
     if (filter && filter.where && filter.where.chainids) {
         pclassi_queries.push({or: filter.where.chainids.inq.map((chainid: string) => {
-            return {'pclassi.chain_id': chainid}
+            return {'pclassi.chainid': chainid}
         })});
     }
     pclassi_filter = JSON.parse(JSON.stringify({where: {and:

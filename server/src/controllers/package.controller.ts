@@ -410,10 +410,10 @@ export class PackageController {
 
         Object.entries(package_json.deployments).map((entry: any) => {
             let bip122_uri: string = entry[0];
-            let chain_id = bip122UriToChainId(bip122_uri);
+            let chainid = bip122UriToChainId(bip122_uri);
 
             if (entry[1][contract_alias]) {
-                chainids.push(BIP122_TO_CHAINID[chain_id[0]]);
+                chainids.push(BIP122_TO_CHAINID[chainid[0]]);
             }
         });
 
@@ -450,10 +450,10 @@ export class PackageController {
         await Promise.all(Object.entries(entry[1]).map(async (entry2: any): Promise<void> => {
             let contract_instance_name: string = entry2[0];
             let ethpm_deployment: ContractInstance = entry2[1];
-            let pclassi, chain_id: string[], compiler;
+            let pclassi, chainid: string[], compiler;
             let deploymentId: string;
 
-            chain_id = bip122UriToChainId(bip122_uri);
+            chainid = bip122UriToChainId(bip122_uri);
 
             pclassi = {
                 packageid: ppackage._id,
@@ -467,9 +467,9 @@ export class PackageController {
                     deployment_bytecode: ethpm_deployment.deployment_bytecode,
                     // constructorArgs,
                     compiler: ethpm_deployment.compiler,
-                    chain_id: BIP122_TO_CHAINID[chain_id[0]],
-                    genesis_hash: chain_id[0],
-                    block_hash: chain_id[2],
+                    chainid: BIP122_TO_CHAINID[chainid[0]],
+                    genesis_hash: chainid[0],
+                    block_hash: chainid[2],
                     bip122_uri: bip122_uri,
                 }
             }
