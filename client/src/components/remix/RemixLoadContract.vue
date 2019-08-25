@@ -141,7 +141,7 @@ export default {
             deployment_info = {
                 pclassi: {
                     address,
-                    chain_id: this.chain,
+                    chainid: this.chain,
                 }
             };
 

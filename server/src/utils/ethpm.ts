@@ -46,7 +46,7 @@ export let pipeToEthpm = async (
     };
 
     pclassii.forEach((pclassi: any) => {
-        let bip122_uri = pclassi.pclassi.bip122_uri || chainIdToBip122Uri(pclassi.pclassi.chain_id, pclassi.pclassi.block);
+        let bip122_uri = pclassi.pclassi.bip122_uri || chainIdToBip122Uri(pclassi.pclassi.chainid, pclassi.pclassi.block);
 
         if (!deployments[bip122_uri]) {
             deployments[bip122_uri] = {}
