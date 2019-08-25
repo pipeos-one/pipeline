@@ -9,10 +9,16 @@
             </template>
             <template slot="header">
                 <div>
+                    <v-btn
+                        @click="openInfo(item)"
+                        icon small
+                    >
+                        <v-icon light small>fa-info</v-icon>
+                    </v-btn>
                     <v-tooltip top v-if="loadToRemix">
                         <v-btn
                             v-on:click.stop="$emit('load-remix', item)"
-                            flat icon small
+                            icon small
                             slot="activator"
                         >
                             <v-icon light small>fa-upload</v-icon>
@@ -22,7 +28,7 @@
 
                     <v-btn v-if="removeItem"
                         v-on:click.stop="$emit('remove-item', item)"
-                        flat icon small
+                        icon small
                     >
                         <v-icon light small>fa-times</v-icon>
                     </v-btn>
@@ -74,13 +80,43 @@
                 </template>
             </v-list>
         </v-expansion-panel-content>
+        <v-dialog v-model="infoDialog" hide-overlay max-width="600px">
+          <v-card v-if="selected">
+            <v-card-actions>
+              <v-spacer></v-spacer>
+              <v-btn icon small @click="infoDialog = false">
+                <v-icon light small>fa-times</v-icon>
+              </v-btn>
+            </v-card-actions>
+            <v-card-text>
+              <ContractInfo :container="selected"/>
+            </v-card-text>
+          </v-card>
+        </v-dialog>
     </v-expansion-panel>
 </template>
 
 <script>
+import ContractInfo from './modals/ContractInfo';
+
 export default {
     props: ['items', 'loadToRemix', 'loadToTree', 'removeItem'],
-}
+    components: {
+        ContractInfo,
+    },
+    data() {
+        return {
+            infoDialog: false,
+            selected: null,
+        };
+    },
+    methods: {
+        openInfo(item) {
+            this.selected = item;
+            this.infoDialog = true;
+        },
+    },
+};
 </script>
 
 <style>
