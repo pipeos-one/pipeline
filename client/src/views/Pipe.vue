@@ -640,36 +640,38 @@ export default {
         container.functions = this.buildFunctionsFromContainer(container);
         this.selectedTreeContainers.push(container);
     },
-    saveFromRemix(container, deployment) {
+    async saveFromRemix(container, deployment) {
+        let pclass, pclassi;
         if (!container.tags) container.tags = [];
         container.tags.push('solidity');
         container.tags.push('uncurated');
 
-        Vue.axios.post(`${containerApi}/similar`, {bytecode: container.pclass.runtime_bytecode.bytecode})
-        .then((response) => {
-            let existant = response.data[0];
-            let chainid = deployment.pclassi.chainid;
+        const similar = await Vue.axios.post(`${containerApi}/similar`, {
+            bytecode: container.pclass.runtime_bytecode.bytecode
+        }).catch(console.log);
+        pclass = similar.data[0];
+        const chainid = deployment.pclassi.chainid;
 
-            // Insert new container only if there is no other container with the same bytecode
-            if (!existant) {
-                console.info('Inserting new container and functions');
-                container.chainids = [chainid];
-                return Vue.axios.post(containerFunctionsApi, container);
-            }
+        // Insert new container only if there is no other container with the same bytecode
+        if (!pclass) {
+            console.info('Inserting new container and functions');
+            container.chainids = [chainid];
+            pclass = await Vue.axios.post(containerFunctionsApi, container)
+              .catch(console.log);
+            pclass = pclass.data;
+        }
 
-            response.data = existant
-            return response;
-        }).then((response) => {
-            // Connect deployed instance with container
-            deployment.pclassid = response.data._id;
-            return Vue.axios.post(containerDeployedApi, deployment);
-        }).then((response) => {
-            // Reload data after insert, to include information in the paginated list
-            // TODO: insert this locally without a server request
-            this.loadData({}, true);
-        }).catch(function (error) {
-            console.log(error);
-        });
+        // Connect deployed instance with container
+        deployment.pclassid = pclass._id;
+        pclassi = await Vue.axios.post(containerDeployedApi, deployment).catch(console.log);
+        pclassi = pclassi.data;
+        pclass.deployment = pclassi;
+        pclass.functions = this.buildFunctionsFromContainer(pclass);
+        this.selectedTreeContainers.push(pclass);
+
+        // Reload data after insert, to include information in the paginated list
+        // TODO: insert this locally without a server request
+        this.loadData({}, true);
     },
     onLoadFromEthpm: function(type, hash) {
         Vue.axios.get(`${packageApi}/storage/${type}/${hash}`).then((response) => {
