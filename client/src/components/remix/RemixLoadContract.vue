@@ -32,7 +32,8 @@
 import Pipeos from '../../namespace/namespace';
 import SimpleModal from '../modals/SimpleModal';
 import {compiledContractProcess} from '../../utils/utils';
-import {deployOnJVM} from './utils.js';
+import {deployOnJVM} from './utils';
+import {getWeb3} from '../../utils/web3connect';
 
 export default {
     components: {
@@ -95,10 +96,10 @@ export default {
                 'network',
                 'getNetworkProvider'
             );
-            this.setNetworkInfo(provider);
+            await this.setNetworkInfo(provider);
             Pipeos.remixClient.on('network', 'providerChanged', this.setNetworkInfo);
         },
-        setNetworkInfo(provider) {
+        async setNetworkInfo(provider) {
             // provider = injected | web3 | vm
             if (!provider) {
                 this.modalIsActive = true;
@@ -114,7 +115,7 @@ export default {
                 this.chain = 'JavaScriptVM';
                 this.deployPipeProxy();
             } else if (provider === 'injected') {
-                this.web3 = window.web3;
+                this.web3 = await getWeb3();
                 this.chain = this.web3.version.network;
             }
             this.modalIsActive = false;
