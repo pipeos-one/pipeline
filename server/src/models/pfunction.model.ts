@@ -4,6 +4,10 @@ import {Graph} from './graph.model';
 import {AbiFunction} from '../interfaces/gapi';
 import {Natspec} from '../interfaces/natspec';
 
+export interface PFunctionSources {
+  [key: string]: string;
+}
+
 @model()
 export class AbstractFunction extends Model {
     @property({
@@ -19,10 +23,9 @@ export class AbstractFunction extends Model {
     natspec: Natspec;
 
     @property({
-      type: 'string',
-      required: true,
+      type: 'object',
     })
-    source: string;
+    sources: PFunctionSources;
 
     @property({
       type: 'string',

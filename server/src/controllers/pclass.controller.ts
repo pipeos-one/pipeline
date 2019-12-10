@@ -18,7 +18,7 @@ import {
 } from '@loopback/rest';
 import {
   PClass, SolClass, JsClass, PFunction, PClassI,
-  SolInstance, SolFunction, Bytecode,
+  SolInstance, SolFunction, Bytecode, PFunctionSources,
 } from '../models';
 import {PClassRepository} from '../repositories';
 import {PFunctionController, PClassIController} from '../controllers';
@@ -284,13 +284,17 @@ export class PClassController {
         }
         signature = funcapi.name ? `${funcapi.name}(${signature})` : undefined;
         sourceByFunctionName = (<JsClass>pclass.pclass).sourceByFunctionName;
+        const sources: PFunctionSources = {};
+        if (sourceByFunctionName) {
+          sources[pclass.type] = sourceByFunctionName[funcapi.name];
+        }
         functiondoc = {
             pfunction: {
                 signature,
                 gapi: funcapi,
                 natspec: signature ? natspec.methods[signature] : undefined,
                 chainids: pclass.chainids,
-                source: sourceByFunctionName ? sourceByFunctionName[funcapi.name] : undefined,
+                sources,
             },
             uri: pclass.uri,
             tags: pclass.tags,
