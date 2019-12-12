@@ -128,6 +128,7 @@
                         :key="n"
                         class="fullheight swiper-margin"
                     >
+                        <canvas :id="'draw_canvas' + n"></canvas>
                         <PipeCanvas :id="'draw_' + n"/>
                     </v-tab-item>
                 </v-tabs>
@@ -142,7 +143,7 @@
                 :contractSource="contractSource"
                 :deploymentInfo="deploymentInfo"
                 :jsSource="jsSource"
-                :graphSource="graphSource"
+                :graphsSource="graphsSource"
                 :graphsAbi="graphsAbi"
                 v-on:load-remix="pipedLoadToRemix"
                 v-on:set-graphs="setCanvasGraph"
@@ -176,8 +177,11 @@
 </template>
 
 <script>
+/* eslint-disable */
+
 import Vue from 'vue';
 import PipeGraphs from '@pipeos/pipecanvas';
+import createPipeCanvas from '@pipeos/pipecanvas/src/newpipecanvas';
 import {pfunctionColorClass} from '@pipeos/pipecanvas/src/utils';
 import Pipeos from '../namespace/namespace';
 import PaginatedList from '../components/PaginatedList';
@@ -260,9 +264,10 @@ export default {
         contractSource: '',
         deploymentInfo: [],
         jsSource: '',
-        graphSource: '',
+        graphsSource: [],
         graphsAbi: null,
         graphInstance: null,
+        pipeGraphs: [],
         pipedContracts: {},
         ethpmDialog: false,
         exportToEthpmResult: null,
@@ -390,7 +395,7 @@ export default {
                 onGraphChange: () => {
                     let deployment_info;
                     this.contractSource = this.graphInstance.getSource('solidity');
-                    this.graphSource = JSON.stringify(this.graphInstance.getSource('graphs'));
+                    this.graphsSource = this.graphInstance.getSource('graphs');
                     this.jsSource = this.graphInstance.getSource('javascript');
                     this.graphsAbi = this.graphInstance.getSource('abi');
                     deployment_info = this.graphInstance.getSource('constructor');
@@ -432,9 +437,45 @@ export default {
             }
         );
         this.graphInstance.addGraph(`draw_${this.activeCanvas + 1}`);
+
+        const newgraph = createPipeCanvas(
+          this.prepGraphContext(this.selectedFunctions.reduce((flattened, subarray) => flattened.concat(subarray), [])),
+          this.graphsSource[this.activeCanvas],
+          {
+            domid: `#draw_canvas${this.activeCanvas + 1}`,
+            width: 600,
+            height: 400,
+          }
+        );
+        newgraph.onChange(new_gr => {
+          const graphsSource = JSON.parse(JSON.stringify(this.graphsSource));
+          graphsSource[this.activeCanvas] = new_gr.rich_graph.init;
+          this.graphsSource = graphsSource;
+        });
+        newgraph.show();
+
+        const graphs = this.pipeGraphs;
+        graphs[this.activeCanvas] = newgraph;
+        this.pipeGraphs = graphs;
     },
+
+    prepGraphContext: function(funcs) {
+      let context = {};
+      funcs.forEach(pfunction => {
+        context[pfunction._id] = {
+          _id: pfunction._id,
+          pclassid: pfunction.pclassid,
+          pfunction: pfunction.pfunction,
+          timestamp: pfunction.timestamp,
+        }
+      });
+      return context;
+    },
+
     addToCanvas: function(pfunction, index) {
         this.graphInstance.addFunction(pfunction, index);
+        const pfunc = this.prepGraphContext([pfunction])[pfunction._id];
+        this.pipeGraphs[this.activeCanvas].addFunction(pfunc);
     },
     onSearchSelectQuery: function(query) {
         this.changePage(1);

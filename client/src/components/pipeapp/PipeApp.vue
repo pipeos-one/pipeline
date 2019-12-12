@@ -127,7 +127,7 @@
                         <v-btn
                             small flat fab
                             slot="activator"
-                            v-on:click="clipboardCopy('graphSource')"
+                            v-on:click="clipboardCopy('graphsSource')"
                         >
                             <v-icon>fa-copy</v-icon>
                         </v-btn>
@@ -166,10 +166,10 @@
                     </div>
                 </v-toolbar>
                 <textarea
-                    ref='graphSource'
+                    ref='graphsSource'
                     class='source-txtar'
                     v-on:change="setGraphs"
-                >{{graphSourceLast}}</textarea>
+                >{{graphsSourceLast}}</textarea>
             </v-tab-item>
             <v-tab-item
                 key="qrcode"
@@ -205,10 +205,10 @@ export default {
         PipeGraph,
         VueQrcode,
     },
-    props: ['chainid', 'contractSource', 'graphSource', 'jsSource', 'deploymentInfo', 'graphsAbi'],
+    props: ['chainid', 'contractSource', 'graphsSource', 'jsSource', 'deploymentInfo', 'graphsAbi'],
     data: () => ({
         contractSourceLast: '',
-        graphSourceLast: '',
+        graphsSourceLast: '',
         jsSourceLast: '',
         deploymentInfoLast: '',
         deploymentInfoMap: '',
@@ -228,8 +228,8 @@ export default {
         contractSource: function() {
             this.contractSourceLast = this.contractSource;
         },
-        graphSource: function() {
-            this.graphSourceLast = this.graphSource;
+        graphsSource: function() {
+            this.graphsSourceLast = JSON.stringify(this.graphsSource);
         },
         jsSource: function() {
             this.jsSourceLast = this.jsSource;
@@ -260,7 +260,7 @@ export default {
         },
         setInitialData: function() {
             this.contractSourceLast = this.contractSource;
-            this.graphSourceLast = this.graphSource;
+            this.graphsSourceLast = JSON.stringify(this.graphsSource);
             this.jsSourceLast = this.jsSource;
             let self = this;
 
@@ -313,7 +313,7 @@ export default {
             setTimeout(() => this.runSource('jsSource'), 1000);
         },
         setGraphs: function() {
-            let graphs = this.$refs['graphSource'].value;
+            let graphs = this.$refs['graphsSource'].value;
             if (graphs) {
                 // TODO handle validation after using a proper v-textarea with error messages
                 // validate json & graph format (build json schema)
@@ -322,7 +322,7 @@ export default {
         },
         savePipeGraph: function() {
           const graphData = this.pipegraphData;
-          graphData.json = this.$refs['graphSource'].value;
+          graphData.json = this.$refs['graphsSource'].value;
           graphData.chainids = [this.chainid];
 
           axios.post(Pipeos.pipeserver.api.graph, graphData).then((response) => {
