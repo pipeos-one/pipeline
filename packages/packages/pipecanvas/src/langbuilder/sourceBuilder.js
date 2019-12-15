@@ -2,7 +2,9 @@ import {enrichedGraphSteps} from './enrichedNodes';
 
 const sourceBuilder = (langBuilder) => (enrichedGraph) => {
   if (!langBuilder) throw new Error('Language not available');
-
+  if (enrichedGraph.runnable_graph.length === 0) {
+    return {source: '', inputs: [], outputs: []};
+  }
   const enrichedNodes = enrichedGraphSteps(enrichedGraph);
   const inputs = enrichedNodes.shift();
   let outputs = enrichedNodes.pop();
