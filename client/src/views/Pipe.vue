@@ -182,6 +182,8 @@
 import Vue from 'vue';
 import PipeGraphs from '@pipeos/pipecanvas';
 import createPipeCanvas from '@pipeos/pipecanvas/src/newpipecanvas';
+import sourceBuilder from '@pipeos/pipecanvas/src/langbuilder/sourceBuilder';
+import solidityBuilder from '@pipeos/pipecanvas/src/langbuilder/solidityBuilder';
 import {pfunctionColorClass} from '@pipeos/pipecanvas/src/utils';
 import Pipeos from '../namespace/namespace';
 import PaginatedList from '../components/PaginatedList';
@@ -449,14 +451,13 @@ export default {
         );
         newgraph.onChange(new_gr => {
           const graphsSource = JSON.parse(JSON.stringify(this.graphsSource));
-          graphsSource[this.activeCanvas] = new_gr.rich_graph.init;
-          this.graphsSource = graphsSource;
+          this.graphsSource[this.activeCanvas] = graphsSource;
+          this.contractSource = sourceBuilder(solidityBuilder)(new_gr).source;
         });
         newgraph.show();
 
         const graphs = this.pipeGraphs;
-        graphs[this.activeCanvas] = newgraph;
-        this.pipeGraphs = graphs;
+        this.pipeGraphs[this.activeCanvas] = newgraph;
     },
 
     prepGraphContext: function(funcs) {
