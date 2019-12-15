@@ -5,7 +5,7 @@ const _ = require ('sanctuary-def');
 const bigInt = require("big-integer");
 window.S = S;
 
-let pipe = function() {
+function pipe() {
   let pipejs = {
     sol: {},
     settings: {
@@ -13,6 +13,25 @@ let pipe = function() {
       baseurl: "http://example.com/my-package#",
     }
   }
+  const PFUNC_IO = (step_out, typing) => {
+    return {
+      "_id": pipejs.settings.id + step_out,
+      "pclassid":"5c95397d4212cc40afeec914",
+      "pfunction":{
+        "signature":"io",
+        "sources": {"javascript":"f=>f"},
+        "graph":{},
+        "gapi":{"constant":true,"inputs":[{"name":typing.name,"type": typing.type}],"name":"io","outputs":[{"name":"o","type": typing.type}],"payable":false,"stateMutability":"view","type":"function"},
+        // "chainids":["3"]
+      },
+      // "tags": ["pipeline"],
+      // "categories":{
+      //   "tags":[]
+      // },
+      "timestamp":"2019-03-22T14:38:36.112Z",
+    }
+  }
+
   let sol = {}
   let zero = bigInt();
   let two = bigInt(2);
@@ -158,7 +177,7 @@ pl["func_abi"] = _.RecordType({
   "type": pl["abi_type"],
   "name": _.String,
   "inputs": _.Array (pl["io"]),
-  "outputs": _.Array (pl["io"]),
+  "outputs": _.Any, // _.Array (pl["io"]),
   "constant": _.Boolean,
   "payable": _.Boolean,
   "stateMutability": pl["abi_mutability"],
@@ -172,8 +191,9 @@ pl["db_func"] = _.RecordType({
   "pfunction": _.RecordType({
     "signature": _.String,
     "gapi": pl["func_abi"],
+    "graph": _.Any,
+    // "chainids": _.Array (_.String),
     "sources": _.StrMap (_.String),
-    "graph": _.Any
   }),
   // "tags": _.Array (_.String),
   // "categories": _.StrMap (_.Any),
@@ -389,7 +409,9 @@ pl["runtime_graph"] = _.RecordType({
             }
             let typing  = context[n.id].pfunction.gapi.outputs[i-1]
             // console.log(context[n.id].pfunction.gapi.outputs, i)
-            pipejs.indexed_func[pipejs.settings.id+step_out]  = {"_id": pipejs.settings.id + step_out,"pclassid":"5c95397d4212cc40afeec914","pfunction":{"signature":"io", "sources": {"javascript":"f=>f"}, "graph":{}, "gapi":{"constant":true,"inputs":[{"name":typing.name,"type": typing.type}],"name":"io","outputs":[{"name":"o","type": typing.type}],"payable":false,"stateMutability":"view","type":"function"},"chainids":["3"]},"categories":{"tags":["Pipeline Demo Package","ethpm","pipeline","ethpm"]},"timestamp":"2019-03-22T14:38:36.112Z", graph: {}}
+
+            pipejs.indexed_func[pipejs.settings.id+step_out] = PFUNC_IO(step_out, typing);
+
             added_nodes[step_out]  = no
             added_edges.push([n.i, i, step_out, 1])
             n.out[""+i]= [[step_out, 1]]
@@ -403,7 +425,9 @@ pl["runtime_graph"] = _.RecordType({
             in:{}, out:{"1":[[n.i, i]]}, position: {x: 0, y:0}, svg_id: ""}
             let typing  = context[n.id].pfunction.gapi.inputs[i-1]
             // console.log(context[n.id].pfunction.gapi.inputs, i)
-            pipejs.indexed_func[pipejs.settings.id + step_in]  = {"_id": pipejs.settings.id +step_in,"pclassid":"5c95397d4212cc40afeec914","pfunction":{"signature":"io", "sources": {"javascript":"f=>f"},"graph":{}, "gapi":{"constant":true,"inputs":[{"name": "i","type": typing.type}],"name":"io","outputs":[{"name":typing.name,"type": typing.type}],"payable":false,"stateMutability":"view","type":"function"},"chainids":["3"]},"categories":{"tags":["Pipeline Demo Package","ethpm","pipeline","ethpm"]},"timestamp":"2019-03-22T14:38:36.112Z", graph: {}}
+
+            pipejs.indexed_func[pipejs.settings.id + step_in] = PFUNC_IO(step_out, typing);
+
             added_nodes[step_in]  = on
             added_edges.push([step_in, 1, n.i, i])
             n.in[""+i] = [step_in, 1]
@@ -510,8 +534,11 @@ pl["runtime_graph"] = _.RecordType({
           args  = runtime[""+y]
         }
 
+        args = args || [];
+
         if (contxt.pfunction.gapi.type == "function") {
           //let ans, func
+
           if (Object.getOwnPropertyNames(contxt.pfunction.graph).length > 0) {
             //console.log("------", contxt.pfunction.graph, node)
             ans = pipejs.run_graph (pipejs.make_runtime (pipejs.indexed_func) (pipejs.enrich_graph (pipejs.indexed_func) (contxt.pfunction.graph))) (args);

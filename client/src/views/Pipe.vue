@@ -469,6 +469,9 @@ export default {
           pfunction: pfunction.pfunction,
           timestamp: pfunction.timestamp,
         }
+        context[pfunction._id].pfunction.graph = context[pfunction._id].pfunction.graph || {};
+        context[pfunction._id].pfunction.sources = context[pfunction._id].pfunction.sources || {};
+        delete context[pfunction._id].pfunction.chainids;
       });
       return context;
     },

@@ -1,5 +1,8 @@
-export function enrichedGraphSteps({rich_graph, runnable_graph, context}) {
+function enrichedGraphSteps(fullgraph) {
+  const graphCopy = JSON.parse(JSON.stringify(fullgraph));
+  const {rich_graph, runnable_graph, context} = graphCopy;
   let contextCopy = {};
+
   Object.keys(rich_graph.n).forEach(nodeIndex => {
     const node = rich_graph.n[nodeIndex];
     const contextKey = `${node.id}_${nodeIndex}`;
@@ -49,3 +52,5 @@ export function enrichedGraphSteps({rich_graph, runnable_graph, context}) {
 
   return enrichedNodes;
 }
+
+export {enrichedGraphSteps};
