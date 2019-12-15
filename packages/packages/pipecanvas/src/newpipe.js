@@ -2,25 +2,18 @@
 
 const S = require ('sanctuary');
 const _ = require ('sanctuary-def');
-
+const bigInt = require("big-integer");
 window.S = S;
-
-let bigInt = require("big-integer");
-let zero = bigInt();
-let two = new bigInt(2)
-
-
-let settings = {
-  id: "5bc59e192817116e84bdd831",
-  baseurl: "http://example.com/my-package#",
-}
-
-let sol = {}
-let pl = {}
 
 let pipe = function() {
   //console.log(S.map)
-  let pipejs = { sol: {}}
+  let pipejs = {
+    sol: {},
+    settings: {
+      id: "5bc59e192817116e84bdd831",
+      baseurl: "http://example.com/my-package#",
+    }
+  }
   let sol = {}
   let zero = bigInt();
   let two = bigInt(2);
@@ -78,7 +71,7 @@ let pipe = function() {
   types.map(x=>pipejs.addType(x[0],x[1]))
 
   let pl = {}
-  pl["mongoid"] = _.NullaryType  ('mongoid') (settings.baseurl+'mongoid') ([])
+  pl["mongoid"] = _.NullaryType  ('mongoid') (pipejs.settings.baseurl+'mongoid') ([])
   (x => S.is (_.String) (x)// && bigInt(x, 16).geq(0) && bigInt(x, 16).lesser(two.pow(12*8))
   )
   pl["node"] = _.RecordType({"i": _.Number, "id": pl["mongoid"]})
@@ -94,10 +87,10 @@ pl["rich_node"] = _.RecordType({
     "edges": _.Array (_.String)
   })
 
-pl["edge"] = _.NullaryType  ('edge') (settings.baseurl+'edge') ([])
+pl["edge"] = _.NullaryType  ('edge') (pipejs.settings.baseurl+'edge') ([])
   (x => S.is (_.Array (_.Number)) (x) && S.equals (4) (x.length) )
 
-pl["rich_edge"] = _.NullaryType  ('edge') (settings.baseurl+'edge') ([])
+pl["rich_edge"] = _.NullaryType  ('edge') (pipejs.settings.baseurl+'edge') ([])
   (x  => S.is (_.RecordType({
     "e": pl["edge"], "svg_id": _.String, "type": _.String
     })) (x) &&
@@ -109,20 +102,20 @@ pl["nodes"] = _.StrMap (pl["node"])
 pl["rich_nodes"] = _.StrMap (pl["rich_node"])
 pl["edges"] = _.Array (pl["edge"])
 pl["runtime"]  = _.Array (_.Any)
-pl["graph"] = _.NullaryType  ('graph') (settings.baseurl+'graph') ([])
+pl["graph"] = _.NullaryType  ('graph') (pipejs.settings.baseurl+'graph') ([])
   (
     x => S.is (_.RecordType({"n": pl["nodes"], "e": pl["edges"], r: pl["runtime"]})) (x)
     //&& S.map (edge => (x.n[edge[0]] || x.r[edge[0]]) && (x.n[edge[2]] || x.r[edge[2]]) (x.e) )
 
       )
-pl["rich_graph"] = _.NullaryType  ('rich_graph') (settings.baseurl+'rich_graph') ([])
+pl["rich_graph"] = _.NullaryType  ('rich_graph') (pipejs.settings.baseurl+'rich_graph') ([])
   (
     x => S.is (_.RecordType({ "n": pl["rich_nodes"], "e": pl["edges"], "r": pl["runtime"], init: pl["graph"]})) (x)
   )
 
 pl["graph_history"] = _.Array (pl["graph"])
 
-pl["io"]  = _.NullaryType ('io') (settings.baseurl+'graph') ([])
+pl["io"]  = _.NullaryType ('io') (pipejs.settings.baseurl+'graph') ([])
     ( x =>
       S.is (_.RecordType({"name": _.String, "type": _.String})) (x) &&
       S.is (_.Type) (sol[x.type])
@@ -130,12 +123,12 @@ pl["io"]  = _.NullaryType ('io') (settings.baseurl+'graph') ([])
 
 pl["abi_type"]  = _.EnumType
   ('abi_type')
-  (settings.baseurl+'abi_type')
+  (pipejs.settings.baseurl+'abi_type')
   (["function", "constructor",  "fallback", "event", "string"]);
 
 pl["abi_mutability"]  = _.EnumType
   ('abi_mutability')
-  (settings.baseurl+'abi_mutability')
+  (pipejs.settings.baseurl+'abi_mutability')
   (["pure", "view", "nonpayable", "payable"]);
 
 pl["func_abi"] = _.RecordType({
@@ -196,8 +189,8 @@ pl["runtime_graph"] = _.RecordType({
     ([pl["graph"], _.Object, pl["graph"]])
     (graph =>  edge => variable => {
       let graph2 = JSON.parse(JSON.stringify(graph))
-      settings.runstep ++
-      graph2.r[settings.runstep] = variable
+      pipejs.settings.runstep ++
+      graph2.r[pipejs.settings.runstep] = variable
       return pipejs.add_edge (graph2) (edge)
     });
 
@@ -361,11 +354,11 @@ pl["runtime_graph"] = _.RecordType({
     S.map (
       n => {
         for (let i = 1 ; i <=context[n.id].pfunction.gapi.outputs.length; i++){
-          if (!(""+i in n.out) && n.id != settings.id) {
+          if (!(""+i in n.out) && n.id != pipejs.settings.id) {
             let no = {
               i: step_out,
               svg_id: "",
-              id: settings.id+step_out,
+              id: pipejs.settings.id+step_out,
               in:{"1": [n.i, i]},
               out:{},
               position: {x: 0, y:0} ,
@@ -373,7 +366,7 @@ pl["runtime_graph"] = _.RecordType({
             }
             let typing  = context[n.id].pfunction.gapi.outputs[i-1]
             // console.log(context[n.id].pfunction.gapi.outputs, i)
-            pipejs.indexed_func[settings.id+step_out]  = {"_id": settings.id + step_out,"pclassid":"5c95397d4212cc40afeec914","pfunction":{"signature":"io", "sources": {"javascript":"f=>f"}, "graph":{}, "gapi":{"constant":true,"inputs":[{"name":typing.name,"type": typing.type}],"name":"io","outputs":[{"name":"o","type": typing.type}],"payable":false,"stateMutability":"view","type":"function"},"chainids":["3"]},"categories":{"tags":["Pipeline Demo Package","ethpm","pipeline","ethpm"]},"timestamp":"2019-03-22T14:38:36.112Z", graph: {}}
+            pipejs.indexed_func[pipejs.settings.id+step_out]  = {"_id": pipejs.settings.id + step_out,"pclassid":"5c95397d4212cc40afeec914","pfunction":{"signature":"io", "sources": {"javascript":"f=>f"}, "graph":{}, "gapi":{"constant":true,"inputs":[{"name":typing.name,"type": typing.type}],"name":"io","outputs":[{"name":"o","type": typing.type}],"payable":false,"stateMutability":"view","type":"function"},"chainids":["3"]},"categories":{"tags":["Pipeline Demo Package","ethpm","pipeline","ethpm"]},"timestamp":"2019-03-22T14:38:36.112Z", graph: {}}
             added_nodes[step_out]  = no
             added_edges.push([n.i, i, step_out, 1])
             n.out[""+i]= [[step_out, 1]]
@@ -382,12 +375,12 @@ pl["runtime_graph"] = _.RecordType({
         }
 
         for (let i = 1 ; i <=context[n.id].pfunction.gapi.inputs.length; i++){
-          if (!(""+i in n.in) && n.id != settings.id) {
-            let on = {edges: [], i: step_in, id: settings.id +step_in,
+          if (!(""+i in n.in) && n.id != pipejs.settings.id) {
+            let on = {edges: [], i: step_in, id: pipejs.settings.id +step_in,
             in:{}, out:{"1":[[n.i, i]]}, position: {x: 0, y:0}, svg_id: ""}
             let typing  = context[n.id].pfunction.gapi.inputs[i-1]
             // console.log(context[n.id].pfunction.gapi.inputs, i)
-            pipejs.indexed_func[settings.id + step_in]  = {"_id": settings.id +step_in,"pclassid":"5c95397d4212cc40afeec914","pfunction":{"signature":"io", "sources": {"javascript":"f=>f"},"graph":{}, "gapi":{"constant":true,"inputs":[{"name": "i","type": typing.type}],"name":"io","outputs":[{"name":typing.name,"type": typing.type}],"payable":false,"stateMutability":"view","type":"function"},"chainids":["3"]},"categories":{"tags":["Pipeline Demo Package","ethpm","pipeline","ethpm"]},"timestamp":"2019-03-22T14:38:36.112Z", graph: {}}
+            pipejs.indexed_func[pipejs.settings.id + step_in]  = {"_id": pipejs.settings.id +step_in,"pclassid":"5c95397d4212cc40afeec914","pfunction":{"signature":"io", "sources": {"javascript":"f=>f"},"graph":{}, "gapi":{"constant":true,"inputs":[{"name": "i","type": typing.type}],"name":"io","outputs":[{"name":typing.name,"type": typing.type}],"payable":false,"stateMutability":"view","type":"function"},"chainids":["3"]},"categories":{"tags":["Pipeline Demo Package","ethpm","pipeline","ethpm"]},"timestamp":"2019-03-22T14:38:36.112Z", graph: {}}
             added_nodes[step_in]  = on
             added_edges.push([step_in, 1, n.i, i])
             n.in[""+i] = [step_in, 1]
