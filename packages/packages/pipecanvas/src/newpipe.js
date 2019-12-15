@@ -6,7 +6,6 @@ const bigInt = require("big-integer");
 window.S = S;
 
 let pipe = function() {
-  //console.log(S.map)
   let pipejs = {
     sol: {},
     settings: {
@@ -17,6 +16,30 @@ let pipe = function() {
   let sol = {}
   let zero = bigInt();
   let two = bigInt(2);
+
+  let cast = type => obj => {
+    const names = Object.keys (type.types);
+    const types = Object.values (type.types);
+    const values = Object.values (obj);
+    return values.length === types.length &&
+           values.every ((v, idx) => S.is (types[idx]) (v))
+           ? S.unchecked.fromPairs (S.unchecked.zip (names) (values))
+           : S.Nothing;
+  };
+
+  let env = _.env;
+
+  let def = _.create ({
+    checkTypes: true,
+    env,
+  });
+
+  let like = t1 => t2 =>
+    t1.type === 'RECORD' &&
+    t2.type === 'RECORD' &&
+    S.equals (Object.values (t1.types)) (Object.values (t2.types));
+
+
   S.map (((y)=>{
   sol["uint"+y*8] = _.NullaryType
   ('uint'+y*8)
@@ -578,28 +601,5 @@ pl["runtime_graph"] = _.RecordType({
   return pipejs;
 
 }
-
-let cast = type => obj => {
-  const names = Object.keys (type.types);
-  const types = Object.values (type.types);
-  const values = Object.values (obj);
-  return values.length === types.length &&
-         values.every ((v, idx) => S.is (types[idx]) (v))
-         ? S.unchecked.fromPairs (S.unchecked.zip (names) (values))
-         : S.Nothing;
-};
-
-let env = _.env;
-
-let def = _.create ({
-  checkTypes: true,
-  env,
-});
-
-let like = t1 => t2 =>
-  t1.type === 'RECORD' &&
-  t2.type === 'RECORD' &&
-  S.equals (Object.values (t1.types))
-           (Object.values (t2.types));
 
 export default pipe;
