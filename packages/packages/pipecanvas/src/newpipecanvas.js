@@ -19,17 +19,28 @@ let DEFAULT_OPTIONS = {
   height: 600,
   domid: '#pipegraph',
 }
-let types = {
+let DEFAULT_TYPE_OPTIONS = {
   "number": {color: "#355"},
   "number[]": {color: "#463"},
   "function": {color: "#562"},
   "string": {color: "#662"},
 }
+let DEFAULT_CONTEXT = {
+  "5bc59e192817116e84bdd831": {
+    "_id":"5bc59e192817116e84bdd831","pclassid":"5dbaa731f18ff7488e9b108b","pfunction":{"signature":"id(x)","gapi":{"constant":true,"inputs":[],"name":"id","outputs":[{"type":"string","name":"id"}],"payable":false,"stateMutability":"pure","type":"function"},
+    "graph":{},
+    "sources":{"javascript.rust":"() => rust.id()","javascript":"(x)=>x"}},
+    // "categories":{"languages":["javascript.rust","javascript"]},
+    "timestamp":"2019-11-06T19:22:53.807Z"
+  }
+}
 
-function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
+
+function pipecanvas(initialcontext = {}, pipegraph = {}, options={}) {
   if (!pipegraph || !(pipegraph instanceof Object) || Object.keys(pipegraph).length === 0) {
     pipegraph = Object.assign({}, DEFAULT_GRAPH);
   }
+  let fcontext = Object.assign({}, DEFAULT_CONTEXT, initialcontext);
 
   let pipeopts = Object.assign({}, DEFAULT_OPTIONS, options);
   let graph1 = {}
@@ -134,7 +145,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
 
           let nearest = nearestf(coords)
           if (nearest){
-            console.log("ddrag neeear", nearest)
+            // console.log("ddrag neeear", nearest)
               current_edge.pos = [current_edge.pos[0], current_edge.pos[1], nearest.x, nearest.y]
               current_edge.target = nearest
           } else {
@@ -189,24 +200,18 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
       if (current_edge.source.i > 2999) {
         new_gr = add_edge_to_input(current_edge)
       } else {
-      new_gr = JSON.parse(JSON.stringify(current_stage.settings.r_graph.rich_graph.init))
-      new_gr = pipe1.add_edge (new_gr) ([current_edge.source.i, current_edge.source.port, current_edge.target.port.i, current_edge.target.port.port] )
+        new_gr = JSON.parse(JSON.stringify(current_stage.settings.r_graph.rich_graph.init))
+        new_gr = pipe1.add_edge (new_gr) ([current_edge.source.i, current_edge.source.port, current_edge.target.port.i, current_edge.target.port.port] )
       }
-    }
-    console.log('dend new_gr', new_gr);
-    if (
-      new_gr && JSON.stringify(new_gr) !== JSON.stringify(
-        current_stage.settings.r_graph.rich_graph.init
-      )
-    ) {
-      new_gr = runnable(new_gr)
 
-      // console.log("dend new_gryyy", new_gr)
+      new_gr = runnable(new_gr)
       current_stage.settings.r_graph = new_gr
-      current_edge = {pos:[], target: false}
-      current_edge.target = false
-      redraw()
+      console.log( "new_gryyy", new_gr)
     }
+
+    current_edge = {pos:[], target: false}
+    current_edge.target = false
+    redraw()
   }
 
   function add_edge_to_input(current_edge){
@@ -310,7 +315,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     let ndx=0, nw=20
     for (let port1 of node_x.inputs){
       //console.log(port1, pos.x+pos.l+50*ndx, pos.y-20)
-      ctx.fillStyle = types[port1.type].color
+      ctx.fillStyle = DEFAULT_TYPE_OPTIONS[port1.type].color
       let x = pos.x-pos.l/2+pos.steps.w*(ndx+0.5)
       let y = pos.y-pos.h/2
       rect1([ctx,x, y,nw,nw,10,10,0,0])
@@ -330,7 +335,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     ndx=0
     for (let port1 of node_x.outputs){
       //console.log(port1)
-      ctx.fillStyle = types[port1.type].color
+      ctx.fillStyle = DEFAULT_TYPE_OPTIONS[port1.type].color
       let x = pos.x-pos.l/2+pos.steps.w*(ndx+0.5)
       let y = pos.y+pos.h/2
       rect1([ctx, x, y,nw,nw,0,0,10,10])
@@ -351,14 +356,14 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
       var midx = (x2+x1)/2
       var midy = (y2+y1)/2
       let context = ctx2
-      //let color  = types[type].color
+      //let color  = DEFAULT_TYPE_OPTIONS[type].color
       let srt  = "M"+x1+","+y1+"C"+x1+"," +midy+"," +
       midx+","+ midy+","+ midx+","+ midy+
       "C"+midx+"," +midy+","+ x2+","+ midy+"," +x2+","+ y2
       //let scale = 1
       //context.moveTo(x1, y1)
       context.lineCap = "round"
-      context.strokeStyle  =  types[type].color? types[type].color : "#aaaaaa"
+      context.strokeStyle  =  DEFAULT_TYPE_OPTIONS[type].color? DEFAULT_TYPE_OPTIONS[type].color : "#aaaaaa"
       context.lineWidth = 1*scale;
       context.stroke(new Path2D(srt));
       context.closePath();
