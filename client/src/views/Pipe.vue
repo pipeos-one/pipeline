@@ -484,27 +484,28 @@ export default {
             type: pfunction.pclass.type,
           }
         }
-        context[pfunction._id] = {
+        let pfunc = {
           _id: pfunction._id,
           pclassid: pfunction.pclassid,
           pfunction: pfunction.pfunction,
           timestamp: pfunction.timestamp,
           pclass,
         }
-        context[pfunction._id].pfunction.graph = context[pfunction._id].pfunction.graph || {};
-        context[pfunction._id].pfunction.sources = context[pfunction._id].pfunction.sources || {};
-        delete context[pfunction._id].pfunction.chainids;
+        pfunc.pfunction.graph = pfunc.pfunction.graph || {};
+        pfunc.pfunction.sources = pfunc.pfunction.sources || {};
+        delete pfunc.pfunction.chainids;
+        if (pfunc.pclass.type === 'sol') {
+          pfunc = solidityBuilder.enrichAbi(pfunc);
+        }
+        context[pfunction._id] = pfunc;
       });
       return context;
     },
-
     addToCanvas: function(pfunction, index) {
-        this.graphInstance.addFunction(pfunction, index);
         const pfunc = this.prepGraphContext([pfunction])[pfunction._id];
         this.pipeGraphs[this.activeCanvas].addFunction(pfunc);
     },
     clearCanvas: function(activeCanvas) {
-      console.log('clearCanvas')
       this.pipeGraphs[this.activeCanvas].clear();
     },
     onSearchSelectQuery: function(query) {
@@ -595,8 +596,9 @@ export default {
                     }
                 });
             });
+
+            this.pipeGraphs[i].setGraph(graph);
         });
-        this.graphInstance.setGraphs(graphs);
     },
     onTreeToggle: function (pclass) {
         let index = this.selectedTreeContainers.findIndex(container => container._id == pclass._id);

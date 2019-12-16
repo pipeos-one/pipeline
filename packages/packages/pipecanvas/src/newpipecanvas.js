@@ -509,6 +509,15 @@ function pipecanvas(initialcontext = {}, pipegraph = {}, options={}) {
     showGraph();
   }
 
+  function setGraph(graph, initialcontext) {
+    if (initialcontext) {
+      fcontext = Object.assign({}, DEFAULT_CONTEXT, initialcontext);
+      pipe1.indexed_func = fcontext;
+    }
+    current_stage.settings.r_graph = runnable(graph);
+    showGraph();
+  }
+
   let onchangeCallb;
   function onChange(cb) {
     onchangeCallb = cb;
@@ -521,6 +530,7 @@ function pipecanvas(initialcontext = {}, pipegraph = {}, options={}) {
   return {
     show: showGraph,
     getGraph,
+    setGraph,
     pipe: pipe1,
     addFunction,
     clear: clearGraph,
