@@ -27,18 +27,23 @@ const sourceBuilder = (langBuilder) => (enrichedGraph) => {
   const freturn = langBuilder.buildFout(outputs);
   const fsource = fdef + '\n' + body + '\n' + freturn;
 
-  let imports = [...new Set([].concat(
-    ...enrichedNodes.map(row => row.map(langBuilder.buildImports))
-  )).values()].join('\n');
+  const uniqueNodes = [...new Set([].concat(
+    ...enrichedNodes
+  )).values()];
+  const pclassMap = {};
+  uniqueNodes.forEach(node => {
+    if (!pclassMap[node.record.pclassid]) {
+      pclassMap[node.record.pclassid] = {
+        pclass: node.record.pclass,
+        fimports: [],
+      }
+    }
+    pclassMap[node.record.pclassid].fimports.push(node.record);
+  });
 
-  if (langBuilder.buildExtra) {
-    const extra = langBuilder.buildExtra([...new Set([].concat(
-      ...enrichedNodes
-    )).values()]);
-    imports += extra;
-  }
+  const imports = langBuilder.buildImports(pclassMap);
 
-  const source = langBuilder.buildContainer(imports, fsource);
+  const source = imports + langBuilder.buildContainer(pclassMap, fsource);
 
   return {
     source,

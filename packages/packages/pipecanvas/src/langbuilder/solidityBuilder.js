@@ -5,41 +5,53 @@ const typeMap = {
   'function': 'Fn(i32) -> i32',
 }
 
-// TODO: fix node.record.pclassid
-const pclassName = 'i32lib';
+const buildImports = (pclassMap) => {
+  const interfaces = Object.keys(pclassMap).map(pclassid => {
+    const {pclass, fimports} = pclassMap[pclassid];
+    const fdefs = fimports.map(node => {
+      const fname = node.pfunction.gapi.name;
+      const ins = finputs(node.pfunction.gapi.inputs);
+      const outs = foutputs(node.pfunction.gapi.outputs);
+      const retursSource = outs.length === 0 ? '' : `returns (${outs.join(', ')})`;
+      return `function ${fname}(${ins.join(', ')}) external ${retursSource};`;
+    });
 
-const buildImports = (node) => {
+    return `interface ${pclass.name}Interface {
+  ${fdefs.join('\n  ')}
+}`;
+  });
+
   return `pragma solidity ^0.5.4;
 pragma experimental ABIEncoderV2;
 
+${interfaces.join('\n')}
 `
 }
 
-// TODO: fixme - map interfaces over same pclass
-const buildExtra = (nodes) => {
-  const interfaceFuncs = nodes.map(node => {
-    const fname = node.record.pfunction.gapi.name;
-    const ins = finputs(node.record.pfunction.gapi.inputs);
-    const outs = foutputs(node.record.pfunction.gapi.outputs);
-    const retursSource = outs.length === 0 ? '' : `returns (${outs.join(', ')})`;
-    return `function ${fname}(${ins.join(', ')}) external ${retursSource};`;
-  })
-
-  return `interface ${pclassName}Interface {
-  ${interfaceFuncs.join('\n  ')}
-}`;
-}
-
 // TODO fixme
-const buildContainer = (imports, fsource) => {
+const buildContainer = (pclassMap, fsource) => {
+  const interfaceDefs = [];
+  const contructorArgs = [];
+  const constructorAssignment = [];
 
-  return `${imports}
+  Object.keys(pclassMap).forEach(pclassid => {
+    const {pclass} = pclassMap[pclassid];
+    const idef = `${pclass.name}Interface public ${pclass.name};`
+    const carg = `address _${pclass.name}_address`;
+    const casign = `${pclass.name} = ${pclass.name}Interface(_${pclass.name}_address);`;
+
+    interfaceDefs.push(idef);
+    contructorArgs.push(carg);
+    constructorAssignment.push(casign);
+  });
+
+  return `
 
 contract PipedContract {
-  ${pclassName}Interface public ${pclassName};
+  ${interfaceDefs.join('\n  ')}
 
-  constructor(address _${pclassName}_address) public {
-    ${pclassName} = ${pclassName}Interface(_${pclassName}_address);
+  constructor(${contructorArgs.join(', ')}) public {
+    ${constructorAssignment.join('\n    ')}
   }
 
   ${fsource}
@@ -64,7 +76,6 @@ const finputs = inputs => setTypes(inputs).map(inp => `${inp.type} ${inp.name}`)
 const foutputs = outputs => setTypes(outputs).map(out => out.type);
 
 const buildGraphStep = (node) => {
-  // console.log('---- buildGraphStep, node:', JSON.stringify(node));
   const record = node.record;
   const ins = node.inputs.map(inp => {
     if (inp.type.includes('[')) return `&${inp.name}`;
@@ -72,7 +83,7 @@ const buildGraphStep = (node) => {
   });
   const outs = record.pfunction.gapi.outputs_idx;// .map(out => out.name);
 
-  const fcall = `${pclassName}.${record.pfunction.gapi.name}(${ins.join(', ')});`;
+  const fcall = `${record.pclass.name}.${record.pfunction.gapi.name}(${ins.join(', ')});`;
 
   if (outs.length === 1) {
     return `    ${outs[0].type} ${outs[0].name} = ${fcall}`;
@@ -97,7 +108,6 @@ const buildFout = outputs => {
 
 export default {
   buildImports,
-  buildExtra,
   buildContainer,
   fdefinition,
   finputs,
