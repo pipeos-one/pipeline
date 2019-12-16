@@ -32,7 +32,12 @@ let DEFAULT_CONTEXT = {
     "graph":{},
     "sources":{"javascript.rust":"() => rust.id()","javascript":"(x)=>x"}},
     // "categories":{"languages":["javascript.rust","javascript"]},
-    "timestamp":"2019-11-06T19:22:53.807Z"
+    "timestamp":"2019-11-06T19:22:53.807Z",
+    pclass: {
+      _id: "0x0",
+      name: "unknown",
+      type: 'unknown',
+    }
   }
 }
 

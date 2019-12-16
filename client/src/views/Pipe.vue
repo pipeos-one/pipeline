@@ -466,11 +466,26 @@ export default {
     prepGraphContext: function(funcs) {
       let context = {};
       funcs.forEach(pfunction => {
+        let pclass;
+        if (!pfunction.pclass) {
+          pclass = {
+            _id: '0x0',
+            name: 'unknown',
+            type: 'unknown',
+          }
+        } else {
+          pclass = {
+            _id: pfunction.pclass._id,
+            name: pfunction.pclass.name,
+            type: pfunction.pclass.type,
+          }
+        }
         context[pfunction._id] = {
           _id: pfunction._id,
           pclassid: pfunction.pclassid,
           pfunction: pfunction.pfunction,
           timestamp: pfunction.timestamp,
+          pclass,
         }
         context[pfunction._id].pfunction.graph = context[pfunction._id].pfunction.graph || {};
         context[pfunction._id].pfunction.sources = context[pfunction._id].pfunction.sources || {};

@@ -29,6 +29,11 @@ function pipe() {
       //   "tags":[]
       // },
       "timestamp":"2019-03-22T14:38:36.112Z",
+      "pclass": {
+        _id: "0x0",
+        name: "unknown",
+        type: 'unknown',
+      }
     }
   }
 
@@ -185,6 +190,12 @@ pl["func_abi"] = _.RecordType({
 
 pl["cont_abi"] = _.Array (pl["func_abi"])
 
+pl["pclass"] = _.RecordType({
+  _id: _.String,
+  name: _.String,
+  type: _.String,
+})
+
 pl["db_func"] = _.RecordType({
   "_id": pl["mongoid"],
   "pclassid": pl["mongoid"],
@@ -198,7 +209,8 @@ pl["db_func"] = _.RecordType({
   // "tags": _.Array (_.String),
   // "categories": _.StrMap (_.Any),
   // "categories": _.Any,
-  "timestamp": _.String
+  "timestamp": _.String,
+  "pclass": pl["pclass"],
 })
 
 
