@@ -498,6 +498,12 @@ function pipecanvas(initialcontext = {}, pipegraph = {}, options={}) {
     redraw()
   }
 
+  function clearGraph() {
+    const graph = Object.assign({}, DEFAULT_GRAPH);
+    current_stage.settings.r_graph = runnable(graph);
+    showGraph();
+  }
+
   let onchangeCallb;
   function onChange(cb) {
     onchangeCallb = cb;
@@ -512,6 +518,7 @@ function pipecanvas(initialcontext = {}, pipegraph = {}, options={}) {
     getGraph,
     pipe: pipe1,
     addFunction,
+    clear: clearGraph,
     onChange,
   }
 }

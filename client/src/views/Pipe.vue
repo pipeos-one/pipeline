@@ -122,6 +122,10 @@
                         ripple
                     >
                         Function {{ n }}
+                        <v-btn
+                          v-on:click="clearCanvas(n)"
+                          flat icon small
+                        ><v-icon small>fa-times</v-icon></v-btn>
                     </v-tab>
                     <v-tab-item
                         v-for="n in canvases"
@@ -459,7 +463,6 @@ export default {
         const graphs = this.pipeGraphs;
         this.pipeGraphs[this.activeCanvas] = newgraph;
     },
-
     prepGraphContext: function(funcs) {
       let context = {};
       funcs.forEach(pfunction => {
@@ -480,6 +483,10 @@ export default {
         this.graphInstance.addFunction(pfunction, index);
         const pfunc = this.prepGraphContext([pfunction])[pfunction._id];
         this.pipeGraphs[this.activeCanvas].addFunction(pfunc);
+    },
+    clearCanvas: function(activeCanvas) {
+      console.log('clearCanvas')
+      this.pipeGraphs[this.activeCanvas].clear();
     },
     onSearchSelectQuery: function(query) {
         this.changePage(1);
