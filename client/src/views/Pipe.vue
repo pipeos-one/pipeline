@@ -454,8 +454,12 @@ export default {
           }
         );
         newgraph.onChange(new_gr => {
-          const graphsSource = JSON.parse(JSON.stringify(this.graphsSource));
-          this.graphsSource[this.activeCanvas] = graphsSource;
+          const graphsSource = {...new_gr.rich_graph.init};
+
+          const gsources = {...this.graphsSource};
+          gsources[this.activeCanvas] = graphsSource;
+          this.graphsSource = graphsSource;
+
           this.contractSource = sourceBuilder(solidityBuilder)(new_gr).source;
         });
         newgraph.show();
