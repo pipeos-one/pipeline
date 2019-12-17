@@ -457,7 +457,7 @@ export default {
           const graphsSource = {...new_gr.rich_graph.init};
 
           const gsources = {...this.graphsSource};
-          gsources[this.activeCanvas] = graphsSource;
+          gsources[this.activeCanvas] = [graphsSource];
           this.graphsSource = graphsSource;
 
           // TODO: not all have Solidity code
