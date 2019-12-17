@@ -460,7 +460,8 @@ export default {
           gsources[this.activeCanvas] = graphsSource;
           this.graphsSource = graphsSource;
 
-          this.contractSource = sourceBuilder(solidityBuilder)(new_gr).source;
+          // TODO: not all have Solidity code
+          this.contractSource = sourceBuilder(solidityBuilder)(new_gr)(`function${this.activeCanvas}`).source;
         });
         newgraph.show();
 
