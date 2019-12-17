@@ -209,9 +209,14 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
       let nearest = false, dx,dy,d2,d1, acc
       for (let rec in targets.end_drag){
         // console.log('nearestf', current_edge.source.type, targets.end_drag[rec], rec, current_stage.settings.r_graph.rich_graph.n[targets.end_drag[rec].port.i], targets.end_drag[rec].port.i)
-
-          if (current_edge.source.type === targets.end_drag[rec].port.type &&
-              current_stage.settings.r_graph.rich_graph.n[targets.end_drag[rec].port.i].in[targets.end_drag[rec].port.port][0] >2999) {
+          const targetIns = current_stage.settings.r_graph.rich_graph.n[targets.end_drag[rec].port.i].in[targets.end_drag[rec].port.port];
+          if (
+            current_edge.source.type === targets.end_drag[rec].port.type &&
+            // don't connect to the same input port:
+            targetIns[0] !== current_edge.source.i &&
+            // only ports connected to input ports
+            targetIns[0] > 2999
+          ) {
               acc = nearest? nearest : targets.end_drag[rec]
 
               d1 = dist(acc, pos)
@@ -219,7 +224,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
               d2 = dist(targets.end_drag[rec], pos)
               // console.log('nearestf', d1,d2)
               if (d1 >= d2) {
-                  if (d2 < 30000){
+                  if (d2 < 30000) {
                       nearest = targets.end_drag[rec]
                   } else {
                       nearest = false
