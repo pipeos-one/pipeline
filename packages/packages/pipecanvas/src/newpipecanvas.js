@@ -21,11 +21,12 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     height: 600,
     domid: '#pipegraph',
     types: {
-      "number": {color: "#355"},
-      "number[]": {color: "#463"},
-      "function": {color: "#562"},
-      "string": {color: "#662"},
-    }
+      // "number": {color: "#355"},
+      // "number[]": {color: "#463"},
+      // "function": {color: "#562"},
+      // "string": {color: "#662"},
+    },
+    colors: {}
   }
   let COMMON_INPUT = (idpart, output) => {
     // typing might contain other attributes, like payable
@@ -48,12 +49,40 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     }
   }
 
+  function getRandomColor() {
+    const letters = '0123456789ABCDEF';
+    const red = '456789A';
+    const green = '456789ABC';
+    const blue = '456789ABC';
+
+    const getPartial = (letters) => letters[Math.floor(Math.random() * letters.length)]
+
+    let color = '#';
+    color += getPartial(red);
+    color += getPartial(red);
+    color += getPartial(green);
+    color += getPartial(green);
+    color += getPartial(blue);
+    color += getPartial(blue);
+
+    return color;
+  }
+
   if (!pipegraph || !(pipegraph instanceof Object) || Object.keys(pipegraph).length === 0) {
     pipegraph = Object.assign({}, DEFAULT_GRAPH);
   }
 
   function typeOptions(type) {
-    return pipeopts.types[type] ? pipeopts.types[type] : {color: "#223"};
+    if (pipeopts.types[type]) return pipeopts.types[type];
+
+    const color = getRandomColor();
+    while (pipeopts.colors[color]) {
+      color = getRandomColor();
+    }
+
+    pipeopts.types[type] = {color};
+    pipeopts.colors[color] = type;
+    return pipeopts.types[type];
   }
 
   if (!pipegraph || !(pipegraph instanceof Object) || Object.keys(pipegraph).length === 0) {
@@ -171,7 +200,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
               current_edge.pos = [co[0], co[1], coords[0], coords[1]]
               current_edge.target = false
           }
-      drawExactArrow(current_stage.settings.ctx, current_edge.pos[0], current_edge.pos[1], current_edge.pos[2], current_edge.pos[3], current_edge.source.type, 1)
+      drawExactArrow(current_stage.settings.ctx, current_edge.pos[0], current_edge.pos[1], current_edge.pos[2], current_edge.pos[3], current_edge.source.type, 1, true)
       // console.log('ddrag current_edge', current_edge)
     }
   }
@@ -378,7 +407,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     return txt.slice(0, half)+ ".." +txt.slice(-half)
   }
 
-  function drawExactArrow(ctx2, x1, y1, x2, y2, type, scale){
+  function drawExactArrow(ctx2, x1, y1, x2, y2, type, scale, temporary = false){
       var midx = (x2+x1)/2
       var midy = (y2+y1)/2
       let context = ctx2
@@ -389,8 +418,8 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
       //let scale = 1
       //context.moveTo(x1, y1)
       context.lineCap = "round"
-      context.strokeStyle  =  pipeopts.types[type] ? pipeopts.types[type].color : "#aaaaaa"
-      context.lineWidth = 1*scale;
+      context.strokeStyle  =  typeOptions(type).color
+      context.lineWidth = !temporary ? 1*scale : 2*scale;
       context.stroke(new Path2D(srt));
       context.closePath();
       //context.moveTo(midx, midy)
