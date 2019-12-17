@@ -13,6 +13,7 @@ function pipe() {
       baseurl: "http://example.com/my-package#",
     }
   }
+
   const PFUNC_IO = (step_out, typing) => {
     // typing might contain other attributes, like payable
     return {
@@ -433,13 +434,16 @@ pl["runtime_graph"] = _.RecordType({
         }
 
         for (let i = 1 ; i <=context[n.id].pfunction.gapi.inputs.length; i++){
+          while (grf.n[step_in]) {
+            step_in += 1;
+          }
           if (!(""+i in n.in) && n.id != pipejs.settings.id) {
             let on = {edges: [], i: step_in, id: pipejs.settings.id +step_in,
             in:{}, out:{"1":[[n.i, i]]}, position: {x: 0, y:0}, svg_id: ""}
             let typing  = context[n.id].pfunction.gapi.inputs[i-1]
             // console.log(context[n.id].pfunction.gapi.inputs, i)
 
-            pipejs.indexed_func[pipejs.settings.id + step_in] = PFUNC_IO(step_out, typing);
+            pipejs.indexed_func[pipejs.settings.id + step_in] = PFUNC_IO(step_in, typing);
 
             added_nodes[step_in]  = on
             added_edges.push([step_in, 1, n.i, i])

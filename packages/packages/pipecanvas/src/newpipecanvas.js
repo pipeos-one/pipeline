@@ -26,32 +26,36 @@ let DEFAULT_OPTIONS = {
   }
 }
 
-let DEFAULT_CONTEXT = {
-  "5bc59e192817116e84bdd831": {
-    "_id":"5bc59e192817116e84bdd831","pclassid":"5dbaa731f18ff7488e9b108b","pfunction":{"signature":"id(x)","gapi":{"constant":true,"inputs":[],"name":"id","outputs":[{"type":"string","name":"id"}],"payable":false,"stateMutability":"pure","type":"function"},
-    "graph":{},
-    "sources":{"javascript.rust":"() => rust.id()","javascript":"(x)=>x"}},
-    // "categories":{"languages":["javascript.rust","javascript"]},
-    "timestamp":"2019-11-06T19:22:53.807Z",
-    pclass: {
-      _id: "0x0",
-      name: "unknown",
-      type: 'unknown',
-    }
-  }
-}
-
-
-function pipecanvas(initialcontext = {}, pipegraph = {}, options={}) {
+function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
   if (!pipegraph || !(pipegraph instanceof Object) || Object.keys(pipegraph).length === 0) {
     pipegraph = Object.assign({}, DEFAULT_GRAPH);
+  }
+
+  let COMMON_INPUT = (idpart, output) => {
+    // typing might contain other attributes, like payable
+    return {
+      "_id": pipe1.settings.id + idpart,
+      "pclassid":"5dbaa731f18ff7488e9b108b",
+      "pfunction":{
+        "signature":"id(x)",
+        "gapi":{"constant":true,"inputs":[],"name":"id","outputs":[output],"payable":false,"stateMutability":"pure","type":"function"},
+        "graph":{},
+        "sources":{"javascript.rust":"() => rust.id()","javascript":"(x)=>x"}
+      },
+      // "categories":{"languages":["javascript.rust","javascript"]},
+      "timestamp":"2019-11-06T19:22:53.807Z",
+      pclass: {
+        _id: "0x0",
+        name: "unknown",
+        type: 'unknown',
+      }
+    }
   }
 
   function typeOptions(type) {
     return pipeopts.types[type] ? pipeopts.types[type] : {color: "#223"};
   }
 
-  let fcontext = Object.assign({}, DEFAULT_CONTEXT, initialcontext);
   if (!pipegraph || !(pipegraph instanceof Object) || Object.keys(pipegraph).length === 0) {
     pipegraph = Object.assign({}, DEFAULT_GRAPH);
   }
@@ -228,14 +232,22 @@ function pipecanvas(initialcontext = {}, pipegraph = {}, options={}) {
     redraw()
   }
 
-  function add_edge_to_input(current_edge){
-    let n1 = current_stage.settings.r_graph.rich_graph.n[current_edge.source.i]
-    let new_gr = JSON.parse(JSON.stringify(current_stage.settings.r_graph.rich_graph.init))
-    //new_gr  = pipe1.add_node(new_gr) ({in: {1: true}, i: current_edge.source.i, id: JSON.parse(JSON.stringify(n1.id))})
-    new_gr  = pipe1.add_node(new_gr) ({i: current_edge.source.i, id: pipe1.settings.id})
-    for (let e in current_stage.settings.r_graph.rich_graph.e) {
-      if (current_stage.settings.r_graph.rich_graph.e[e][0] === current_edge.source.i)
-        new_gr = pipe1.add_edge (new_gr) (current_stage.settings.r_graph.rich_graph.e[e])
+  function add_edge_to_input(current_edge) {
+    const {r_graph} = current_stage.settings;
+    let n1 = r_graph.rich_graph.n[current_edge.source.i]
+    let new_gr = JSON.parse(JSON.stringify(r_graph.rich_graph.init))
+
+    const sourceid = r_graph.rich_graph.n[current_edge.source.i].id;
+    const inputIdx = current_edge.source.port - 1;
+    const sourceInput = r_graph.context[sourceid].pfunction.gapi.outputs[inputIdx];
+    const newnode = COMMON_INPUT(current_edge.source.i, {name: sourceInput.name, type: sourceInput.type});
+    pipe1.indexed_func[newnode._id] = newnode;
+
+    new_gr  = pipe1.add_node(new_gr) ({i: current_edge.source.i, id: newnode._id})
+
+    for (let e in r_graph.rich_graph.e) {
+      if (r_graph.rich_graph.e[e][0] === current_edge.source.i)
+        new_gr = pipe1.add_edge (new_gr) (r_graph.rich_graph.e[e])
     }
     new_gr = pipe1.add_edge (new_gr) ([current_edge.source.i, current_edge.source.port, current_edge.target.port.i, current_edge.target.port.port] )
     return new_gr
@@ -509,9 +521,8 @@ function pipecanvas(initialcontext = {}, pipegraph = {}, options={}) {
     showGraph();
   }
 
-  function setGraph(graph, initialcontext) {
-    if (initialcontext) {
-      fcontext = Object.assign({}, DEFAULT_CONTEXT, initialcontext);
+  function setGraph(graph, fcontext) {
+    if (fcontext) {
       pipe1.indexed_func = fcontext;
     }
     current_stage.settings.r_graph = runnable(graph);

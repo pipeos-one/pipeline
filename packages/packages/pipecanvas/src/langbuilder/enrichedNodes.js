@@ -27,7 +27,12 @@ function enrichedGraphSteps(fullgraph) {
       node.outputs = [...Array(olen + 1).keys()].slice(1).map(i => {
         const findex = node.out[i][0][0];
         const oindex = node.out[i][0][1] - 1;  // starts at 1
-        const output = JSON.parse(JSON.stringify(contextCopy[rich_graph.n[findex].id].pfunction.gapi.inputs[oindex]));
+
+        // We just need the name
+        const output = {
+          ...node.record.pfunction.gapi.outputs[i - 1],
+          name: contextCopy[rich_graph.n[findex].id].pfunction.gapi.inputs[oindex].name,
+        }
 
         output.name += `_${findex}_${oindex}`;
         contextCopy[rich_graph.n[findex].id].pfunction.gapi.inputs_idx[oindex] = output;
@@ -40,7 +45,12 @@ function enrichedGraphSteps(fullgraph) {
         // console.log('node.inputs', i, node.in[i]);
         const findex = node.in[i][0];
         const oindex = node.in[i][1] - 1;  // starts at 1
-        const input = JSON.parse(JSON.stringify(contextCopy[rich_graph.n[findex].id].pfunction.gapi.outputs[oindex]));
+
+        // We just need the name
+        const input = {
+          ...node.record.pfunction.gapi.inputs[i - 1], // starts at 0
+          name: contextCopy[rich_graph.n[findex].id].pfunction.gapi.outputs[oindex].name,
+        }
 
         input.name += `_${findex}_${oindex}`;
         contextCopy[rich_graph.n[findex].id].pfunction.gapi.outputs_idx[oindex] = input;
