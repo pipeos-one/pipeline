@@ -28,8 +28,8 @@ const sourceBuilder = (langBuilder) => (enrichedGraph) => (functionName = "funct
   const body = [].concat(
     ...enrichedNodes.map(row => row.map(langBuilder.buildGraphStep))
   ).join('\n');
-  const freturn = langBuilder.buildFout(outputs);
-  const fsource = langBuilder.buildFunction(fdef, body, freturn);
+
+  const fsource = langBuilder.buildFunction(fdef, body, outputs.map(out => out.inputs[0]));
 
   const uniqueNodes = [...new Set([].concat(
     ...enrichedNodes
