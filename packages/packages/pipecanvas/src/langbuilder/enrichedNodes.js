@@ -9,8 +9,9 @@ function enrichedGraphSteps(fullgraph) {
     contextCopy[contextKey] = JSON.parse(JSON.stringify(context[node.id]));
     rich_graph.n[nodeIndex].id = contextKey;
 
-    contextCopy[contextKey].pfunction.gapi.inputs_idx = JSON.parse(JSON.stringify(contextCopy[contextKey].pfunction.gapi.inputs));
-    contextCopy[contextKey].pfunction.gapi.outputs_idx = JSON.parse(JSON.stringify(contextCopy[contextKey].pfunction.gapi.outputs));
+    const gapi = contextCopy[contextKey].pfunction.gapi;
+    gapi.inputs_idx = JSON.parse(JSON.stringify(gapi.inputs));
+    gapi.outputs_idx = JSON.parse(JSON.stringify(gapi.outputs));
   });
 
   const levelCount = runnable_graph.length;
