@@ -1,6 +1,6 @@
 import {enrichedGraphSteps} from './enrichedNodes';
 
-const sourceBuilder = (langBuilder) => (enrichedGraph) => {
+const sourceBuilder = (langBuilder) => (enrichedGraph) => (functionName = "function00") => {
   if (!langBuilder) throw new Error('Language not available');
   if (enrichedGraph.runnable_graph.length === 0) {
     return {source: '', inputs: [], outputs: []};
@@ -15,17 +15,21 @@ const sourceBuilder = (langBuilder) => (enrichedGraph) => {
   }
 
   // Function definition
-  const fname = 'func0';
-  const ins = langBuilder.finputs(inputs.map(inp => inp.record.pfunction.gapi.outputs_idx[0]));
-  const outs = langBuilder.foutputs(outputs.map(out => out.inputs[0]));
-  const fdef = langBuilder.fdefinition(fname, ins, outs);
+  // fixme TODO: payable only if payable
+  const fdef = langBuilder.fdefinition({
+    name: functionName,
+    payable: true,
+    stateMutability: 'payable',
+    inputs: inputs.map(inp => inp.record.pfunction.gapi.outputs_idx[0]),
+    outputs: outputs.map(out => out.inputs[0]),
+  }, 'public');
 
   // Function body - graph steps
   const body = [].concat(
     ...enrichedNodes.map(row => row.map(langBuilder.buildGraphStep))
   ).join('\n');
   const freturn = langBuilder.buildFout(outputs);
-  const fsource = fdef + '\n' + body + '\n' + freturn;
+  const fsource = langBuilder.buildFunction(fdef, body, freturn);
 
   const uniqueNodes = [...new Set([].concat(
     ...enrichedNodes
@@ -42,7 +46,6 @@ const sourceBuilder = (langBuilder) => (enrichedGraph) => {
   });
 
   const imports = langBuilder.buildImports(pclassMap);
-
   const source = imports + langBuilder.buildContainer(pclassMap, fsource);
 
   return {

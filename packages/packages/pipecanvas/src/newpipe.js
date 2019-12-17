@@ -14,6 +14,7 @@ function pipe() {
     }
   }
   const PFUNC_IO = (step_out, typing) => {
+    // typing might contain other attributes, like payable
     return {
       "_id": pipejs.settings.id + step_out,
       "pclassid":"5c95397d4212cc40afeec914",
@@ -21,7 +22,7 @@ function pipe() {
         "signature":"io",
         "sources": {"javascript":"f=>f"},
         "graph":{},
-        "gapi":{"constant":true,"inputs":[{"name":typing.name,"type": typing.type}],"name":"io","outputs":[{"name":"o","type": typing.type}],"payable":false,"stateMutability":"view","type":"function"},
+        "gapi":{"constant":true,"inputs":[typing],"name":"io","outputs":[typing],"payable":false,"stateMutability":"view","type":"function"},
         // "chainids":["3"]
       },
       // "tags": ["pipeline"],
