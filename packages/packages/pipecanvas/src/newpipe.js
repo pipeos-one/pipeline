@@ -3,9 +3,10 @@
 const S = require ('sanctuary');
 const _ = require ('sanctuary-def');
 const bigInt = require("big-integer");
-window.S = S;
 
 function pipe() {
+  window.S = S;
+
   let pipejs = {
     sol: {},
     settings: {

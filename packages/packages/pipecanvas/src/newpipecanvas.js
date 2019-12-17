@@ -3,34 +3,30 @@
 import pipejs from './newpipe';
 const S = require ('sanctuary');
 const d3 = require("d3");
-window.S = S;
-window.d3 = d3;
-
-let DEFAULT_GRAPH = {n: {}, e: [], r: []}
-const DEFAULT_TARGETS = {
-  for_click: {},
-  for_click_edge: {},
-  for_drag: {},
-  end_drag:{},
-  for_drop: {}
-}
-let DEFAULT_OPTIONS = {
-  width: 600,
-  height: 600,
-  domid: '#pipegraph',
-  types: {
-    "number": {color: "#355"},
-    "number[]": {color: "#463"},
-    "function": {color: "#562"},
-    "string": {color: "#662"},
-  }
-}
 
 function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
-  if (!pipegraph || !(pipegraph instanceof Object) || Object.keys(pipegraph).length === 0) {
-    pipegraph = Object.assign({}, DEFAULT_GRAPH);
-  }
+  window.S = S;
+  window.d3 = d3;
 
+  let DEFAULT_GRAPH = {n: {}, e: [], r: []}
+  const DEFAULT_TARGETS = {
+    for_click: {},
+    for_click_edge: {},
+    for_drag: {},
+    end_drag:{},
+    for_drop: {}
+  }
+  let DEFAULT_OPTIONS = {
+    width: 600,
+    height: 600,
+    domid: '#pipegraph',
+    types: {
+      "number": {color: "#355"},
+      "number[]": {color: "#463"},
+      "function": {color: "#562"},
+      "string": {color: "#662"},
+    }
+  }
   let COMMON_INPUT = (idpart, output) => {
     // typing might contain other attributes, like payable
     return {
@@ -50,6 +46,10 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
         type: 'unknown',
       }
     }
+  }
+
+  if (!pipegraph || !(pipegraph instanceof Object) || Object.keys(pipegraph).length === 0) {
+    pipegraph = Object.assign({}, DEFAULT_GRAPH);
   }
 
   function typeOptions(type) {

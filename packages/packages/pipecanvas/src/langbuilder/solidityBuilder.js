@@ -10,6 +10,11 @@ const PAYABLE_INPUT = {
   type: 'uint256',
   payable: true,
 }
+const DEFAULT_OUTPUT = {
+  name: 'done',
+  type: 'bool',
+  temporary: true,
+}
 
 const enrichAbi = (pfunc) => {
   const enriched = {...pfunc};
@@ -19,12 +24,15 @@ const enrichAbi = (pfunc) => {
   if (enriched.pfunction.gapi.payable) {
     enriched.pfunction.gapi.inputs.push({...PAYABLE_INPUT});
   }
+  if (enriched.pfunction.gapi.outputs.length === 0) {
+    enriched.pfunction.gapi.outputs.push({...DEFAULT_OUTPUT});
+  }
   return enriched;
 }
 
 const fdefinition = (gapi, visibility = 'public') => {
   const ins = finputs(gapi.inputs);
-  const outs = foutputs(gapi.outputs);
+  const outs = foutputs(foutputsP(gapi.outputs));
   const type = gapi.stateMutability !== 'non-payable' ? gapi.stateMutability : '';
 
   const returnSource = outs.length === 0 ? '' : `returns (${outs.join(', ')})`;
@@ -98,6 +106,11 @@ const finputsP = inputs => {
   const weiValue = inputscpy.splice(weiValueIx, 1)[0];
   return {inputs: inputscpy, weiValue};
 }
+
+const foutputsP = outputs => {
+  const outputscpy = [...outputs];
+  return outputscpy.filter(out => !out.temporary);
+}
 const finputs = inputs => setTypes(inputs).map(inp => `${inp.type} ${inp.name}`);
 const foutputs = outputs => setTypes(outputs).map(out => out.type);
 
@@ -106,7 +119,7 @@ const buildGraphStep = (node) => {
   const {gapi} = record.pfunction;
   const {inputs, weiValue} = finputsP(node.inputs);
   const ins = inputs.map(inp => inp.name);
-  const outs = gapi.outputs_idx;
+  const outs = foutputsP(gapi.outputs_idx);
   let extraOptions = '';
 
   // contract.function.value(10).gas(800)();
@@ -125,7 +138,9 @@ const buildGraphStep = (node) => {
   return `    ${returnSource}${fcall}`;
 }
 
-const buildFunction = (fdef, body, freturn) => {
+const buildFunction = (fdef, body, outputs) => {
+  const freturn = buildFout(foutputsP(outputs));
+
   return `${fdef}
   {
 ${body}
@@ -135,10 +150,7 @@ ${body}
 }
 
 const buildFout = outputs => {
-  const outs = outputs.map(out => {
-    const output = out.inputs[0];
-    return output.name;
-  });
+  const outs = outputs.map(out => out.name);
 
   return outs.length === 0 ? '' : `return ${outs.length === 1 ? outs[0] : `(${outs.join(', ')})`};`;
 }
