@@ -1,10 +1,3 @@
-const typeMap = {
-  'number': 'i32',
-  'number[]': 'Vec<i32>',
-  'string': 'String',
-  'function': 'Fn(i32) -> i32',
-}
-
 const PAYABLE_INPUT = {
   name: 'WEI_VALUE',
   type: 'uint256',
@@ -92,11 +85,7 @@ contract PipedContract {
 }`
 }
 
-const setTypes = ios => ios//.map(io => {
-//   const cpy = JSON.parse(JSON.stringify(io));
-//   cpy.type = typeMap[io.type];
-//   return cpy;
-// });
+const setTypes = ios => ios;
 
 const finputsP = inputs => {
   const inputscpy = [...inputs];
