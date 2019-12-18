@@ -8,7 +8,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
   window.S = S;
   window.d3 = d3;
 
-  let DEFAULT_GRAPH = {n: {}, e: [], r: []}
+  const DEFAULT_GRAPH = {n: {}, e: [], r: []}
   const DEFAULT_TARGETS = {
     for_click: {},
     for_click_edge: {},
@@ -26,7 +26,14 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
       // "function": {color: "#562"},
       // "string": {color: "#662"},
     },
-    colors: {}
+    typecolors: {},
+    colors: {
+      nodeBody: "#d8d8d8",
+      nodeRemove: "#fcc",
+      portText: "#aaaaaa",
+      text: "#000000",
+    },
+    font: `Lato,-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"`,
   }
   let COMMON_INPUT = (idpart, output) => {
     // typing might contain other attributes, like payable
@@ -51,9 +58,9 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
 
   function getRandomColor() {
     const letters = '0123456789ABCDEF';
-    const red = '456789A';
-    const green = '456789ABC';
-    const blue = '456789ABC';
+    const red = '56789ABC';
+    const green = '6789ABCD';
+    const blue = '6789ABCD';
 
     const getPartial = (letters) => letters[Math.floor(Math.random() * letters.length)]
 
@@ -76,12 +83,14 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     if (pipeopts.types[type]) return pipeopts.types[type];
 
     const color = getRandomColor();
-    while (pipeopts.colors[color]) {
+    const end = 0;
+    while (pipeopts.typecolors[color] && end < 400) {
       color = getRandomColor();
+      end += 1;
     }
 
     pipeopts.types[type] = {color};
-    pipeopts.colors[color] = type;
+    pipeopts.typecolors[color] = type;
     return pipeopts.types[type];
   }
 
@@ -297,7 +306,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
         let node_i = r_graph.rich_graph.n[node]
         let node_x = r_graph.context[node_i.id]
         let len = Math.max(node_x.pfunction.gapi.inputs.length, node_x.pfunction.gapi.outputs.length)
-        dnodes[node] = {x: node_i.position.x, y: node_i.position.y, container: node_x.pclassid, name: node_x.pfunction.gapi.name, len: len, context: node_x.pfunction.gapi, i:node}
+        dnodes[node] = {x: node_i.position.x, y: node_i.position.y, container: node_x.pclass.name, name: node_x.pfunction.gapi.name, len: len, context: node_x.pfunction.gapi, i:node}
         if (cols < node_i.position.x  + len) {
           cols = node_i.position.x  + len
         }
@@ -354,19 +363,21 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     let nh = pos.h
 
     ports_show(ctx, pos, node.context, ports_pos, node.i)
-    ctx.fillStyle="#ccc"
+    ctx.fillStyle = pipeopts.colors.nodeBody
+
     rect1([ctx,pos.x,pos.y,nw,pos.h,pos.h/2])
     targets.for_click[[node.i, 1]] = {l: pos.x-nw/2, r:  pos.x+nw/2-16 , t: pos.y-pos.h/2 , b: pos.y+pos.h/2}
-    ctx.fillStyle="#fcc"
+    ctx.fillStyle = pipeopts.colors.nodeRemove
+
     rect1([ctx,pos.x+nw/2-8,pos.y,16,16,8])
     targets.for_click[[node.i, 0]] = {l: pos.x+nw/2-16, r:  pos.x+nw/2 , t: pos.y-pos.h/2 , b: pos.y+pos.h/2}
     ctx.beginPath()
     ctx.textAlign = "center";
-    //ctx.font = (18*scale-9)+"px Roboto Condensed"
+    //ctx.font = (18*scale-9)+"px "+pipeopts.font
     //context.lineJoin = "round";
-    ctx.fillStyle = "#000000"
+    ctx.fillStyle = pipeopts.colors.text
     //ctx.fillText(shorten(node.container,max*5+2), pos.x, pos.y-2 );
-    ctx.font = (12*scale+4)+"px Roboto Condensed"
+    ctx.font = (10*scale+4)+"px " + pipeopts.font
     ctx.fillText(shorten(node.container,node.len*2+2)+": "+shorten(node.name,node.len*10+4), pos.x, pos.y+6 );
     ctx.fill()
   }
@@ -382,8 +393,8 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
       ctx.save();
       ctx.translate( x, y);
       ctx.rotate( -Math.PI / 4 );
-      ctx.font = (8/1+4)+"px Roboto Condensed";
-      ctx.fillStyle = "#aaaaaa";; // red
+      ctx.font = (8/1+4)+"px " + pipeopts.font;
+      ctx.fillStyle = pipeopts.colors.portText;
       ctx.textAlign = "left";
       ctx.fillText( port1.name, 0,0 );
       ctx.restore();
@@ -508,7 +519,8 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
       ctx.arcTo(x-w/2, y-h/2, x + w/2, y-h/2, tl);
       ctx.closePath();
     }
-      ctx.fill();
+
+    ctx.fill();
 
     return ctx;
   };
