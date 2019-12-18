@@ -36,6 +36,7 @@ function pipe() {
         _id: "0x0",
         name: "unknown",
         type: 'unknown',
+        deployment: 'unknown',
       }
     }
   }
@@ -197,6 +198,7 @@ pl["pclass"] = _.RecordType({
   _id: _.String,
   name: _.String,
   type: _.String,
+  deployment: _.String,
 })
 
 pl["db_func"] = _.RecordType({

@@ -483,6 +483,7 @@ export default {
             _id: pfunction.pclass._id,
             name: pfunction.pclass.name,
             type: pfunction.pclass.type,
+            deployment: pfunction.pclass.deployment ? pfunction.pclass.deployment.pclassi.address : '',
           }
         }
         let pfunc = {
