@@ -52,6 +52,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
         _id: "0x0",
         name: "unknown",
         type: 'unknown',
+        deployment: 'unknown',
       }
     }
   }
