@@ -377,7 +377,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     //context.lineJoin = "round";
     ctx.fillStyle = pipeopts.colors.text
     //ctx.fillText(shorten(node.container,max*5+2), pos.x, pos.y-2 );
-    ctx.font = (10*scale+4)+"px " + pipeopts.font
+    ctx.font = (9*scale+4)+"px " + pipeopts.font
     ctx.fillText(shorten(node.container,node.len*2+2)+": "+shorten(node.name,node.len*10+4), pos.x, pos.y+6 );
     ctx.fill()
   }
