@@ -188,6 +188,7 @@ import PipeGraphs from '@pipeos/pipecanvas';
 import createPipeCanvas from '@pipeos/pipecanvas/src/newpipecanvas';
 import sourceBuilder from '@pipeos/pipecanvas/src/langbuilder/sourceBuilder';
 import solidityBuilder from '@pipeos/pipecanvas/src/langbuilder/solidityBuilder';
+import web3Builder from '@pipeos/pipecanvas/src/langbuilder/web3Builder';
 import {pfunctionColorClass} from '@pipeos/pipecanvas/src/utils';
 import Pipeos from '../namespace/namespace';
 import PaginatedList from '../components/PaginatedList';
@@ -462,6 +463,7 @@ export default {
 
           // TODO: not all have Solidity code
           this.contractSource = sourceBuilder(solidityBuilder)(new_gr)(`function${this.activeCanvas}`).source;
+          this.jsSource = sourceBuilder(web3Builder)(new_gr)(`function${this.activeCanvas}`).source;
         });
         newgraph.show();
 
