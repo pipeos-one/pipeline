@@ -45,8 +45,8 @@ const sourceBuilder = (langBuilder) => (enrichedGraph) => (functionName = "funct
     pclassMap[node.record.pclassid].fimports.push(node.record);
   });
 
-  const imports = langBuilder.buildImports(pclassMap);
-  const source = imports + langBuilder.buildContainer(pclassMap, fsource);
+  const imports = langBuilder.buildImports(pclassMap, functionName);
+  const source = imports + langBuilder.buildContainer(pclassMap, fsource, functionName);
 
   return {
     source,
