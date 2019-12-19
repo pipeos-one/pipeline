@@ -1,7 +1,7 @@
 /* eslint-disable */
 
 const Sanct = require ('sanctuary');
-const _ = require ('sanctuary-def');
+const SDef = require ('sanctuary-def');
 const bigInt = require("big-integer");
 
 function pipe() {
@@ -55,9 +55,9 @@ function pipe() {
            : Sanct.Nothing;
   };
 
-  let env = _.env;
+  let env = SDef.env;
 
-  let def = _.create ({
+  let def = SDef.create ({
     checkTypes: true,
     env,
   });
@@ -69,7 +69,7 @@ function pipe() {
 
 
   Sanct.map (((y)=>{
-  sol["uint"+y*8] = _.NullaryType
+  sol["uint"+y*8] = SDef.NullaryType
   ('uint'+y*8)
   ('uint'+y*8)
   ([])
@@ -77,7 +77,7 @@ function pipe() {
         x.geq(0) &&
         x.lesser(two.pow(new bigInt(y*8))));
 
-  sol["int"+y*8] = _.NullaryType
+  sol["int"+y*8] = SDef.NullaryType
     ('int'+y*8)
     ('int'+y*8)
     ([])
@@ -85,7 +85,7 @@ function pipe() {
           x.geq(-two.pow(new bigInt(y*8-1))) &&
           x.lesser(two.pow(new bigInt(y*8-1))));
 
-  sol["bytes"+y] = _.NullaryType
+  sol["bytes"+y] = SDef.NullaryType
     ('bytes'+y)
     ('bytes'+y)
     ([])
@@ -101,134 +101,134 @@ function pipe() {
 
   let types =
   [
-    ["string", _.String],
-    ["bytes" , _.String],
-    ["number", _.Number],
-    ["number[]", _.Array(_.Number)],
-    ["string", _.String],
-    ["string[]", _.Array(_.String)],
-    ["object", _.Object],
-    ["object[]", _.Array(_.Object)],
-    ["function", _.Any],
+    ["string", SDef.String],
+    ["bytes" , SDef.String],
+    ["number", SDef.Number],
+    ["number[]", SDef.Array(SDef.Number)],
+    ["string", SDef.String],
+    ["string[]", SDef.Array(SDef.String)],
+    ["object", SDef.Object],
+    ["object[]", SDef.Array(SDef.Object)],
+    ["function", SDef.Any],
     ["address", pipejs.sol["bytes20"]],
     ["byte", pipejs.sol["bytes1"]],
     ["uint", pipejs.sol["uint256"]],
     ["int", pipejs.sol["int256"]],
     ["bool", pipejs.sol["uint8"]],
-    ["tuple", _.Any], // has to bbe better defined _.RecordType
-    ["any", _.Any]
+    ["tuple", SDef.Any], // has to bbe better defined SDef.RecordType
+    ["any", SDef.Any]
   ]
   //console.log(types)
   types.map(x=>pipejs.addType(x[0],x[1]))
 
   let pl = {}
-  pl["mongoid"] = _.NullaryType  ('mongoid') (pipejs.settings.baseurl+'mongoid') ([])
-  (x => Sanct.is (_.String) (x)// && bigInt(x, 16).geq(0) && bigInt(x, 16).lesser(two.pow(12*8))
+  pl["mongoid"] = SDef.NullaryType  ('mongoid') (pipejs.settings.baseurl+'mongoid') ([])
+  (x => Sanct.is (SDef.String) (x)// && bigInt(x, 16).geq(0) && bigInt(x, 16).lesser(two.pow(12*8))
   )
-  pl["node"] = _.RecordType({"i": _.Number, "id": pl["mongoid"]})
-pl["rich_node"] = _.RecordType({
-  "i": _.Number, "svg_id": _.String,
+  pl["node"] = SDef.RecordType({"i": SDef.Number, "id": pl["mongoid"]})
+pl["rich_node"] = SDef.RecordType({
+  "i": SDef.Number, "svg_id": SDef.String,
   "id": pl["mongoid"],
-   "out": _.StrMap (_.Array (_.Array (_.Number))),
-   "in": _.StrMap (_.Array (_.Number)),
-   "position": _.RecordType({
-    "x": _.Number,
-    "y": _.Number
+   "out": SDef.StrMap (SDef.Array (SDef.Array (SDef.Number))),
+   "in": SDef.StrMap (SDef.Array (SDef.Number)),
+   "position": SDef.RecordType({
+    "x": SDef.Number,
+    "y": SDef.Number
     }),
-    "edges": _.Array (_.String)
+    "edges": SDef.Array (SDef.String)
   })
 
-pl["edge"] = _.NullaryType  ('edge') (pipejs.settings.baseurl+'edge') ([])
-  (x => Sanct.is (_.Array (_.Number)) (x) && Sanct.equals (4) (x.length) )
+pl["edge"] = SDef.NullaryType  ('edge') (pipejs.settings.baseurl+'edge') ([])
+  (x => Sanct.is (SDef.Array (SDef.Number)) (x) && Sanct.equals (4) (x.length) )
 
-pl["rich_edge"] = _.NullaryType  ('edge') (pipejs.settings.baseurl+'edge') ([])
-  (x  => Sanct.is (_.RecordType({
-    "e": pl["edge"], "svg_id": _.String, "type": _.String
+pl["rich_edge"] = SDef.NullaryType  ('edge') (pipejs.settings.baseurl+'edge') ([])
+  (x  => Sanct.is (SDef.RecordType({
+    "e": pl["edge"], "svg_id": SDef.String, "type": SDef.String
     })) (x) &&
-    Sanct.is (_.Type) (sol[x.type])
+    Sanct.is (SDef.Type) (sol[x.type])
   )
-// pl["rich_edge"] = _.NullaryType  ('edge') (baseurl+'edge') ([])
-//   (x => Sanct.is (_.Array (_.Number)) (x) && Sanct.equals (5) (x.length) )
-pl["nodes"] = _.StrMap (pl["node"])
-pl["rich_nodes"] = _.StrMap (pl["rich_node"])
-pl["edges"] = _.Array (pl["edge"])
-pl["runtime"]  = _.Array (_.Any)
-pl["graph"] = _.NullaryType  ('graph') (pipejs.settings.baseurl+'graph') ([])
+// pl["rich_edge"] = SDef.NullaryType  ('edge') (baseurl+'edge') ([])
+//   (x => Sanct.is (SDef.Array (SDef.Number)) (x) && Sanct.equals (5) (x.length) )
+pl["nodes"] = SDef.StrMap (pl["node"])
+pl["rich_nodes"] = SDef.StrMap (pl["rich_node"])
+pl["edges"] = SDef.Array (pl["edge"])
+pl["runtime"]  = SDef.Array (SDef.Any)
+pl["graph"] = SDef.NullaryType  ('graph') (pipejs.settings.baseurl+'graph') ([])
   (
-    x => Sanct.is (_.RecordType({"n": pl["nodes"], "e": pl["edges"], r: pl["runtime"]})) (x)
+    x => Sanct.is (SDef.RecordType({"n": pl["nodes"], "e": pl["edges"], r: pl["runtime"]})) (x)
     //&& Sanct.map (edge => (x.n[edge[0]] || x.r[edge[0]]) && (x.n[edge[2]] || x.r[edge[2]]) (x.e) )
 
       )
-pl["rich_graph"] = _.NullaryType  ('rich_graph') (pipejs.settings.baseurl+'rich_graph') ([])
+pl["rich_graph"] = SDef.NullaryType  ('rich_graph') (pipejs.settings.baseurl+'rich_graph') ([])
   (
-    x => Sanct.is (_.RecordType({ "n": pl["rich_nodes"], "e": pl["edges"], "r": pl["runtime"], init: pl["graph"]})) (x)
+    x => Sanct.is (SDef.RecordType({ "n": pl["rich_nodes"], "e": pl["edges"], "r": pl["runtime"], init: pl["graph"]})) (x)
   )
 
-pl["graph_history"] = _.Array (pl["graph"])
+pl["graph_history"] = SDef.Array (pl["graph"])
 
-pl["io"]  = _.NullaryType ('io') (pipejs.settings.baseurl+'graph') ([])
+pl["io"]  = SDef.NullaryType ('io') (pipejs.settings.baseurl+'graph') ([])
     ( x =>
-      Sanct.is (_.RecordType({"name": _.String, "type": _.String})) (x) &&
-      Sanct.is (_.Type) (sol[x.type])
+      Sanct.is (SDef.RecordType({"name": SDef.String, "type": SDef.String})) (x) &&
+      Sanct.is (SDef.Type) (sol[x.type])
     )
 
-pl["abi_type"]  = _.EnumType
+pl["abi_type"]  = SDef.EnumType
   ('abi_type')
   (pipejs.settings.baseurl+'abi_type')
   (["function", "constructor",  "fallback", "event", "string"]);
 
-pl["abi_mutability"]  = _.EnumType
+pl["abi_mutability"]  = SDef.EnumType
   ('abi_mutability')
   (pipejs.settings.baseurl+'abi_mutability')
   (["pure", "view", "nonpayable", "payable"]);
 
-pl["func_abi"] = _.RecordType({
+pl["func_abi"] = SDef.RecordType({
   "type": pl["abi_type"],
-  "name": _.String,
-  "inputs": _.Array (pl["io"]),
-  "outputs": _.Any, // _.Array (pl["io"]),
-  "constant": _.Boolean,
-  "payable": _.Boolean,
+  "name": SDef.String,
+  "inputs": SDef.Array (pl["io"]),
+  "outputs": SDef.Any, // SDef.Array (pl["io"]),
+  "constant": SDef.Boolean,
+  "payable": SDef.Boolean,
   "stateMutability": pl["abi_mutability"],
 })
 
-pl["cont_abi"] = _.Array (pl["func_abi"])
+pl["cont_abi"] = SDef.Array (pl["func_abi"])
 
-pl["pclass"] = _.RecordType({
-  _id: _.String,
-  name: _.String,
-  type: _.String,
-  deployment: _.String,
+pl["pclass"] = SDef.RecordType({
+  _id: SDef.String,
+  name: SDef.String,
+  type: SDef.String,
+  deployment: SDef.String,
 })
 
-pl["db_func"] = _.RecordType({
+pl["db_func"] = SDef.RecordType({
   "_id": pl["mongoid"],
   "pclassid": pl["mongoid"],
-  "pfunction": _.RecordType({
-    "signature": _.String,
+  "pfunction": SDef.RecordType({
+    "signature": SDef.String,
     "gapi": pl["func_abi"],
-    "graph": _.Any,
-    // "chainids": _.Array (_.String),
-    "sources": _.StrMap (_.String),
+    "graph": SDef.Any,
+    // "chainids": SDef.Array (SDef.String),
+    "sources": SDef.StrMap (SDef.String),
   }),
-  // "tags": _.Array (_.String),
-  // "categories": _.StrMap (_.Any),
-  // "categories": _.Any,
-  "timestamp": _.String,
+  // "tags": SDef.Array (SDef.String),
+  // "categories": SDef.StrMap (SDef.Any),
+  // "categories": SDef.Any,
+  "timestamp": SDef.String,
   "pclass": pl["pclass"],
 })
 
 
 
-pl["db_funcs"]  = _.Array (pl["db_func"])
-pl["id_funcs"] = _.StrMap (pl["db_func"])
+pl["db_funcs"]  = SDef.Array (pl["db_func"])
+pl["id_funcs"] = SDef.StrMap (pl["db_func"])
 
 
-pl["runtime_graph"] = _.RecordType({
+pl["runtime_graph"] = SDef.RecordType({
   "rich_graph": pl["rich_graph"],
-  "runnable_graph":  _.Array (_.Array (_.Number)),
+  "runnable_graph":  SDef.Array (SDef.Array (SDef.Number)),
   "context": pl["id_funcs"],
-  "runtime": _.StrMap ( pl["runtime"])
+  "runtime": SDef.StrMap ( pl["runtime"])
 })
 
 
@@ -246,7 +246,7 @@ pl["runtime_graph"] = _.RecordType({
     });
 
   pipejs.add_const= def ('add_const') ({})
-    ([pl["graph"], _.Object, pl["graph"]])
+    ([pl["graph"], SDef.Object, pl["graph"]])
     (graph =>  edge => variable => {
       let graph2 = JSON.parse(JSON.stringify(graph))
       pipejs.settings.runstep ++
@@ -303,7 +303,7 @@ pl["runtime_graph"] = _.RecordType({
     });
 
   pipejs.remove_node= def ('remove_node') ({})
-    ([pl["graph"], _.Number, pl["graph"]])
+    ([pl["graph"], SDef.Number, pl["graph"]])
     (graph => node_id => {
       // console.log(!(""+node_id in graph.n))
       if (!(""+node_id in graph.n)) return graph;
@@ -505,7 +505,7 @@ pl["runtime_graph"] = _.RecordType({
     });
 
   pipejs.run_graph=  def ('run_graph') ({})
-    ([pl["runtime_graph"], _.Any, _.Any])
+    ([pl["runtime_graph"], SDef.Any, SDef.Any])
     ( runtime_graph => ins => {
       let outs = [], ndx = 0, node
       let func, args, ans;
@@ -602,7 +602,7 @@ pl["runtime_graph"] = _.RecordType({
     });
 
   pipejs.fun_graph= def ('fun_graph') ({})
-    ([pl["id_funcs"], pl["graph"], _.Object, _.Any])
+    ([pl["id_funcs"], pl["graph"], SDef.Object, SDef.Any])
     ( context => graph => ins =>{
       return pipejs.run_graph (pipejs.make_runtime (context) (pipejs.enrich_graph (context) (graph)) ) (ins)
     });
