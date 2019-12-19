@@ -566,6 +566,20 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     }
 
     pipe1.indexed_func = Object.assign({}, pipe1.indexed_func || {}, fcontext);
+
+    pipegraph.e.forEach(edge => {
+      if (edge[0] > 2999) {
+        const sourceOutput = pipe1.indexed_func[pipegraph.n[edge[2]].id].pfunction.gapi.inputs[edge[3] - 1];
+        const newnode = COMMON_INPUT(edge[0], {name: sourceOutput.name, type: sourceOutput.type});
+
+        pipe1.indexed_func[newnode._id] = newnode;
+
+        if(!pipegraph.n[edge[0]]) {
+          pipegraph  = pipe1.add_node(pipegraph) ({i: edge[0], id: newnode._id})
+        }
+      }
+    });
+
     current_stage.settings.r_graph = runnable(pipegraph);
   }
 
