@@ -1,11 +1,11 @@
 /* eslint-disable */
 
-const S = require ('sanctuary');
+const Sanct = require ('sanctuary');
 const _ = require ('sanctuary-def');
 const bigInt = require("big-integer");
 
 function pipe() {
-  window.S = S;
+  window.S = Sanct;
 
   let pipejs = {
     sol: {},
@@ -50,9 +50,9 @@ function pipe() {
     const types = Object.values (type.types);
     const values = Object.values (obj);
     return values.length === types.length &&
-           values.every ((v, idx) => S.is (types[idx]) (v))
-           ? S.unchecked.fromPairs (S.unchecked.zip (names) (values))
-           : S.Nothing;
+           values.every ((v, idx) => Sanct.is (types[idx]) (v))
+           ? Sanct.unchecked.fromPairs (Sanct.unchecked.zip (names) (values))
+           : Sanct.Nothing;
   };
 
   let env = _.env;
@@ -65,10 +65,10 @@ function pipe() {
   let like = t1 => t2 =>
     t1.type === 'RECORD' &&
     t2.type === 'RECORD' &&
-    S.equals (Object.values (t1.types)) (Object.values (t2.types));
+    Sanct.equals (Object.values (t1.types)) (Object.values (t2.types));
 
 
-  S.map (((y)=>{
+  Sanct.map (((y)=>{
   sol["uint"+y*8] = _.NullaryType
   ('uint'+y*8)
   ('uint'+y*8)
@@ -92,7 +92,7 @@ function pipe() {
     (x => bigInt.isInstance(x) &&
           x.geq(0) &&
           x.lesser(two.pow(new bigInt(y*8))));
-})) (S.range (1) (33));
+})) (Sanct.range (1) (33));
 
   pipejs.sol = sol;
   pipejs.addType= function (name, type){
@@ -123,7 +123,7 @@ function pipe() {
 
   let pl = {}
   pl["mongoid"] = _.NullaryType  ('mongoid') (pipejs.settings.baseurl+'mongoid') ([])
-  (x => S.is (_.String) (x)// && bigInt(x, 16).geq(0) && bigInt(x, 16).lesser(two.pow(12*8))
+  (x => Sanct.is (_.String) (x)// && bigInt(x, 16).geq(0) && bigInt(x, 16).lesser(two.pow(12*8))
   )
   pl["node"] = _.RecordType({"i": _.Number, "id": pl["mongoid"]})
 pl["rich_node"] = _.RecordType({
@@ -139,37 +139,37 @@ pl["rich_node"] = _.RecordType({
   })
 
 pl["edge"] = _.NullaryType  ('edge') (pipejs.settings.baseurl+'edge') ([])
-  (x => S.is (_.Array (_.Number)) (x) && S.equals (4) (x.length) )
+  (x => Sanct.is (_.Array (_.Number)) (x) && Sanct.equals (4) (x.length) )
 
 pl["rich_edge"] = _.NullaryType  ('edge') (pipejs.settings.baseurl+'edge') ([])
-  (x  => S.is (_.RecordType({
+  (x  => Sanct.is (_.RecordType({
     "e": pl["edge"], "svg_id": _.String, "type": _.String
     })) (x) &&
-    S.is (_.Type) (sol[x.type])
+    Sanct.is (_.Type) (sol[x.type])
   )
 // pl["rich_edge"] = _.NullaryType  ('edge') (baseurl+'edge') ([])
-//   (x => S.is (_.Array (_.Number)) (x) && S.equals (5) (x.length) )
+//   (x => Sanct.is (_.Array (_.Number)) (x) && Sanct.equals (5) (x.length) )
 pl["nodes"] = _.StrMap (pl["node"])
 pl["rich_nodes"] = _.StrMap (pl["rich_node"])
 pl["edges"] = _.Array (pl["edge"])
 pl["runtime"]  = _.Array (_.Any)
 pl["graph"] = _.NullaryType  ('graph') (pipejs.settings.baseurl+'graph') ([])
   (
-    x => S.is (_.RecordType({"n": pl["nodes"], "e": pl["edges"], r: pl["runtime"]})) (x)
-    //&& S.map (edge => (x.n[edge[0]] || x.r[edge[0]]) && (x.n[edge[2]] || x.r[edge[2]]) (x.e) )
+    x => Sanct.is (_.RecordType({"n": pl["nodes"], "e": pl["edges"], r: pl["runtime"]})) (x)
+    //&& Sanct.map (edge => (x.n[edge[0]] || x.r[edge[0]]) && (x.n[edge[2]] || x.r[edge[2]]) (x.e) )
 
       )
 pl["rich_graph"] = _.NullaryType  ('rich_graph') (pipejs.settings.baseurl+'rich_graph') ([])
   (
-    x => S.is (_.RecordType({ "n": pl["rich_nodes"], "e": pl["edges"], "r": pl["runtime"], init: pl["graph"]})) (x)
+    x => Sanct.is (_.RecordType({ "n": pl["rich_nodes"], "e": pl["edges"], "r": pl["runtime"], init: pl["graph"]})) (x)
   )
 
 pl["graph_history"] = _.Array (pl["graph"])
 
 pl["io"]  = _.NullaryType ('io') (pipejs.settings.baseurl+'graph') ([])
     ( x =>
-      S.is (_.RecordType({"name": _.String, "type": _.String})) (x) &&
-      S.is (_.Type) (sol[x.type])
+      Sanct.is (_.RecordType({"name": _.String, "type": _.String})) (x) &&
+      Sanct.is (_.Type) (sol[x.type])
     )
 
 pl["abi_type"]  = _.EnumType
@@ -241,7 +241,7 @@ pl["runtime_graph"] = _.RecordType({
     ([pl["db_funcs"], pl["id_funcs"]])
     (db_funcs => {
       let obj_funcs = {}
-      S.map (x => obj_funcs[x._id] = x) (db_funcs)
+      Sanct.map (x => obj_funcs[x._id] = x) (db_funcs)
       return obj_funcs;
     });
 
@@ -335,7 +335,7 @@ pl["runtime_graph"] = _.RecordType({
 
     pipejs.addEdges= function(g){
       //// console.log("grfff",g)
-      S.map (
+      Sanct.map (
         e => {
           // console.log("edge",e, g)
           if (g.r[e[0]]) {
@@ -389,11 +389,11 @@ pl["runtime_graph"] = _.RecordType({
     if (unvisited.length  === 0) return;
     let row = 0, visitedNow = []
     let only_outputs = true
-    S.map (n => {if (n < 4000 ) only_outputs = false }) (unvisited)
+    Sanct.map (n => {if (n < 4000 ) only_outputs = false }) (unvisited)
 
-    S.map (n => {
+    Sanct.map (n => {
       if ((pipejs.inputNodesAreVisited(gf.n[n], visited)  || pipejs.inputNodesAreDefined(gf.n[n], gf.r, level)) && (level >0 || n > 2000)){
-        S.flip (visitors) ({node: gf.n[n] , level: level, row: row, context: pipejs.indexed_func})
+        Sanct.flip (visitors) ({node: gf.n[n] , level: level, row: row, context: pipejs.indexed_func})
         row = row+1
         if (only_outputs || n < 4000) visitedNow.push(n)
       }
@@ -411,7 +411,7 @@ pl["runtime_graph"] = _.RecordType({
     let step_in = 3000
     while (grf.n[""+step_out] !== undefined) step_out++
     while (grf.n[""+step_in] !== undefined) step_in++
-    S.map (
+    Sanct.map (
       n => {
         for (let i = 1 ; i <=context[n.id].pfunction.gapi.outputs.length; i++){
           if (!(""+i in n.out) && n.id != pipejs.settings.id) {
@@ -466,7 +466,7 @@ pl["runtime_graph"] = _.RecordType({
     (context => graph1 => {
       let graph2 = JSON.parse(JSON.stringify(graph1))
 
-      S.map (x => {
+      Sanct.map (x => {
         x.out = {};
         x.in ={};
         x.position = {x: 0, y: 0};
@@ -477,7 +477,7 @@ pl["runtime_graph"] = _.RecordType({
       pipejs.addNodesEdges(graph2, context);
       // console.log("lllll",graph2)
       let visitors = [pipejs.enrich];
-      let graph3 =  pipejs.positionNodes(graph2, S.keys(graph2.n), ["0"], visitors, 0)
+      let graph3 =  pipejs.positionNodes(graph2, Sanct.keys(graph2.n), ["0"], visitors, 0)
       // console.log("graph3",graph3)
       graph2.init  = graph1
       return graph2
@@ -494,7 +494,7 @@ pl["runtime_graph"] = _.RecordType({
         rows[rich_graph2.n[x].position.y].push(parseInt(x))
         }
         // console.log(JSON.stringify(rows))
-        //S.map (x  => S.map (y => rows[x][y] = 100) (x)) (rows)
+        //Sanct.map (x  => Sanct.map (y => rows[x][y] = 100) (x)) (rows)
       // console.log(JSON.stringify(rows))
       return {
         "rich_graph": rich_graph2,
@@ -517,7 +517,7 @@ pl["runtime_graph"] = _.RecordType({
       let rich = JSON.parse(JSON.stringify(runtime_graph.rich_graph))
 
       //// console.log("gkkgg", arr_ins)
-      S.map (x => {
+      Sanct.map (x => {
         //console.log("in item gkkgg", x, ndx, arr_ins, arr_ins[ndx], ""+x)
         runtime[""+x] = [arr_ins[ndx]]
         //console.log("vvvv", JSON.parse(JSON.stringify(runtime)), runtime[""+x])
@@ -527,10 +527,10 @@ pl["runtime_graph"] = _.RecordType({
       //console.log(ins, arr_ins, runnable)
       //console.log("gkkgg ins", arr_ins, runnable, JSON.parse(JSON.stringify(runtime)))
       ndx = 0
-      S.map (x => {
+      Sanct.map (x => {
         //console.log(x,"x")
         //if (ndx !== 0) {
-        S.map (y => {
+        Sanct.map (y => {
         node  = rich.n[""+y]
         let contxt = runtime_graph.context[node.id]
         let source = contxt.pfunction.sources.javascript
@@ -540,7 +540,7 @@ pl["runtime_graph"] = _.RecordType({
 
         if  ("1" in node.in){
           let port  =  0
-          S.map (x1=> {
+          Sanct.map (x1=> {
             // console.log(x1)
             let argt = runtime[x1[0]][x1[1]-1]
             let type  = contxt.pfunction.gapi.inputs[port].type
@@ -569,7 +569,7 @@ pl["runtime_graph"] = _.RecordType({
             func = new Function("return " + source)();
             //console.log("func",func,JSON.stringify(args), JSON.stringify(runtime))
             if (func.length < args.length) {
-              ans = S.unchecked.reduce (S.I)
+              ans = Sanct.unchecked.reduce (Sanct.I)
               (func)
               (args)
             } else  {
