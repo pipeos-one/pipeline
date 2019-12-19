@@ -34,14 +34,14 @@ const buildImports = (pclassMap, functionName) => {
     return `"${pclass.deployment}"`;
   });
 
-  return `const provider = new ethers.providers.Web3Provider(web3.currentProvider);
-const signer = provider.getSigner();
+  return ``;
+}
 
-const {${functionName}} = pipedGraph(${addrArgs.join(', ')}, signer);
-
-// ${functionName}().then(console.log);
-
-`
+const deploymentArgs = (pclassMap) => {
+  return Object.keys(pclassMap).map(pclassid => {
+    const {pclass} = pclassMap[pclassid];
+    return pclass.deployment;
+  });
 }
 
 const buildContainer = (pclassMap, fsource, functionName) => {
@@ -94,7 +94,7 @@ const buildGraphStep = (node, stepIndex) => {
   const {gapi} = record.pfunction;
   const {inputs, weiValue} = finputsP(node.inputs);
   const ins = inputs.map(inp => inp.name);
-  const outs = foutputsP(gapi.outputs_idx).map(out => out.name);
+  const outs = gapi.outputs_idx.map(out => out.name);
 
   let extraOptions = '';
 
@@ -106,28 +106,19 @@ const buildGraphStep = (node, stepIndex) => {
 
   let returnSource;
 
-  let consolelog;
-
-  if (outs.length === 0) {
-    returnSource = `const response_${stepIndex} = `;
-    consolelog = `console.log('response_${stepIndex}', response_${stepIndex});`;
-  } else if (outs.length === 1) {
+  if (outs.length === 1) {
     returnSource = `const ${outs[0]} = `;
-    consolelog = `console.log('${outs[0]}', ${outs[0]});`;
   } else {
     // TODO fixme
     returnSource = `const [${outs.join(', ')}] = `;
-
-    consolelog = `console.log('${outs.join(',')}', ${outs.join(',')});`;
   }
 
   return `    ${returnSource}${fcall}
-    ${consolelog}
 `;
 }
 
 const buildFunction = (fdef, body, outputs) => {
-  const freturn = buildFout(foutputsP(outputs));
+  const freturn = buildFout(outputs);
 
   return `async ${fdef}
   {
@@ -152,4 +143,5 @@ export default {
   buildGraphStep,
   buildFout,
   setTypes,
+  arguments: deploymentArgs,
 }

@@ -54,6 +54,7 @@ const sourceBuilder = (langBuilder) => (enrichedGraph) => (functionName = "funct
       inputs.map(inp => inp.record.pfunction.gapi.outputs_idx[0])
     ),
     outputs: langBuilder.setTypes(outputs.map(out => out.inputs[0])),
+    arguments: langBuilder.arguments(pclassMap),
   }
 }
 

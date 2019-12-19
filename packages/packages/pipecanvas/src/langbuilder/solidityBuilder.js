@@ -144,6 +144,8 @@ const buildFout = outputs => {
   return outs.length === 0 ? '' : `return ${outs.length === 1 ? outs[0] : `(${outs.join(', ')})`};`;
 }
 
+const getDeploymentArgs = () => [];
+
 export default {
   enrichAbi,
   buildImports,
@@ -155,4 +157,5 @@ export default {
   buildGraphStep,
   buildFout,
   setTypes,
+  arguments: getDeploymentArgs,
 }

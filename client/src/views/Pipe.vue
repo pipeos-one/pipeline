@@ -463,7 +463,19 @@ export default {
 
           // TODO: not all have Solidity code
           this.contractSource = sourceBuilder(solidityBuilder)(new_gr)(`function${this.activeCanvas}`).source;
-          this.jsSource = sourceBuilder(web3Builder)(new_gr)(`function${this.activeCanvas}`).source;
+
+          const web3js = sourceBuilder(web3Builder)(new_gr)(`function${this.activeCanvas}`);
+          const webfixture = `const provider = new ethers.providers.Web3Provider(web3.currentProvider);
+const signer = provider.getSigner();
+const {function00} = pipedGraph(${web3js.arguments.join(', ')}, signer);
+
+function00(...args).then(console.log);
+
+`
+          this.jsSource = webfixture + web3js.source;
+
+          // const pipedGraph = eval(`(function(){return ${web3js.source}})()`);
+          // const {function00} = pipedGraph(...web3js.arguments, signer);
         });
         newgraph.show();
 
