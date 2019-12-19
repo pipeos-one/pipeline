@@ -1,7 +1,7 @@
 /* eslint-disable */
 
-import d3 from "d3";
-import pipejs from './newpipe';
+import pipejs from './pipe';
+const d3 = require("d3");
 
 function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
   const DEFAULT_GRAPH = {n: {}, e: [], r: []}
