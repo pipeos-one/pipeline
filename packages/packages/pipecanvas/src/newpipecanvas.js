@@ -1,13 +1,9 @@
 /* eslint-disable */
 
+import d3 from "d3";
 import pipejs from './newpipe';
-const S = require ('sanctuary');
-const d3 = require("d3");
 
 function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
-  window.S = S;
-  window.d3 = d3;
-
   const DEFAULT_GRAPH = {n: {}, e: [], r: []}
   const DEFAULT_TARGETS = {
     for_click: {},
