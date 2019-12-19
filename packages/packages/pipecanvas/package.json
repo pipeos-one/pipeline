@@ -9,11 +9,8 @@
   "dependencies": {
     "big-integer": "^1.6.48",
     "d3": "^5.14.2",
-    "ramda": "^0.25.0",
     "sanctuary": "^2.0.1",
-    "sanctuary-def": "^0.20.1",
-    "svg.draggable.js": "^2.2.1",
-    "svg.js": "^2.6.6"
+    "sanctuary-def": "^0.20.1"
   },
   "repository": {
     "type": "git",
