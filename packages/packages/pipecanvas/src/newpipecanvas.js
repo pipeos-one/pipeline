@@ -76,10 +76,6 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     return color;
   }
 
-  if (!pipegraph || !(pipegraph instanceof Object) || Object.keys(pipegraph).length === 0) {
-    pipegraph = Object.assign({}, DEFAULT_GRAPH);
-  }
-
   function typeOptions(type) {
     if (pipeopts.types[type]) return pipeopts.types[type];
 
@@ -95,9 +91,6 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     return pipeopts.types[type];
   }
 
-  if (!pipegraph || !(pipegraph instanceof Object) || Object.keys(pipegraph).length === 0) {
-    pipegraph = Object.assign({}, DEFAULT_GRAPH);
-  }
 
   let pipeopts = Object.assign({}, DEFAULT_OPTIONS, options);
   let graph1 = {}
@@ -106,17 +99,16 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
 
   let targets = JSON.parse(JSON.stringify(DEFAULT_TARGETS));
   let pipe1 = new pipejs();
-  pipe1.indexed_func = fcontext;
 
-  current_stage.settings.r_graph = runnable(pipegraph);
+  setGraph(pipegraph, fcontext);
 
   function runnable(graph) {
     console.log('runnable pipe1', pipe1);
-    console.log('runnable fcontext', fcontext);
+    console.log('runnable fcontext', pipe1.indexed_func);
     console.log('runnable graph', graph);
-    let rich  = pipe1.enrich_graph (fcontext) (graph)
+    let rich  = pipe1.enrich_graph (pipe1.indexed_func) (graph)
     console.log('runnable rich', rich)
-    let runtime = pipe1.make_runtime (fcontext)(rich)
+    let runtime = pipe1.make_runtime (pipe1.indexed_func)(rich)
     current_stage.settings.r_graph = runtime
     return runtime
   }
@@ -545,7 +537,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
 
   function addFunction(pfunction, index) {
     console.log('addFunction pfunction', pfunction);
-    fcontext[pfunction._id] = pfunction;
+    pipe1.indexed_func[pfunction._id] = pfunction;
     console.log(current_stage.settings.r_graph);
     const lastIndex = Math.max(100,
       ...Object.keys(current_stage.settings.r_graph.rich_graph.init.n)
@@ -568,12 +560,13 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     showGraph();
   }
 
-  function setGraph(graph, fcontext) {
-    if (fcontext) {
-      pipe1.indexed_func = fcontext;
+  function setGraph(pipegraph, fcontext = {}) {
+    if (!pipegraph || !(pipegraph instanceof Object) || Object.keys(pipegraph).length === 0) {
+      pipegraph = Object.assign({}, DEFAULT_GRAPH);
     }
-    current_stage.settings.r_graph = runnable(graph);
-    showGraph();
+
+    pipe1.indexed_func = Object.assign({}, pipe1.indexed_func || {}, fcontext);
+    current_stage.settings.r_graph = runnable(pipegraph);
   }
 
   let onchangeCallb;

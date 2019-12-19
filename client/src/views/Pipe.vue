@@ -614,6 +614,7 @@ function00(...args).then(console.log);
             });
 
             this.pipeGraphs[i].setGraph(graph);
+            this.pipeGraphs[i].show();
         });
     },
     onTreeToggle: function (pclass) {
