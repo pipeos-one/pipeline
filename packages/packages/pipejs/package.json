@@ -1,0 +1,48 @@
+{
+  "name": "@pipeos/pipejs",
+  "version": "0.0.4",
+  "description": "Core library for managing Pipeline graphs",
+  "main": "./index.js",
+  "browser": "./dist/pipejs.min.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "test": "jest",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "big-integer": "^1.6.48",
+    "sanctuary": "^2.0.1",
+    "sanctuary-def": "^0.20.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.6.4",
+    "@babel/preset-env": "^7.6.3",
+    "babel-jest": "^24.9.0",
+    "babel-loader": "^8.0.6",
+    "eslint": "^6.5.1",
+    "jest": "^24.9.0",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.9"
+  },
+  "files": [
+    "dist/pipejs.min.js"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pipeos-one/pipeline.git"
+  },
+  "keywords": [
+    "pipeline",
+    "graph",
+    "javascript"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Loredana Cirstea <loredana.cirstea@gmail.com>",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/pipeos-one/pipeline/issues"
+  },
+  "homepage": "https://github.com/pipeos-one/pipeline#readme"
+}
