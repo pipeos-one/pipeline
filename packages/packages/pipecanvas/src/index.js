@@ -1,6 +1,4 @@
-/* eslint-disable */
-
-import pipejs from './pipe';
+import pipejs from '@pipeos/pipejs';
 const d3 = require("d3");
 
 function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
