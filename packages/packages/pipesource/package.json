@@ -1,6 +1,6 @@
 {
   "name": "@pipeos/pipesource",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Library for building source code from a Pipeline graph",
   "main": "index.js",
   "browser": "./dist/pipesource.min.js",
