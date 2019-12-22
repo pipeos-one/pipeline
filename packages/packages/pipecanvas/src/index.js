@@ -534,7 +534,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     pipe1.indexed_func[pfunction._id] = pfunction;
     console.log(current_stage.settings.r_graph);
     const lastIndex = Math.max(100,
-      ...Object.keys(current_stage.settings.r_graph.rich_graph.init.n)
+      ...Object.keys(current_stage.settings.r_graph.rich_graph.init.n).filter(key => key < 3000)
     );
     console.log('lastIndex', lastIndex);
     let new_gr = JSON.parse(JSON.stringify(current_stage.settings.r_graph.rich_graph.init))
