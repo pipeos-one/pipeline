@@ -6,7 +6,7 @@ const sourceBuilder = (langBuilder) => (enrichedGraph) => (functionName = "funct
     return {source: '', inputs: [], outputs: []};
   }
   const enrichedNodes = enrichedGraphSteps(enrichedGraph);
-  const inputs = enrichedNodes.shift();
+  const inputs = enrichedNodes.shift() || [];
   let outputs = enrichedNodes.pop();
 
   if (outputs[0].i < 3000) {
