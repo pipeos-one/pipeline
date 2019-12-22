@@ -188,7 +188,7 @@ pl['abi_ios'] = SDef.NullaryType ('abi_ios') (pipejs.settings.baseurl+'abi_ios')
 pl["abi_type"]  = SDef.EnumType
   ('abi_type')
   (pipejs.settings.baseurl+'abi_type')
-  (["function", "constructor",  "fallback", "event", "string"]);
+  (["function", "constructor",  "fallback", "event", "receive", "string"]);
 
 pl["abi_mutability"]  = SDef.EnumType
   ('abi_mutability')
