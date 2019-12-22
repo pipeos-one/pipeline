@@ -164,12 +164,25 @@ pl["rich_graph"] = SDef.NullaryType  ('rich_graph') (pipejs.settings.baseurl+'ri
     x => Sanct.is (SDef.RecordType({ "n": pl["rich_nodes"], "e": pl["edges"], "r": pl["runtime"], init: pl["graph"]})) (x)
   )
 
+pl["runnable_graph_step"] = SDef.NullaryType  ('runnable_graph_step') (pipejs.settings.baseurl+'runnable_graph_step') ([])
+  (
+    x => Sanct.is (SDef.Array (SDef.Number)) (x) || Sanct.is (SDef.Array0) (x)
+  )
+
+pl["runnable_graph"] = SDef.Array (pl["runnable_graph_step"])
+
 pl["graph_history"] = SDef.Array (pl["graph"])
 
-pl["io"]  = SDef.NullaryType ('io') (pipejs.settings.baseurl+'graph') ([])
+pl["abi_io"]  = SDef.NullaryType ('abi_io') (pipejs.settings.baseurl+'abi_io') ([])
     ( x =>
       Sanct.is (SDef.RecordType({"name": SDef.String, "type": SDef.String})) (x) &&
       Sanct.is (SDef.Type) (sol[x.type])
+    )
+
+pl['abi_ios'] = SDef.NullaryType ('abi_ios') (pipejs.settings.baseurl+'abi_ios') ([])
+    ( x =>
+      Sanct.is (SDef.Array (pl["abi_io"])) (x) ||
+      Sanct.is (SDef.Array0) (x)
     )
 
 pl["abi_type"]  = SDef.EnumType
@@ -185,8 +198,8 @@ pl["abi_mutability"]  = SDef.EnumType
 pl["func_abi"] = SDef.RecordType({
   "type": pl["abi_type"],
   "name": SDef.String,
-  "inputs": SDef.Array (pl["io"]),
-  "outputs": SDef.Any, // SDef.Array (pl["io"]),
+  "inputs": pl['abi_ios'],
+  "outputs": pl['abi_ios'],
   "constant": SDef.Boolean,
   "payable": SDef.Boolean,
   "stateMutability": pl["abi_mutability"],
@@ -226,7 +239,7 @@ pl["id_funcs"] = SDef.StrMap (pl["db_func"])
 
 pl["runtime_graph"] = SDef.RecordType({
   "rich_graph": pl["rich_graph"],
-  "runnable_graph":  SDef.Array (SDef.Array (SDef.Number)),
+  "runnable_graph":  pl["runnable_graph"],
   "context": pl["id_funcs"],
   "runtime": SDef.StrMap ( pl["runtime"])
 })
@@ -488,14 +501,15 @@ pl["runtime_graph"] = SDef.RecordType({
     (context  => rich_graph => {
       let rows = []
       let rich_graph2 = JSON.parse(JSON.stringify(rich_graph))
-      for (let x in rich_graph2.n) {
-        // console.log("x", rich_graph.n[x], rows[rich_graph.n[x].position.y])
-          if ( rows[rich_graph2.n[x].position.y] === undefined) rows[rich_graph2.n[x].position.y] = []
-        rows[rich_graph2.n[x].position.y].push(parseInt(x))
-        }
-        // console.log(JSON.stringify(rows))
-        //Sanct.map (x  => Sanct.map (y => rows[x][y] = 100) (x)) (rows)
-      // console.log(JSON.stringify(rows))
+
+      for (let x of Object.keys(rich_graph2.n)) {
+          if ( rows[rich_graph2.n[x].position.y] === undefined) {
+            rows[rich_graph2.n[x].position.y] = []
+          }
+          rows[rich_graph2.n[x].position.y].push(parseInt(x))
+      }
+      if (!rows[0]) rows[0] = [];
+
       return {
         "rich_graph": rich_graph2,
         "runnable_graph": rows,
