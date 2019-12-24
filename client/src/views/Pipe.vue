@@ -122,12 +122,17 @@
                         ripple
                     >
                         Function {{ n }}
+                        <v-btn
+                          v-on:click="clearCanvas(n)"
+                          flat icon small
+                        ><v-icon small>fa-times</v-icon></v-btn>
                     </v-tab>
                     <v-tab-item
                         v-for="n in canvases"
                         :key="n"
                         class="fullheight swiper-margin"
                     >
+                        <canvas :id="'draw_canvas' + n"></canvas>
                         <PipeCanvas :id="'draw_' + n"/>
                     </v-tab-item>
                 </v-tabs>
@@ -142,7 +147,7 @@
                 :contractSource="contractSource"
                 :deploymentInfo="deploymentInfo"
                 :jsSource="jsSource"
-                :graphSource="graphSource"
+                :graphsSource="graphsSource"
                 :graphsAbi="graphsAbi"
                 v-on:load-remix="pipedLoadToRemix"
                 v-on:set-graphs="setCanvasGraph"
@@ -176,8 +181,14 @@
 </template>
 
 <script>
+/* eslint-disable */
+
 import Vue from 'vue';
 import PipeGraphs from '@pipeos/pipecanvas';
+import createPipeCanvas from '@pipeos/pipecanvas/src/newpipecanvas';
+import sourceBuilder from '@pipeos/pipecanvas/src/langbuilder/sourceBuilder';
+import solidityBuilder from '@pipeos/pipecanvas/src/langbuilder/solidityBuilder';
+import web3Builder from '@pipeos/pipecanvas/src/langbuilder/web3Builder';
 import {pfunctionColorClass} from '@pipeos/pipecanvas/src/utils';
 import Pipeos from '../namespace/namespace';
 import PaginatedList from '../components/PaginatedList';
@@ -260,9 +271,10 @@ export default {
         contractSource: '',
         deploymentInfo: [],
         jsSource: '',
-        graphSource: '',
+        graphsSource: [],
         graphsAbi: null,
         graphInstance: null,
+        pipeGraphs: [],
         pipedContracts: {},
         ethpmDialog: false,
         exportToEthpmResult: null,
@@ -390,7 +402,7 @@ export default {
                 onGraphChange: () => {
                     let deployment_info;
                     this.contractSource = this.graphInstance.getSource('solidity');
-                    this.graphSource = JSON.stringify(this.graphInstance.getSource('graphs'));
+                    this.graphsSource = this.graphInstance.getSource('graphs');
                     this.jsSource = this.graphInstance.getSource('javascript');
                     this.graphsAbi = this.graphInstance.getSource('abi');
                     deployment_info = this.graphInstance.getSource('constructor');
@@ -432,9 +444,85 @@ export default {
             }
         );
         this.graphInstance.addGraph(`draw_${this.activeCanvas + 1}`);
+
+        const newgraph = createPipeCanvas(
+          this.prepGraphContext(this.selectedFunctions.reduce((flattened, subarray) => flattened.concat(subarray), [])),
+          this.graphsSource[this.activeCanvas],
+          {
+            domid: `#draw_canvas${this.activeCanvas + 1}`,
+            width: 600,
+            height: 400,
+          }
+        );
+        newgraph.onChange(new_gr => {
+          const graphsSource = {...new_gr.rich_graph.init};
+
+          const gsources = {...this.graphsSource};
+          gsources[this.activeCanvas] = [graphsSource];
+          this.graphsSource = graphsSource;
+
+          // TODO: not all have Solidity code
+          this.contractSource = sourceBuilder(solidityBuilder)(new_gr)(`function${this.activeCanvas}`).source;
+
+          const web3js = sourceBuilder(web3Builder)(new_gr)(`function${this.activeCanvas}`);
+          const webfixture = `const provider = new ethers.providers.Web3Provider(web3.currentProvider);
+const signer = provider.getSigner();
+const {function00} = pipedGraph(${web3js.arguments.join(', ')}, signer);
+
+function00(...args).then(console.log);
+
+`
+          this.jsSource = webfixture + web3js.source;
+
+          // const pipedGraph = eval(`(function(){return ${web3js.source}})()`);
+          // const {function00} = pipedGraph(...web3js.arguments, signer);
+        });
+        newgraph.show();
+
+        const graphs = this.pipeGraphs;
+        this.pipeGraphs[this.activeCanvas] = newgraph;
+    },
+    prepGraphContext: function(funcs) {
+      let context = {};
+      funcs.forEach(pfunction => {
+        let pclass;
+        if (!pfunction.pclass) {
+          pclass = {
+            _id: '0x0',
+            name: 'unknown',
+            type: 'unknown',
+          }
+        } else {
+          pclass = {
+            _id: pfunction.pclass._id,
+            name: pfunction.pclass.name,
+            type: pfunction.pclass.type,
+            deployment: pfunction.pclass.deployment ? pfunction.pclass.deployment.pclassi.address : '',
+          }
+        }
+        let pfunc = {
+          _id: pfunction._id,
+          pclassid: pfunction.pclassid,
+          pfunction: pfunction.pfunction,
+          timestamp: pfunction.timestamp,
+          pclass,
+        }
+        pfunc.pfunction.graph = pfunc.pfunction.graph || {};
+        pfunc.pfunction.sources = pfunc.pfunction.sources || {};
+        delete pfunc.pfunction.chainids;
+        if (pfunc.pclass.type === 'sol') {
+          pfunc = solidityBuilder.enrichAbi(pfunc);
+        }
+        context[pfunction._id] = pfunc;
+      });
+      return context;
     },
     addToCanvas: function(pfunction, index) {
-        this.graphInstance.addFunction(pfunction, index);
+        const pfunc = this.prepGraphContext([pfunction])[pfunction._id];
+        this.pipeGraphs[this.activeCanvas].addFunction(pfunc);
+    },
+    clearCanvas: function(activeCanvas) {
+      this.pipeGraphs[this.activeCanvas].clear();
     },
     onSearchSelectQuery: function(query) {
         this.changePage(1);
@@ -524,8 +612,10 @@ export default {
                     }
                 });
             });
+
+            this.pipeGraphs[i].setGraph(graph);
+            this.pipeGraphs[i].show();
         });
-        this.graphInstance.setGraphs(graphs);
     },
     onTreeToggle: function (pclass) {
         let index = this.selectedTreeContainers.findIndex(container => container._id == pclass._id);
