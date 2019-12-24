@@ -1,5 +1,19 @@
 import {enrichedGraphSteps} from './enrichedGraphSteps';
 
+const stateMap = {
+  'pure': 0,
+  'view': 1,
+  'nonpayable': 2,
+  'payable': 3,
+}
+
+const stateMapR = {
+  0: 'pure',
+  1: 'view',
+  2: 'nonpayable',
+  3: 'payable'
+}
+
 const sourceBuilder = (langBuilder) => (enrichedGraph) => (functionName = "function00") => {
   if (!langBuilder) throw new Error('Language not available');
   if (enrichedGraph.runnable_graph.length === 0) {
@@ -14,12 +28,17 @@ const sourceBuilder = (langBuilder) => (enrichedGraph) => (functionName = "funct
     outputs = [];
   }
 
-  // Function definition
-  // fixme TODO: payable only if payable
-  const fdef = langBuilder.fdefinition({
+  let stateType = 0;
+  enrichedNodes.forEach(row => row.map(step => {
+    const state = stateMap[step.record.pfunction.gapi.stateMutability];
+    if (state > stateType) {
+      stateType = state;
+    }
+  }));
+
     name: functionName,
     payable: true,
-    stateMutability: 'payable',
+    stateMutability: stateMapR[stateType],
     inputs: inputs.map(inp => inp.record.pfunction.gapi.outputs_idx[0]),
     outputs: outputs.map(out => out.inputs[0]),
   }, 'public');
