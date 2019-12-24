@@ -65,7 +65,7 @@ const buildContainer = (pclassMap, fsource, functionName) => {
 
   return `function pipedGraph(${addrArgs.join(', ')}, provider, signer, ethers) {
 
-  ${abidefs.join('\n')}
+${abidefs.join('\n')}
 
   ${fsource}
 
