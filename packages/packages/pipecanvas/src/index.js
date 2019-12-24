@@ -98,11 +98,11 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
 
   function runnable(graph) {
     console.log('runnable pipe1', pipe1);
-    console.log('runnable fcontext', pipe1.indexed_func);
+    console.log('runnable fcontext', pipe1.get_indexed_func());
     console.log('runnable graph', graph);
-    let rich  = pipe1.enrich_graph (pipe1.indexed_func) (graph)
+    let rich  = pipe1.enrich_graph (pipe1.get_indexed_func()) (graph)
     console.log('runnable rich', rich)
-    let runtime = pipe1.make_runtime (pipe1.indexed_func)(rich)
+    let runtime = pipe1.make_runtime (pipe1.get_indexed_func())(rich)
     current_stage.settings.r_graph = runtime
     return runtime
   }
@@ -271,7 +271,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     const inputIdx = current_edge.source.port - 1;
     const sourceInput = r_graph.context[sourceid].pfunction.gapi.outputs[inputIdx];
     const newnode = COMMON_INPUT(current_edge.source.i, {name: sourceInput.name, type: sourceInput.type});
-    pipe1.indexed_func[newnode._id] = newnode;
+    pipe1.add_indexed_func(newnode);
 
     new_gr  = pipe1.add_node(new_gr) ({i: current_edge.source.i, id: newnode._id})
 
@@ -531,7 +531,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
 
   function addFunction(pfunction, index) {
     console.log('addFunction pfunction', pfunction);
-    pipe1.indexed_func[pfunction._id] = pfunction;
+    pipe1.add_indexed_func(pfunction);
     console.log(current_stage.settings.r_graph);
     const lastIndex = Math.max(100,
       ...Object.keys(current_stage.settings.r_graph.rich_graph.init.n).filter(key => key < 3000)
@@ -558,15 +558,16 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     if (!pipegraph || !(pipegraph instanceof Object) || Object.keys(pipegraph).length === 0) {
       pipegraph = Object.assign({}, DEFAULT_GRAPH);
     }
+    const mergedContext = Object.assign({}, pipe1.get_indexed_func(), fcontext);
+    pipe1.set_indexed_func(mergedContext);
 
-    pipe1.indexed_func = Object.assign({}, pipe1.indexed_func || {}, fcontext);
 
     pipegraph.e.forEach(edge => {
       if (edge[0] > 2999) {
-        const sourceOutput = pipe1.indexed_func[pipegraph.n[edge[2]].id].pfunction.gapi.inputs[edge[3] - 1];
+        const sourceOutput = pipe1.get_indexed_func()[pipegraph.n[edge[2]].id].pfunction.gapi.inputs[edge[3] - 1];
         const newnode = COMMON_INPUT(edge[0], {name: sourceOutput.name, type: sourceOutput.type});
 
-        pipe1.indexed_func[newnode._id] = newnode;
+        pipe1.add_indexed_func(newnode);
 
         if(!pipegraph.n[edge[0]]) {
           pipegraph  = pipe1.add_node(pipegraph) ({i: edge[0], id: newnode._id})

@@ -173,17 +173,38 @@ pl["runnable_graph"] = SDef.Array (pl["runnable_graph_step"])
 
 pl["graph_history"] = SDef.Array (pl["graph"])
 
-pl["abi_io"]  = SDef.NullaryType ('abi_io') (pipejs.settings.baseurl+'abi_io') ([])
+pl["abi_io_function"]  = SDef.NullaryType ('abi_io_function') (pipejs.settings.baseurl+'abi_io_function') ([])
     ( x =>
-      Sanct.is (SDef.RecordType({"name": SDef.String, "type": SDef.String})) (x) &&
+      Sanct.is (SDef.RecordType({
+        "name": SDef.String,
+        "type": SDef.String,
+        // TODO components
+      })) (x) &&
       Sanct.is (SDef.Type) (sol[x.type])
     )
 
-pl['abi_ios'] = SDef.NullaryType ('abi_ios') (pipejs.settings.baseurl+'abi_ios') ([])
+pl["abi_io_event"]  = SDef.NullaryType ('abi_io_event') (pipejs.settings.baseurl+'abi_io_event') ([])
     ( x =>
-      Sanct.is (SDef.Array (pl["abi_io"])) (x) ||
+      Sanct.is (SDef.RecordType({
+        "name": SDef.String,
+        "type": SDef.String,
+        // TODO components
+        "indexed": SDef.Boolean,
+      })) (x) &&
+      Sanct.is (SDef.Type) (sol[x.type])
+    )
+
+pl['abi_ios_function'] = SDef.NullaryType ('abi_ios_function') (pipejs.settings.baseurl+'abi_ios_function') ([])
+    ( x =>
+      Sanct.is (SDef.Array (pl["abi_io_function"])) (x) ||
       Sanct.is (SDef.Array0) (x)
     )
+
+pl['abi_ios_events'] = SDef.NullaryType ('abi_io_event') (pipejs.settings.baseurl+'abi_io_event') ([])
+    ( x =>
+      Sanct.is (SDef.Array (pl["abi_io_event"])) (x) ||
+      Sanct.is (SDef.Array0) (x)
+        )
 
 pl["abi_type"]  = SDef.EnumType
   ('abi_type')
@@ -196,14 +217,28 @@ pl["abi_mutability"]  = SDef.EnumType
   (["pure", "view", "nonpayable", "payable"]);
 
 pl["func_abi"] = SDef.RecordType({
-  "type": pl["abi_type"],
+  "type": pl["abi_type"], // might be missing; default 'function'
   "name": SDef.String,
-  "inputs": pl['abi_ios'],
-  "outputs": pl['abi_ios'],
-  "constant": SDef.Boolean,
-  "payable": SDef.Boolean,
+  "inputs": pl['abi_ios_function'],
+  "outputs": pl['abi_ios_function'],
+  "constant": SDef.Boolean, // will be deprecated
+  "payable": SDef.Boolean, // will be deprecated
   "stateMutability": pl["abi_mutability"],
 })
+
+pl["event_abi"] = SDef.RecordType({
+  "type": pl["abi_type"],
+  "name": SDef.String,
+  "inputs": SDef.Array0,
+  "outputs": pl['abi_ios_events'],
+  "anonymous": SDef.Boolean,
+})
+
+pl["gapi"] = SDef.NullaryType ('gapi') (pipejs.settings.baseurl+'gapi') ([])
+    ( x =>
+      Sanct.is (pl["func_abi"]) (x) ||
+      Sanct.is (pl["event_abi"]) (x)
+    )
 
 pl["cont_abi"] = SDef.Array (pl["func_abi"])
 
@@ -219,7 +254,7 @@ pl["db_func"] = SDef.RecordType({
   "pclassid": pl["mongoid"],
   "pfunction": SDef.RecordType({
     "signature": SDef.String,
-    "gapi": pl["func_abi"],
+    "gapi": pl["gapi"],
     "graph": SDef.Any,
     // "chainids": SDef.Array (SDef.String),
     "sources": SDef.StrMap (SDef.String),
@@ -249,6 +284,24 @@ pl["runtime_graph"] = SDef.RecordType({
   //pipejs.try = {};
   pipejs._currentPoint= {x: 0, y: 1};
   pipejs.indexed_func= {};
+
+  pipejs.set_indexed_func = def ('set_indexed_func') ({})
+    ([pl["id_funcs"], pl["id_funcs"]])
+    (fcontext => {
+      pipejs.indexed_func = fcontext;
+      return pipejs.indexed_func;
+    });
+
+  pipejs.get_indexed_func = def ('get_indexed_func') ({})
+    ([pl["id_funcs"]])
+    (() => pipejs.indexed_func)
+
+  pipejs.add_indexed_func = def ('index_funcs') ({})
+    ([pl["db_func"], pl["id_funcs"]])
+    (added_func => {
+      pipejs.indexed_func[added_func._id] = added_func;
+      return pipejs.indexed_func;
+    });
 
   pipejs.index_funcs= def ('index_funcs') ({})
     ([pl["db_funcs"], pl["id_funcs"]])
