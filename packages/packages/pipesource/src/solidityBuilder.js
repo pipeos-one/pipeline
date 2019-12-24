@@ -14,10 +14,16 @@ const enrichAbi = (pfunc) => {
   const haspayable = enriched.pfunction.gapi.inputs.find(inp => inp.name === PAYABLE_INPUT.name);
   if (haspayable) return enriched;
 
+  if (enriched.pfunction.gapi.type === 'event') {
+    enriched.pfunction.gapi.outputs = JSON.parse(JSON.stringify(enriched.pfunction.gapi.inputs));
+    enriched.pfunction.gapi.inputs = [];
+    return enriched;
+  }
+
   if (enriched.pfunction.gapi.payable) {
     enriched.pfunction.gapi.inputs.push({...PAYABLE_INPUT});
   }
-  if (enriched.pfunction.gapi.outputs.length === 0) {
+  if (enriched.pfunction.gapi.outputs && enriched.pfunction.gapi.outputs.length === 0) {
     enriched.pfunction.gapi.outputs.push({...DEFAULT_OUTPUT});
   }
   return enriched;

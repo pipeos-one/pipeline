@@ -22,6 +22,11 @@ const sourceBuilder = (langBuilder) => (enrichedGraph) => (functionName = "funct
   const enrichedNodes = enrichedGraphSteps(enrichedGraph);
   const inputs = enrichedNodes.shift() || [];
   let outputs = enrichedNodes.pop();
+  const events = enrichedNodes
+    .map(step => step.filter(node => node.record.pfunction.gapi.type === 'event'))
+    .reduce((accum, n) => {
+      return accum.concat(n);
+    }, []);
 
   if (outputs[0].i < 3000) {
     enrichedNodes.push(outputs);
@@ -36,19 +41,26 @@ const sourceBuilder = (langBuilder) => (enrichedGraph) => (functionName = "funct
     }
   }));
 
+  const fdefGapi = {
     name: functionName,
     payable: true,
     stateMutability: stateMapR[stateType],
     inputs: inputs.map(inp => inp.record.pfunction.gapi.outputs_idx[0]),
     outputs: outputs.map(out => out.inputs[0]),
-  }, 'public');
+  }
+  const fdef = langBuilder.fdefinition(fdefGapi, 'public');
 
   // Function body - graph steps
   const body = [].concat(
     ...enrichedNodes.map(row => row.map(langBuilder.buildGraphStep))
   ).join('\n');
 
-  const fsource = langBuilder.buildFunction(fdef, body, outputs.map(out => out.inputs[0]));
+  let fsource;
+  if (events.length > 0 && langBuilder.buildFunctionWithEvents) {
+    fsource = langBuilder.buildFunctionWithEvents(fdefGapi, body, outputs.map(out => out.inputs[0]), events);
+  } else {
+    fsource = langBuilder.buildFunction(fdef, body, outputs.map(out => out.inputs[0]), events);
+  }
 
   const uniqueNodes = [...new Set([].concat(
     ...enrichedNodes
