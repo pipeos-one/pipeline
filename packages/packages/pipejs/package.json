@@ -1,6 +1,6 @@
 {
   "name": "@pipeos/pipejs",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Core library for managing Pipeline graphs",
   "main": "./index.js",
   "browser": "./dist/pipejs.min.js",
