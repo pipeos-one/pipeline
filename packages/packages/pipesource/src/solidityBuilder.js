@@ -35,9 +35,19 @@ const fdefinition = (gapi, visibility = 'public') => {
   const type = gapi.stateMutability !== 'non-payable' ? gapi.stateMutability : '';
 
   const returnSource = outs.length === 0 ? '' : `returns (${outs.join(', ')})`;
-  return `function ${gapi.name}(${ins.join(', ')})
-    ${visibility} ${type}
+
+  let source = `function ${gapi.name}(${ins.join(', ')})
+    ${visibility}`;
+
+  if (type !== '') {
+    source += ` ${type}`;
+  }
+  if (returnSource !== '') {
+    source += `
     ${returnSource}`;
+  }
+
+  return source;
 }
 
 const buildImports = (pclassMap) => {
@@ -136,12 +146,20 @@ const buildGraphStep = (node) => {
 const buildFunction = (fdef, body, outputs) => {
   const freturn = buildFout(foutputsP(outputs));
 
-  return `${fdef}
+  let source = `${fdef}
   {
-${body}
-    ${freturn}
+${body}`
+
+  if (freturn !== '') {
+    source += `
+    ${freturn}`;
   }
-`
+
+  source += `
+  }
+`;
+
+  return source;
 }
 
 const buildFout = outputs => {
