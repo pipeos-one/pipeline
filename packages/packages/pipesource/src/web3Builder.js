@@ -150,8 +150,8 @@ const buildFunctionWithEvents = (fdefGapi, body, outputs, events) => {
 
   return `${fdef}
   {
-    ${eventCall}
-      ${body}
+${eventCall}
+${body}
       ${freturn}
     });
   }
