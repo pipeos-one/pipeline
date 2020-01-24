@@ -5,7 +5,9 @@ The project is in development. Not safe for production use.
 
 ## Use
 
-Use on https://remix.ethereum.org (new design) or http://remix-alpha.ethereum.org. Activate Pipeline from the plugins section.
+[!Update]: **You can use our Pipeline Development Environment with the latest alpha version of the libraries at https://observablehq.com/@loredanacirstea/pipeos-web3-env.**
+
+Use on https://remix.ethereum.org. Activate Pipeline from the plugins section.
 
 Demos: https://www.youtube.com/watch?v=sC7Hd6Sr1SI&list=PL323JufuD9JAyaYCEvrnQ5yOAc3ukuNyF
 
