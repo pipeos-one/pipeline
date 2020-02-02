@@ -25,6 +25,11 @@
             :modalMessage="modalMessage"
             @change="recheckNetwork"
         />
+        <SimpleModal
+            :modalIsActive="modalErrorsIsActive"
+            :modalMessage="modalErrorsMessage"
+            @change="modalErrorsReset"
+        />
     </div>
 </template>
 
@@ -55,6 +60,8 @@ export default {
             ],
             modalIsActive: false,
             modalMessage: '',
+            modalErrorsIsActive: false,
+            modalErrorsMessage: '',
             remixInterfaceWarning: {active: false, msg: ''},
         }
     },
@@ -83,9 +90,14 @@ export default {
               await this.listenNetworkInfo();
               this.setContractsFromRemix();
 
-              Pipeos.remixClient.solidity.on('compilationFinished', (target, source, version, data) => {
-                  this.setContractsFromRemix();
-              })
+              try {
+                Pipeos.remixClient.solidity.on('compilationFinished', (target, source, version, data) => {
+                    this.setContractsFromRemix();
+                })
+              } catch (e) {
+                this.modalErrorsIsActive = true;
+                this.modalErrorsMessage = "Load the Compiler plugin from Remix and reload Pipeline, otherwise some Pipeline features will not work.";
+              }
             }
         },
         ethaddressInput() {
@@ -165,27 +177,36 @@ export default {
                     return compiledContractProcess(result);
                 }
             } catch (e) {
-                throw e;
+              this.modalErrorsIsActive = true;
+              this.modalErrorsMessage = "Load the Compiler plugin from Remix and reload Pipeline, otherwise some Pipeline features will not work.";
             }
             return [];
         },
         deployPipeProxy() {
             if (this.chain === 'JavaScriptVM') {
-                let count =  0;
-                let iid = setInterval(() => {
+                let count = 0;
+                const iid = setInterval(async () => {
                     count ++;
                     if (count > 5) {
                         clearInterval(iid);
+                        this.modalErrorsIsActive = true;
+                        this.modalErrorsMessage = 'Load the Deploy & Run Transactions plugin from Remix, and reload Pipeline. (Pipeline proxy could not be deployed on JavaScriptVM. You might not be able to test Pipeline created contracts on JavaScriptVM.)';
                     }
-                    deployOnJVM(Pipeos.contracts.PipeProxy.compiled.bytecode, '300000', (result) => {
-                        if (result && result.createdAddress) {
-                            Pipeos.contracts.PipeProxy.addresses['JavaScriptVM'] = result.createdAddress;
-                            clearInterval(iid);
-                        }
+                    const receipt = await deployOnJVM(Pipeos.contracts.PipeProxy.compiled.bytecode, '300000').catch(e => {
+                        console.log(e)
                     });
+
+                    if (receipt && receipt.createdAddress) {
+                        Pipeos.contracts.PipeProxy.addresses['JavaScriptVM'] = receipt.createdAddress;
+                        clearInterval(iid);
+                    }
                 }, 4000);
             }
         },
+        modalErrorsReset() {
+          this.modalErrorsIsActive = false;
+          this.modalErrorsMessage = '';
+        }
     }
 }
 </script>
