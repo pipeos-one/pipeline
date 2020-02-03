@@ -184,12 +184,9 @@
 /* eslint-disable */
 
 import Vue from 'vue';
-import PipeGraphs from '@pipeos/pipecanvas';
-import createPipeCanvas from '@pipeos/pipecanvas/src/newpipecanvas';
-import sourceBuilder from '@pipeos/pipecanvas/src/langbuilder/sourceBuilder';
-import solidityBuilder from '@pipeos/pipecanvas/src/langbuilder/solidityBuilder';
-import web3Builder from '@pipeos/pipecanvas/src/langbuilder/web3Builder';
-import {pfunctionColorClass} from '@pipeos/pipecanvas/src/utils';
+import pipecanvas from '@pipeos/pipecanvas';
+import {sourceBuilder, solidityBuilder, web3Builder} from '@pipeos/pipesource';
+import {pfunctionColorClass} from '../utils/utils';
 import Pipeos from '../namespace/namespace';
 import PaginatedList from '../components/PaginatedList';
 import PipeTree from '../components/PipeTree';
@@ -272,8 +269,7 @@ export default {
         deploymentInfo: [],
         jsSource: '',
         graphsSource: [],
-        graphsAbi: null,
-        graphInstance: null,
+        graphsAbi: [],
         pipeGraphs: [],
         pipedContracts: {},
         ethpmDialog: false,
@@ -396,60 +392,16 @@ export default {
         return Math.ceil(response.data.count / limit);
     },
     loadCanvas: function() {
-        this.graphInstance = new PipeGraphs(
-            this.selectedFunctions.reduce((flattened, subarray) => flattened.concat(subarray), []),
-            {
-                onGraphChange: () => {
-                    let deployment_info;
-                    this.contractSource = this.graphInstance.getSource('solidity');
-                    this.graphsSource = this.graphInstance.getSource('graphs');
-                    this.jsSource = this.graphInstance.getSource('javascript');
-                    this.graphsAbi = this.graphInstance.getSource('abi');
-                    deployment_info = this.graphInstance.getSource('constructor');
-                    this.deploymentInfo = [{
-                        funcName: 'proxy',
-                        deployment: Pipeos.contracts.PipeProxy.addresses[this.chain],
-                        contractName: 'PipeProxy',
-                    }];
-
-                    this.deploymentInfo = this.deploymentInfo.concat(
-                        Object.keys(deployment_info).map(funcName => {
-                            let function_id = deployment_info[funcName]
-                            let contract_address;
-                            this.selectedFunctions.forEach(pipedFunction => {
-                                let functionObj = pipedFunction.find(func => func._id == function_id);
-                                if (functionObj) {
-                                    let deployment = functionObj.pclass.deployment.pclassi;
-                                    contract_address = {
-                                        funcName,
-                                        deployment: deployment.openapiid ? `http://${deployment.host}${deployment.basePath}` : deployment.address,
-                                        contractName: functionObj.pclass.name,
-                                    };
-                                }
-                            });
-                            return contract_address;
-                        })
-                    );
-                },
-                onGraphFunctionRemove: (grIndex, nodes) => {
-                    console.log('onGraphFunctionRemove', grIndex, nodes);
-                    // nodes.map(node => {
-                    //     console.log('node', node, this.selectedFunctions[grIndex][node.i]._id);
-                    //     if (this.selectedFunctions[grIndex][node.i]._id === node.id) {
-                    //         this.selectedFunctions[grIndex][node.i].removed = true;
-                    //         console.log('removed');
-                    //     }
-                    // });
-                },
-            }
-        );
-        this.graphInstance.addGraph(`draw_${this.activeCanvas + 1}`);
-
-        const newgraph = createPipeCanvas(
-          this.prepGraphContext(this.selectedFunctions.reduce((flattened, subarray) => flattened.concat(subarray), [])),
-          this.graphsSource[this.activeCanvas],
+      this.addCanvasGraph(this.activeCanvas);
+    },
+    addCanvasGraph: function(activeCanvas) {
+        const newgraph = pipecanvas(
+          this.prepGraphContext(this.selectedFunctions.reduce(
+            (flattened, subarray) => flattened.concat(subarray), [])
+          ),
+          this.graphsSource[activeCanvas],
           {
-            domid: `#draw_canvas${this.activeCanvas + 1}`,
+            domid: `#draw_canvas${activeCanvas + 1}`,
             width: 600,
             height: 400,
           }
@@ -458,29 +410,52 @@ export default {
           const graphsSource = {...new_gr.rich_graph.init};
 
           const gsources = {...this.graphsSource};
-          gsources[this.activeCanvas] = [graphsSource];
+          gsources[activeCanvas] = [graphsSource];
           this.graphsSource = graphsSource;
 
-          // TODO: not all have Solidity code
-          this.contractSource = sourceBuilder(solidityBuilder)(new_gr)(`function${this.activeCanvas}`).source;
+          // TODO: for non-Solidity graphs
+          const contractSource = sourceBuilder(solidityBuilder)(new_gr)(`function${activeCanvas}`);
+          this.contractSource = contractSource.source;
+          this.graphsAbi[activeCanvas] = contractSource.gapi;
 
-          const web3js = sourceBuilder(web3Builder)(new_gr)(`function${this.activeCanvas}`);
+          const web3js = sourceBuilder(web3Builder)(new_gr)(`function${activeCanvas}`);
           const webfixture = `const provider = new ethers.providers.Web3Provider(web3.currentProvider);
 const signer = provider.getSigner();
-const {function00} = pipedGraph(${web3js.arguments.join(', ')}, signer);
+const {function00} = pipedGraph(${web3js.arguments.map(arg => `"${arg}"`).join(', ')}, signer);
 
 function00(...args).then(console.log);
 
 `
           this.jsSource = webfixture + web3js.source;
-
           // const pipedGraph = eval(`(function(){return ${web3js.source}})()`);
           // const {function00} = pipedGraph(...web3js.arguments, signer);
+
+          let deploymentInfo = Object.values(new_gr.rich_graph.init.n).map(node => {
+            return {
+              _id: node.id,
+              funcName: new_gr.context[node.id].pfunction.gapi.name,
+            }
+          });
+          this.deploymentInfo = deploymentInfo.map(node => {
+              let contract_address;
+              this.selectedFunctions.forEach(pipedFunction => {
+                  let functionObj = pipedFunction.find(func => func._id == node._id);
+                  if (functionObj) {
+                      let deployment = functionObj.pclass.deployment.pclassi;
+                      contract_address = {
+                          funcName: node.funcName,
+                          deployment: deployment.openapiid ? `http://${deployment.host}${deployment.basePath}` : deployment.address,
+                          contractName: functionObj.pclass.name,
+                      };
+                  }
+              });
+              return contract_address;
+          });
         });
         newgraph.show();
 
         const graphs = this.pipeGraphs;
-        this.pipeGraphs[this.activeCanvas] = newgraph;
+        this.pipeGraphs[activeCanvas] = newgraph;
     },
     prepGraphContext: function(funcs) {
       let context = {};
@@ -589,7 +564,10 @@ function00(...args).then(console.log);
     },
     onFunctionToggle: function (pfunction) {
         if (pfunction.pfunction.gapi.type === 'event') {
-            if (this.graphInstance.containsEvent(this.activeCanvas)) {
+            const graph = this.pipeGraphs[this.activeCanvas].getGraph();
+            const containsEvent = Object.values(graph.rich_graph.init.n)
+              .find(node => graph.context[node.id].pfunction.gapi.type === 'event');
+            if (containsEvent) {
                 this.simpleModal.active = true;
                 this.simpleModal.msg = 'There can only be one event per graph/tab. You can add another graph/tab by clicking the + button.';
                 this.simpleModal.setBy = ['default'];
@@ -653,11 +631,10 @@ function00(...args).then(console.log);
         });
     },
     setActiveCanvas: function(value) {
-        if (this.graphInstance.getGraphs().length <= value) {
-            this.graphInstance.addGraph(`draw_${value + 1}`);
+        if (this.pipeGraphs.length <= value) {
+            this.addCanvasGraph(value);
         }
         this.activeCanvas = value;
-        this.graphInstance.activeTab(value)
     },
     newCanvasFunction: function() {
         let functions = this.selectedFunctions;

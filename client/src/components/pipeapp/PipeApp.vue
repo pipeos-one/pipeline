@@ -251,14 +251,13 @@ export default {
         }
     },
     methods: {
-        setDeploymentInfo: function() {
-            this.deploymentInfoMap = this.deploymentInfo.slice(1);
-            this.deploymentInfoLast = this.deploymentInfo.map(deployment => {
-                return `"${deployment.deployment}"`;
-            }).join(',');
-
+        setDeploymentInfo: function () {
+            this.deploymentInfoMap = this.deploymentInfo;
+            this.deploymentInfoLast = this.deploymentInfo
+                .map(deployment => `"${deployment.deployment}"`)
+                .join(',');
         },
-        setInitialData: function() {
+        setInitialData: function () {
             this.contractSourceLast = this.contractSource;
             this.graphsSourceLast = JSON.stringify(this.graphsSource);
             this.jsSourceLast = this.jsSource;
