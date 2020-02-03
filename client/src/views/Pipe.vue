@@ -430,27 +430,27 @@ function00(...args).then(console.log);
           // const pipedGraph = eval(`(function(){return ${web3js.source}})()`);
           // const {function00} = pipedGraph(...web3js.arguments, signer);
 
-          let deploymentInfo = Object.values(new_gr.rich_graph.init.n).map(node => {
+          let deploymentInfo = [];
+          Object.values(new_gr.rich_graph.init.n).map(node => {
             return {
               _id: node.id,
               funcName: new_gr.context[node.id].pfunction.gapi.name,
             }
-          });
-          this.deploymentInfo = deploymentInfo.map(node => {
-              let contract_address;
+          }).forEach(node => {
               this.selectedFunctions.forEach(pipedFunction => {
                   let functionObj = pipedFunction.find(func => func._id == node._id);
                   if (functionObj) {
                       let deployment = functionObj.pclass.deployment.pclassi;
-                      contract_address = {
+                      let contract_address = {
                           funcName: node.funcName,
                           deployment: deployment.openapiid ? `http://${deployment.host}${deployment.basePath}` : deployment.address,
                           contractName: functionObj.pclass.name,
                       };
+                      deploymentInfo.push(contract_address);
                   }
               });
-              return contract_address;
           });
+          this.deploymentInfo = deploymentInfo;
         });
         newgraph.show();
 
