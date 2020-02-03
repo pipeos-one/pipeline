@@ -147,6 +147,7 @@
                 :contractSource="contractSource"
                 :deploymentInfo="deploymentInfo"
                 :jsSource="jsSource"
+                :jsSourceFunction="jsSourceFunction"
                 :graphsSource="graphsSource"
                 :graphsAbi="graphsAbi"
                 v-on:load-remix="pipedLoadToRemix"
@@ -268,6 +269,7 @@ export default {
         contractSource: '',
         deploymentInfo: [],
         jsSource: '',
+        jsSourceFunction: null,
         graphsSource: [],
         graphsAbi: [],
         pipeGraphs: [],
@@ -419,16 +421,19 @@ export default {
           this.graphsAbi[activeCanvas] = contractSource.gapi;
 
           const web3js = sourceBuilder(web3Builder)(new_gr)(`function${activeCanvas}`);
-          const webfixture = `const provider = new ethers.providers.Web3Provider(web3.currentProvider);
-const signer = provider.getSigner();
-const {function00} = pipedGraph(${web3js.arguments.map(arg => `"${arg}"`).join(', ')}, signer);
+          const web3jsSourceFunction = (jsSource, runArguments) => `function() {
+  const provider = new ethers.providers.Web3Provider(web3.currentProvider);
+  const signer = provider.getSigner();
+  const graphArguments = [${runArguments.join(', ')}];
+  const {function${activeCanvas}} = pipedGraph(...graphArguments, provider, signer, ethers);
 
-function00(...args).then(console.log);
+  return function${activeCanvas}(...arguments);
 
+  ${jsSource}
+}
 `
-          this.jsSource = webfixture + web3js.source;
-          // const pipedGraph = eval(`(function(){return ${web3js.source}})()`);
-          // const {function00} = pipedGraph(...web3js.arguments, signer);
+          this.jsSource = web3js.source;
+          this.jsSourceFunction = web3jsSourceFunction;
 
           let deploymentInfo = [];
           Object.values(new_gr.rich_graph.init.n).map(node => {

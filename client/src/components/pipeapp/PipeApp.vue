@@ -70,16 +70,6 @@
                         </v-btn>
                         <span>Copy to clipboard</span>
                     </v-tooltip>
-                    <v-tooltip bottom>
-                        <v-btn
-                            small flat fab
-                            slot="activator"
-                            v-on:click="runSource('jsSource')"
-                        >
-                            <v-icon>fa-play</v-icon>
-                        </v-btn>
-                        <span>Run source</span>
-                    </v-tooltip>
                     <v-dialog v-model="dialog" hide-overlay max-width="600px">
                         <!-- <v-tooltip bottom> -->
                             <v-btn
@@ -205,13 +195,14 @@ export default {
         PipeGraph,
         VueQrcode,
     },
-    props: ['chainid', 'contractSource', 'graphsSource', 'jsSource', 'deploymentInfo', 'graphsAbi'],
+    props: ['chainid', 'contractSource', 'graphsSource', 'jsSource', 'jsSourceFunction', 'deploymentInfo', 'graphsAbi'],
     data: () => ({
         contractSourceLast: '',
         graphsSourceLast: '',
         jsSourceLast: '',
+        jsSourceFunctionLast: null,
         deploymentInfoLast: '',
-        deploymentInfoMap: '',
+        deploymentInfoMap: [],
         dialog: false,
         dialogGraph: false,
         pipegraphId: null,
@@ -232,7 +223,10 @@ export default {
             this.graphsSourceLast = JSON.stringify(this.graphsSource);
         },
         jsSource: function() {
-            this.jsSourceLast = this.jsSource;
+            this.setJsSource();
+        },
+        jsSourceFunction: function() {
+          this.jsSourceFunctionLast = this.jsSourceFunction;
         },
         deploymentInfo: function() {
             this.setDeploymentInfo();
@@ -251,26 +245,34 @@ export default {
         }
     },
     methods: {
-        setDeploymentInfo: function () {
+        setDeploymentInfo: function() {
             this.deploymentInfoMap = this.deploymentInfo;
             this.deploymentInfoLast = this.deploymentInfo
                 .map(deployment => `"${deployment.deployment}"`)
                 .join(',');
         },
-        setInitialData: function () {
+        setJsSource: function() {
+          this.jsSourceLast = this.jsSourceFunction ? this.jsSourceFunction(this.jsSource, this.deploymentInfo.map(deployment => `"${deployment.deployment}"`)) : '';
+        },
+        setInitialData: function() {
             this.contractSourceLast = this.contractSource;
             this.graphsSourceLast = JSON.stringify(this.graphsSource);
-            this.jsSourceLast = this.jsSource;
-            let self = this;
+            this.setJsSource();
+        },
+        pipedScriptCallback: function(funcName, returnValues) {
+            let element = document.getElementById(`output_${funcName}`);
+            element.innerHTML = '';
 
-            this.PipedScriptCallback = window.PipedScriptCallback = (funcName, returnValues) => {
-                let element = document.getElementById(`output_${funcName}`);
-                element.innerHTML = '';
-
-                Object.keys(returnValues).forEach((name) => {
-                    element.insertAdjacentHTML('beforeend', `<p>${name}: ${this.prepareOutput(returnValues[name])}</p>`);
-                });
-            }
+            Object.keys(returnValues).forEach((name) => {
+                const value = returnValues[name];
+                const pid = `returnValue_${funcName}_${name}`;
+                element.insertAdjacentHTML('beforeend', `<p class="flex" id="${pid}" style="overflow-y: auto;">${name}: ${this.prepareOutput(value)}</p>`);
+                if (value instanceof Object && value.wait) {
+                    value.wait(2).then(receipt => {
+                        document.getElementById(pid).innerHTML = 'Receipt: ' + JSON.stringify(receipt);
+                    });
+                }
+            });
         },
         prepareOutput: function(value) {
             if (typeof value === 'object') {
@@ -283,33 +285,44 @@ export default {
             document.execCommand("copy");
         },
         runSource: function(reference) {
-            eval(this.$refs[reference].value);
+            window.ethers = ethers;
+            return eval(this.$refs[reference].value);
         },
-        jsArgumentsChange: function(args)  {
+        jsArgumentsChange: async function(fargs)  {
+            console.log('jsArgumentsChange', fargs, JSON.stringify(fargs));
             if (this.dialog) {
-              this.deploymentInfoMap.forEach((deployment) => {
-                  let userValue = this.$refs[deployment.funcName][0].$refs.input.value;
-
-                  if (deployment.deployment != userValue) {
-                      let varName = `deployment_${deployment.funcName}`;
-                      let pattern1 = `const ${varName} = `;
-                      let regex = new RegExp(pattern1 + '.*;');
-                      let replacement = `const ${varName} = "${userValue}";`;
-
-                      this.jsSourceLast = this.jsSourceLast.replace(regex, replacement);
-                  }
-              });
-            }
-            args.forEach((arg, i) => {
-                if (!arg.type.includes('int') && arg.type !== 'bool') {
-                    arg.value = `"${arg.value}"`;
-                }
-                let pattern1 = `let ${arg.name} = `;
-                let regex = new RegExp(pattern1 + '.*;');
-                let replacement = `let ${arg.name} = ${arg.value};`;
+                const newArgs = this.deploymentInfoMap.map((deployment) => {
+                    const userValue = this.$refs[deployment.funcName][0].$refs.input.value;
+                    return userValue || deployment.deployment;
+                }).map(arg => `"${arg}"`).join(', ');
+                const regex = /const graphArguments =.*;/;
+                const replacement = `const graphArguments = [${newArgs}];`;
                 this.jsSourceLast = this.jsSourceLast.replace(regex, replacement);
-            });
-            setTimeout(() => this.runSource('jsSource'), 1000);
+            }
+            const functionArgs = fargs.map(arg => {
+                if (!arg.type.includes('int') && arg.type !== 'bool') {
+                    return `"${arg.value}"`;
+                }
+                return arg.value;
+            }).join(', ');
+
+            setTimeout(async () => {
+                const runnableSource = `(${this.$refs.jsSource.value})(${functionArgs})`;
+                const returnValues = {};
+
+                // TODO activeCanvas
+                try {
+                    const results = await eval(runnableSource);
+                    this.graphsAbi[0].outputs.forEach((out, i) => {
+                        returnValues[out.name] = results[i];
+                    });
+                } catch (error) {
+                    console.error(error);
+                    returnValues['Error'] = JSON.stringify(error);
+                }
+
+                this.pipedScriptCallback(this.graphsAbi[0].name, returnValues);
+            }, 1000);
         },
         setGraphs: function() {
             let graphs = this.$refs['graphsSource'].value;
