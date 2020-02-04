@@ -10,6 +10,9 @@
         "no-plusplus": "off",
         "func-names": "off",
         "import/prefer-default-export": "off",
-        "no-console": "off"
+        "no-console": "off",
+        "arrow-parens": "off",
+        "object-shorthand": "off",
+        "space-before-function-parens": "off"
     }
 }
