@@ -806,10 +806,10 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
-"@pipeos/pipejs@^0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@pipeos/pipejs/-/pipejs-0.0.8.tgz#8933534e7e359ba4dad4a9f081113b026d410d40"
-  integrity sha512-MqPS+R6Bu4yqDJCKu/nTiCTNmdz4DHJNFwuK/g/jvmVriTIr/W2fPfVWPVYv69UEeo5+uCc2bJr/Ozwb0qzSQg==
+"@pipeos/pipejs@^0.0.10":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@pipeos/pipejs/-/pipejs-0.0.10.tgz#df848e21f4561fb0ce6335e6f4859f050eec579a"
+  integrity sha512-fMZbGFDNFqaaNBj3EiFkYnyHy7AfJtOM4BIK9HZmb7LrxYgls/QVkg6VpZ0R50YG7rszjcfUf/7Mw4ADgIXWCw==
   dependencies:
     big-integer "^1.6.48"
     sanctuary "^2.0.1"
