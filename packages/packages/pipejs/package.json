@@ -2,7 +2,6 @@
   "name": "@pipeos/pipejs",
   "version": "0.0.8",
   "description": "Core library for managing Pipeline graphs",
-  "browser": "./dist/pipejs.min.js",
   "main": "./src/index.js",
   "scripts": {
     "build": "webpack --mode production",
