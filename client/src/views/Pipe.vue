@@ -130,7 +130,7 @@
                     <v-tab-item
                         v-for="n in canvases"
                         :key="n"
-                        class="fullheight swiper-margin"
+                        class="fullheight swiper-margin canvasTab"
                     >
                         <canvas :id="'draw_canvas' + n"></canvas>
                         <PipeCanvas :id="'draw_' + n"/>
@@ -206,6 +206,7 @@ import 'swiper/dist/css/swiper.css';
 import {
     randomId,
     compiledContractProcess,
+    debounce,
 } from '../utils/utils';
 
 Vue.use(VueAwesomeSwiper);
@@ -307,8 +308,26 @@ export default {
   mounted() {
     this.loadData();
     this.loadCanvas();
+
+    window.onresize = () => {
+        this.debouncedResize();
+    }
   },
   methods: {
+    debouncedResize: debounce(function() {
+        this.isCalculating = true;
+        setTimeout(function () {
+            this.isCalculating = false;
+            this.pipeGraphs.forEach(graph => {
+                const canvasBox = this.getCanvasBox();
+                graph.setOptions({
+                    width: canvasBox.width,
+                    height: canvasBox.height,
+                });
+                graph.show();
+            });
+        }.bind(this), 300);
+    }, 800),
     setNetworkInfo: function(chain, web3) {
         this.chain = chain;
         this.chain_query = chain === 'JavaScriptVM' ? '' : chain;
@@ -397,7 +416,15 @@ export default {
     loadCanvas: function() {
       this.addCanvasGraph(this.activeCanvas);
     },
+    getCanvasBox() {
+        const parentBox = document.getElementsByClassName("canvasTab")[0].getBoundingClientRect();
+        return {
+          width: parentBox.width,
+          height: Math.min(window.innerHeight, parentBox.height) - 57, // - remix terminal
+        }
+    },
     addCanvasGraph: function(activeCanvas) {
+        const canvasBox = this.getCanvasBox();
         const newgraph = pipecanvas(
           this.prepGraphContext(this.selectedFunctions.reduce(
             (flattened, subarray) => flattened.concat(subarray), [])
@@ -405,8 +432,8 @@ export default {
           this.graphsSource[activeCanvas],
           {
             domid: `#draw_canvas${activeCanvas + 1}`,
-            width: 600,
-            height: 400,
+            width: canvasBox.width,
+            height: canvasBox.height,
           }
         );
         newgraph.onChange(new_gr => {
