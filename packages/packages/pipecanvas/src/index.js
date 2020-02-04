@@ -387,6 +387,18 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
       ctx.textAlign = "left";
       ctx.fillText( port1.name, 0,0 );
       ctx.restore();
+
+      let xt = pos.x-pos.l/2+pos.steps.w*(ndx+0.5)
+      let yt = pos.y-pos.h/2
+      ctx.save();
+      ctx.translate( xt, yt);
+      ctx.rotate( -Math.PI / 4 );
+      ctx.font = (8/1+4)+"px " + pipeopts.font;
+      ctx.fillStyle = pipeopts.colors.portText;
+      ctx.textAlign = "left";
+      ctx.fillText( port1.type, 10,10 );
+      ctx.restore();
+
       ports_pos[[i,ndx+1,0]]={x: x,y: y, type: port1.type}
       // console.log(i)
       if (parseInt(i) < 3000) targets.end_drag[[i,ndx+1]] = {x: x,  y: y, port: {i:i, port:ndx+1, type:port1.type}}
