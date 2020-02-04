@@ -27,6 +27,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
       portText: "#aaaaaa",
       text: "#000000",
     },
+    bodyColorFunction: null,
     font: `Lato,-apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol"`,
   }
   let COMMON_INPUT = (idpart, output) => {
@@ -85,8 +86,8 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     return pipeopts.types[type];
   }
 
-
-  let pipeopts = Object.assign({}, DEFAULT_OPTIONS, options);
+  let coloropts = Object.assign({}, DEFAULT_OPTIONS.colors, options.colors || {});
+  let pipeopts = Object.assign({}, DEFAULT_OPTIONS, options, {colors: coloropts});
   let graph1 = {}
   let current_stage = ({settings:{transform:{}}})
   let current_edge = ({pos:[], target: false})
@@ -350,7 +351,8 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     let nh = pos.h
 
     ports_show(ctx, pos, node.context, ports_pos, node.i)
-    ctx.fillStyle = pipeopts.colors.nodeBody
+    const bodycol = pipeopts.bodyColorFunction ? pipeopts.bodyColorFunction(node.context) : null;
+    ctx.fillStyle = bodycol ? bodycol : pipeopts.colors.nodeBody;
 
     rect1([ctx,pos.x,pos.y,nw,pos.h,pos.h/2])
     targets.for_click[[node.i, 1]] = {l: pos.x-nw/2, r:  pos.x+nw/2-16 , t: pos.y-pos.h/2 , b: pos.y+pos.h/2}

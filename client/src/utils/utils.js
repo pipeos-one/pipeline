@@ -146,3 +146,14 @@ export function pfunctionColorClass(gapi) {
     }
     return colorClass;
 };
+
+export const colorMap = {
+    event: '#C9DEBB',
+    payable: '#CDE0F2',
+    nonconstant: '#E9DEDE',
+};
+
+export function pfunctionColor(gapi) {
+    const colorClass = pfunctionColorClass(gapi);
+    return colorMap[colorClass];
+};
