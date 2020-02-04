@@ -521,6 +521,10 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     }
   }
 
+  function setOptions(newoptions) {
+    Object.assign(pipeopts, newoptions);
+  }
+
   function showGraph() {
     let canvas1 = d3.select(pipeopts.domid).attr('width', pipeopts.width).attr('height', pipeopts.height);
     const ctx1 = canvas1.node().getContext('2d');
@@ -589,6 +593,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
 
   return {
     show: showGraph,
+    setOptions,
     getGraph,
     setGraph,
     pipe: pipe1,
