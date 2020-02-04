@@ -125,7 +125,7 @@ export default {
             }
             if (provider === 'vm') {
                 this.chain = 'JavaScriptVM';
-                this.deployPipeProxy();
+                // this.deployPipeProxy();
             } else if (provider === 'injected') {
                 this.web3 = await getWeb3();
                 this.chain = this.web3.version.network;
@@ -182,27 +182,27 @@ export default {
             }
             return [];
         },
-        deployPipeProxy() {
-            if (this.chain === 'JavaScriptVM') {
-                let count = 0;
-                const iid = setInterval(async () => {
-                    count ++;
-                    if (count > 5) {
-                        clearInterval(iid);
-                        this.modalErrorsIsActive = true;
-                        this.modalErrorsMessage = 'Load the Deploy & Run Transactions plugin from Remix, and reload Pipeline. (Pipeline proxy could not be deployed on JavaScriptVM. You might not be able to test Pipeline created contracts on JavaScriptVM.)';
-                    }
-                    const receipt = await deployOnJVM(Pipeos.contracts.PipeProxy.compiled.bytecode, '300000').catch(e => {
-                        console.log(e)
-                    });
-
-                    if (receipt && receipt.createdAddress) {
-                        Pipeos.contracts.PipeProxy.addresses['JavaScriptVM'] = receipt.createdAddress;
-                        clearInterval(iid);
-                    }
-                }, 4000);
-            }
-        },
+        // deployPipeProxy() {
+        //     if (this.chain === 'JavaScriptVM') {
+        //         let count = 0;
+        //         const iid = setInterval(async () => {
+        //             count ++;
+        //             if (count > 5) {
+        //                 clearInterval(iid);
+        //                 this.modalErrorsIsActive = true;
+        //                 this.modalErrorsMessage = 'Load the Deploy & Run Transactions plugin from Remix, and reload Pipeline. (Pipeline proxy could not be deployed on JavaScriptVM. You might not be able to test Pipeline created contracts on JavaScriptVM.)';
+        //             }
+        //             const receipt = await deployOnJVM(Pipeos.contracts.PipeProxy.compiled.bytecode, '300000').catch(e => {
+        //                 console.log(e)
+        //             });
+        //
+        //             if (receipt && receipt.createdAddress) {
+        //                 Pipeos.contracts.PipeProxy.addresses['JavaScriptVM'] = receipt.createdAddress;
+        //                 clearInterval(iid);
+        //             }
+        //         }, 4000);
+        //     }
+        // },
         modalErrorsReset() {
           this.modalErrorsIsActive = false;
           this.modalErrorsMessage = '';
