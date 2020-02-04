@@ -1,6 +1,6 @@
 {
   "name": "@pipeos/pipecanvas",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Library for visualizing and editing Pipeline graphs in canvas",
   "browser": "./dist/pipecanvas.min.js",
   "main": "./src/index.js",
@@ -10,7 +10,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@pipeos/pipejs": "^0.0.6",
+    "@pipeos/pipejs": "^0.0.8",
     "d3": "^5.14.2"
   },
   "devDependencies": {
