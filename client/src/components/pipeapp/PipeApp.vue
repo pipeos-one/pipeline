@@ -35,7 +35,7 @@
                         <p>With the deployment info provided.</p>
                     </v-tooltip>
                 </v-toolbar>
-                <textarea ref='contractSource' class='source-txtar'>{{contractSourceLast}}</textarea>
+                <textarea ref='contractSource' class='source-txtar' v-model="contractSourceLast[activeCanvas]"></textarea>
             </v-tab-item>
             <v-tab-item
                 key="deployment"
@@ -53,7 +53,7 @@
                         <span>Copy constructor arguments to clipboard</span>
                     </v-tooltip>
                 </v-toolbar>
-                <textarea ref='deploymentInfo' class='source-txtar'>{{deploymentInfoLast}}</textarea>
+                <textarea ref='deploymentInfo' class='source-txtar' v-model="deploymentInfoLast[activeCanvas]"></textarea>
             </v-tab-item>
             <v-tab-item
                 key="js"
@@ -82,7 +82,11 @@
                         </v-tooltip> -->
                         <v-card v-if="dialog">
                             <v-flex xs12
-                                v-for="(instance, i) in deploymentInfoMap"
+                              v-for="(_, canvasIndex) in deploymentInfoMap"
+                              :key="`deployment_canvas_${canvasIndex}`"
+                            >
+                            <v-flex xs12
+                                v-for="(instance, i) in deploymentInfoMap[canvasIndex]"
                                 :key="`deployment_${i}`"
                             >
                                 <v-text-field
@@ -97,16 +101,15 @@
                                 ></v-text-field>
                             </v-flex>
                             <AbiFunction
-                                v-if="graphsAbi.length"
-                                v-for="(funcAbi, i) in graphsAbi"
-                                :key="`function_${i}`"
-                                :abi="funcAbi"
-                                @change="jsArgumentsChange"
+                                :key="`function_${canvasIndex}`"
+                                :abi="graphsAbi[canvasIndex]"
+                                @change="jsArgumentsChange($event, canvasIndex)"
                             />
+                            </v-flex>
                         </v-card>
                     </v-dialog>
                 </v-toolbar>
-                <textarea ref='jsSource' class='source-txtar'>{{jsSourceLast}}</textarea>
+                <textarea ref='jsSource' class='source-txtar' v-model="jsSourceLast[activeCanvas]"></textarea>
             </v-tab-item>
             <v-tab-item
                 key="graph"
@@ -148,7 +151,7 @@
                           </v-card-actions>
                           <v-card-text>
                             <v-container>
-                              <PipeGraph v-model="pipegraphData" :abi="graphsAbi[0]" @change="jsArgumentsChange"/>
+                              <PipeGraph v-model="pipegraphData" :abi="graphsAbi[activeCanvas]" @change="jsArgumentsChange($event, activeCanvas)"/>
                             </v-container>
                           </v-card-text>
                         </v-card>
@@ -159,7 +162,8 @@
                     ref='graphsSource'
                     class='source-txtar'
                     v-on:change="setGraphs"
-                >{{graphsSourceLast}}</textarea>
+                    v-model="JSON.stringify(graphsSourceLast[activeCanvas])"
+                ></textarea>
             </v-tab-item>
             <v-tab-item
                 key="qrcode"
@@ -195,13 +199,13 @@ export default {
         PipeGraph,
         VueQrcode,
     },
-    props: ['chainid', 'contractSource', 'graphsSource', 'jsSource', 'jsSourceFunction', 'deploymentInfo', 'graphsAbi'],
+    props: ['chainid', 'contractSources', 'graphsSource', 'jsSources', 'jsSourcesFunction', 'deploymentInfo', 'graphsAbi', 'activeCanvas'],
     data: () => ({
-        contractSourceLast: '',
-        graphsSourceLast: '',
-        jsSourceLast: '',
-        jsSourceFunctionLast: null,
-        deploymentInfoLast: '',
+        contractSourceLast: [],
+        graphsSourceLast: [],
+        jsSourceLast: [],
+        jsSourceFunctionLast: [],
+        deploymentInfoLast: [],
         deploymentInfoMap: [],
         dialog: false,
         dialogGraph: false,
@@ -209,24 +213,21 @@ export default {
         pipegraphData: null,
         qrcodeValue: null,
     }),
-    created: function() {
+    mounted: function() {
         this.setInitialData();
     },
-    mounted: function() {
-        this.setDeploymentInfo();
-    },
     watch: {
-        contractSource: function() {
-            this.contractSourceLast = this.contractSource;
+        contractSources: function() {
+            this.contractSourceLast = this.contractSources;
         },
         graphsSource: function() {
-            this.graphsSourceLast = JSON.stringify(this.graphsSource);
+            this.graphsSourceLast = this.graphsSource;
         },
-        jsSource: function() {
+        jsSources: function() {
             this.setJsSource();
         },
-        jsSourceFunction: function() {
-          this.jsSourceFunctionLast = this.jsSourceFunction;
+        jsSourcesFunction: function() {
+          this.jsSourceFunctionLast = this.jsSourcesFunction;
         },
         deploymentInfo: function() {
             this.setDeploymentInfo();
@@ -248,16 +249,23 @@ export default {
         setDeploymentInfo: function() {
             this.deploymentInfoMap = this.deploymentInfo;
             this.deploymentInfoLast = this.deploymentInfo
-                .map(deployment => `"${deployment.deployment}"`)
-                .join(',');
+                .map(graph => {
+                    return graph.map(deployment => `"${deployment.deployment}"`).join(',');
+                });
         },
         setJsSource: function() {
-          this.jsSourceLast = this.jsSourceFunction ? this.jsSourceFunction(this.jsSource, this.deploymentInfo.map(deployment => `"${deployment.deployment}"`)) : '';
+            this.jsSourceLast = this.jsSources.map((source, i) => {
+                return this.jsSourcesFunction[i] ? this.jsSourcesFunction[i](
+                    source,
+                    this.deploymentInfo[i].map(deployment => `"${deployment.deployment}"`)
+                ) : '';
+            });
         },
         setInitialData: function() {
-            this.contractSourceLast = this.contractSource;
-            this.graphsSourceLast = JSON.stringify(this.graphsSource);
+            this.contractSourceLast = this.contractSources;
+            this.graphsSourceLast = this.graphsSource;
             this.setJsSource();
+            this.setDeploymentInfo();
         },
         pipedScriptCallback: function(funcName, returnValues) {
             let element = document.getElementById(`output_${funcName}`);
@@ -288,40 +296,48 @@ export default {
             window.ethers = ethers;
             return eval(this.$refs[reference].value);
         },
-        jsArgumentsChange: async function(fargs)  {
-            console.log('jsArgumentsChange', fargs, JSON.stringify(fargs));
+        jsArgumentsChange: async function(fargs, activeCanvas) {
             if (this.dialog) {
-                const newArgs = this.deploymentInfoMap.map((deployment) => {
+                const newArgs = this.deploymentInfoMap[activeCanvas].map((deployment) => {
                     const userValue = this.$refs[deployment.funcName][0].$refs.input.value;
                     return userValue || deployment.deployment;
                 }).map(arg => `"${arg}"`).join(', ');
                 const regex = /const graphArguments =.*;/;
                 const replacement = `const graphArguments = [${newArgs}];`;
-                this.jsSourceLast = this.jsSourceLast.replace(regex, replacement);
+                this.jsSourceLast[activeCanvas] = this.jsSourceLast[activeCanvas].replace(regex, replacement);
             }
-            const functionArgs = fargs.map(arg => {
-                if (!arg.type.includes('int') && arg.type !== 'bool') {
-                    return `"${arg.value}"`;
-                }
-                return arg.value;
-            }).join(', ');
-
+            const sourcecode = this.jsSourceLast[activeCanvas];
+            // const sourcecode = this.$refs.jsSource.value;
             setTimeout(async () => {
-                const runnableSource = `(${this.$refs.jsSource.value})(${functionArgs})`;
+                const runnableSource = `(function(){return ${sourcecode}})()`;
                 const returnValues = {};
+                const self = this;
+                const funcName = this.graphsAbi[activeCanvas].name;
+                const outputsAbi = this.graphsAbi[activeCanvas].outputs;
 
-                // TODO activeCanvas
                 try {
-                    const results = await eval(runnableSource);
-                    this.graphsAbi[0].outputs.forEach((out, i) => {
-                        returnValues[out.name] = results[i];
-                    });
+                    const runnableFunction = await eval(runnableSource);
+
+                    if (fargs.length > 0) {
+                        const results = await runnableFunction(...fargs.map(arg => arg.value));
+                        outputsAbi.forEach((out, i) => {
+                            returnValues[out.name] = results[i];
+                        });
+                    } else {
+                        runnableFunction(function(...results) {
+                            console.log('runnableFunction callback', results);
+                            outputsAbi.forEach((out, i) => {
+                                returnValues[out.name] = results[i];
+                            });
+                            self.pipedScriptCallback(funcName, returnValues);
+                        });
+                    }
                 } catch (error) {
                     console.error(error);
-                    returnValues['Error'] = JSON.stringify(error);
+                    returnValues['Error'] = error;
                 }
 
-                this.pipedScriptCallback(this.graphsAbi[0].name, returnValues);
+                this.pipedScriptCallback(funcName, returnValues);
             }, 1000);
         },
         setGraphs: function() {
@@ -329,27 +345,28 @@ export default {
             if (graphs) {
                 // TODO handle validation after using a proper v-textarea with error messages
                 // validate json & graph format (build json schema)
-                this.$emit('set-graphs', JSON.parse(graphs));
+                this.graphsSourceLast[this.activeCanvas] = JSON.parse(graphs);
+                this.$emit('set-graphs', this.graphsSourceLast);
             }
         },
         savePipeGraph: function() {
-          const graphData = this.pipegraphData;
-          graphData.json = this.$refs['graphsSource'].value;
-          graphData.chainids = [this.chainid];
+            const graphData = this.pipegraphData;
+            graphData.json = this.$refs['graphsSource'].value;
+            graphData.chainids = [this.chainid];
 
-          axios.post(Pipeos.pipeserver.api.graph, graphData).then((response) => {
-            this.pipegraphId = response.data._id;
-            this.dialogGraph = false;
-            this.$emit('saved', response.data);
-          });
+            axios.post(Pipeos.pipeserver.api.graph, graphData).then((response) => {
+                this.pipegraphId = response.data._id;
+                this.dialogGraph = false;
+                this.$emit('saved', response.data);
+            });
         },
         setGraphData() {
-          // TODO: multiple graphs here - treat them differently
-          // TODO: link graphs somehow
-          this.pipegraphData = this.pipegraphData || {
-            name: 'Graph Name',
-            markdown: '# Graph Dapp',
-          };
+            // TODO: multiple graphs here - treat them differently
+            // TODO: link graphs somehow
+            this.pipegraphData = this.pipegraphData || {
+                name: 'Graph Name',
+                markdown: '# Graph Dapp',
+            };
         },
     },
 };

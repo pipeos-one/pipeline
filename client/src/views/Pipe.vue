@@ -144,14 +144,15 @@
           <v-container class="thincontainer fit">
             <PipeApp
                 :chainid="chain"
-                :contractSource="contractSource"
+                :activeCanvas="activeCanvas"
+                :contractSources="contractSources"
                 :deploymentInfo="deploymentInfo"
-                :jsSource="jsSource"
-                :jsSourceFunction="jsSourceFunction"
+                :jsSources="jsSources"
+                :jsSourcesFunction="jsSourcesFunction"
                 :graphsSource="graphsSource"
                 :graphsAbi="graphsAbi"
                 v-on:load-remix="pipedLoadToRemix"
-                v-on:set-graphs="setCanvasGraph"
+                v-on:set-graphs="setCanvasGraphs"
                 v-on:saved="onSavedGraph"
             />
           </v-container>
@@ -266,10 +267,10 @@ export default {
         selectedContainers: [],
         filterOptions,
         pipeJs: {},
-        contractSource: '',
+        contractSources: [],
         deploymentInfo: [],
-        jsSource: '',
-        jsSourceFunction: null,
+        jsSources: [],
+        jsSourcesFunction: [],
         graphsSource: [],
         graphsAbi: [],
         pipeGraphs: [],
@@ -409,16 +410,10 @@ export default {
           }
         );
         newgraph.onChange(new_gr => {
-          const graphsSource = {...new_gr.rich_graph.init};
-
-          const gsources = {...this.graphsSource};
-          gsources[activeCanvas] = [graphsSource];
-          this.graphsSource = graphsSource;
+          const graphSource = {...new_gr.rich_graph.init};
 
           // TODO: for non-Solidity graphs
           const contractSource = sourceBuilder(solidityBuilder)(new_gr)(`function${activeCanvas}`);
-          this.contractSource = contractSource.source;
-          this.graphsAbi[activeCanvas] = contractSource.gapi;
 
           const web3js = sourceBuilder(web3Builder)(new_gr)(`function${activeCanvas}`);
           const web3jsSourceFunction = (jsSource, runArguments) => `function() {
@@ -432,9 +427,6 @@ export default {
   ${jsSource}
 }
 `
-          this.jsSource = web3js.source;
-          this.jsSourceFunction = web3jsSourceFunction;
-
           let deploymentInfo = [];
           Object.values(new_gr.rich_graph.init.n).map(node => {
             return {
@@ -455,12 +447,38 @@ export default {
                   }
               });
           });
-          this.deploymentInfo = deploymentInfo;
+
+          this.updateGraphChange(activeCanvas, graphSource, contractSource, web3js.source, web3jsSourceFunction, deploymentInfo);
         });
         newgraph.show();
 
         const graphs = this.pipeGraphs;
         this.pipeGraphs[activeCanvas] = newgraph;
+    },
+    updateGraphChange: function(activeCanvas, graphSource, contractSource, jsSource, jsSourceFunction, deploymentInfo) {
+        const graphsSource = JSON.parse(JSON.stringify(this.graphsSource));
+        graphsSource[activeCanvas] = [graphSource];
+        this.graphsSource = graphsSource;
+
+        const contractSources = JSON.parse(JSON.stringify(this.contractSources));
+        contractSources[activeCanvas] = [contractSource.source];
+        this.contractSources = contractSources;
+
+        const graphsAbi = JSON.parse(JSON.stringify(this.graphsAbi));
+        graphsAbi[activeCanvas] = contractSource.gapi;
+        this.graphsAbi = graphsAbi;
+
+        const jsSources = JSON.parse(JSON.stringify(this.jsSources));
+        jsSources[activeCanvas] = jsSource;
+        this.jsSources = jsSources;
+
+        const deploymentInfos = JSON.parse(JSON.stringify(this.deploymentInfo));
+        deploymentInfos[activeCanvas] = deploymentInfo;
+        this.deploymentInfo = deploymentInfos;
+
+        const jsSourcesFunction = this.jsSourcesFunction;
+        jsSourcesFunction[activeCanvas] = jsSourceFunction;
+        this.jsSourcesFunction = jsSourcesFunction;
     },
     prepGraphContext: function(funcs) {
       let context = {};
@@ -583,7 +601,7 @@ export default {
         this.selectedFunctions[this.activeCanvas].push(pfunction);
         this.addToCanvas(pfunction, this.activeCanvas);
     },
-    setCanvasGraph: function(graphs) {
+    setCanvasGraphs: function(graphs) {
         graphs.forEach((graph, i) => {
             Object.values(graph.n).forEach(node => {
                 let pfunction;
@@ -841,7 +859,7 @@ export default {
     pipedLoadToRemix: function() {
         let self = this;
         let name = `PipedContract_${randomId()}.sol`;
-        this.loadToRemixCall(name, this.contractSource);
+        this.loadToRemixCall(name, this.contractSources[this.activeCanvas]);
         this.pipedContracts[name] = null;
 
         if (this.chain === 'JavaScriptVM') return;
@@ -892,7 +910,7 @@ export default {
       // } catch (e) {
       //   console.error('Could not parse graph');
       // }
-      // // this.setCanvasGraph(pipegraph.json);
+      // // this.setCanvasGraphs(pipegraph.json);
       // this.graphData = pipegraph;
     },
   }
