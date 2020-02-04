@@ -1,6 +1,6 @@
 {
   "name": "@pipeos/pipesource",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Library for building source code from a Pipeline graph",
   "main": "src/index.js",
   "scripts": {
@@ -19,7 +19,11 @@
     "webpack-cli": "^3.3.9"
   },
   "files": [
-    "dist/pipesource.min.js"
+    "dist/pipesource.min.js",
+    "src/enrichedGraphSteps.js",
+    "src/sourceBuilder.js",
+    "src/solidityBuilder.js",
+    "src/web3Builder.js"
   ],
   "repository": {
     "type": "git",
