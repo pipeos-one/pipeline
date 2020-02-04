@@ -82,7 +82,11 @@
                         </v-tooltip> -->
                         <v-card v-if="dialog">
                             <v-flex xs12
-                                v-for="(instance, i) in deploymentInfoMap[activeCanvas]"
+                              v-for="(_, canvasIndex) in deploymentInfoMap"
+                              :key="`deployment_canvas_${canvasIndex}`"
+                            >
+                            <v-flex xs12
+                                v-for="(instance, i) in deploymentInfoMap[canvasIndex]"
                                 :key="`deployment_${i}`"
                             >
                                 <v-text-field
@@ -97,12 +101,11 @@
                                 ></v-text-field>
                             </v-flex>
                             <AbiFunction
-                                v-if="graphsAbi.length"
-                                v-for="(funcAbi, i) in graphsAbi"
-                                :key="`function_${i}`"
-                                :abi="funcAbi"
-                                @change="jsArgumentsChange"
+                                :key="`function_${canvasIndex}`"
+                                :abi="graphsAbi[canvasIndex]"
+                                @change="jsArgumentsChange($event, canvasIndex)"
                             />
+                            </v-flex>
                         </v-card>
                     </v-dialog>
                 </v-toolbar>
@@ -148,7 +151,7 @@
                           </v-card-actions>
                           <v-card-text>
                             <v-container>
-                              <PipeGraph v-model="pipegraphData" :abi="graphsAbi[activeCanvas]" @change="jsArgumentsChange"/>
+                              <PipeGraph v-model="pipegraphData" :abi="graphsAbi[activeCanvas]" @change="jsArgumentsChange($event, activeCanvas)"/>
                             </v-container>
                           </v-card-text>
                         </v-card>
@@ -293,40 +296,48 @@ export default {
             window.ethers = ethers;
             return eval(this.$refs[reference].value);
         },
-        jsArgumentsChange: async function(fargs)  {
-            console.log('jsArgumentsChange', fargs, JSON.stringify(fargs));
+        jsArgumentsChange: async function(fargs, activeCanvas) {
             if (this.dialog) {
-                const newArgs = this.deploymentInfoMap[this.activeCanvas].map((deployment) => {
+                const newArgs = this.deploymentInfoMap[activeCanvas].map((deployment) => {
                     const userValue = this.$refs[deployment.funcName][0].$refs.input.value;
                     return userValue || deployment.deployment;
                 }).map(arg => `"${arg}"`).join(', ');
                 const regex = /const graphArguments =.*;/;
                 const replacement = `const graphArguments = [${newArgs}];`;
-                this.jsSourceLast[this.activeCanvas] = this.jsSourceLast[this.activeCanvas].replace(regex, replacement);
+                this.jsSourceLast[activeCanvas] = this.jsSourceLast[activeCanvas].replace(regex, replacement);
             }
-            const functionArgs = fargs.map(arg => {
-                if (!arg.type.includes('int') && arg.type !== 'bool') {
-                    return `"${arg.value}"`;
-                }
-                return arg.value;
-            }).join(', ');
-
+            const sourcecode = this.jsSourceLast[activeCanvas];
+            // const sourcecode = this.$refs.jsSource.value;
             setTimeout(async () => {
-                const runnableSource = `(${this.$refs.jsSource.value})(${functionArgs})`;
+                const runnableSource = `(function(){return ${sourcecode}})()`;
                 const returnValues = {};
+                const self = this;
+                const funcName = this.graphsAbi[activeCanvas].name;
+                const outputsAbi = this.graphsAbi[activeCanvas].outputs;
 
-                // TODO activeCanvas
                 try {
-                    const results = await eval(runnableSource);
-                    this.graphsAbi[0].outputs.forEach((out, i) => {
-                        returnValues[out.name] = results[i];
-                    });
+                    const runnableFunction = await eval(runnableSource);
+
+                    if (fargs.length > 0) {
+                        const results = await runnableFunction(...fargs.map(arg => arg.value));
+                        outputsAbi.forEach((out, i) => {
+                            returnValues[out.name] = results[i];
+                        });
+                    } else {
+                        runnableFunction(function(...results) {
+                            console.log('runnableFunction callback', results);
+                            outputsAbi.forEach((out, i) => {
+                                returnValues[out.name] = results[i];
+                            });
+                            self.pipedScriptCallback(funcName, returnValues);
+                        });
+                    }
                 } catch (error) {
                     console.error(error);
-                    returnValues['Error'] = JSON.stringify(error);
+                    returnValues['Error'] = error;
                 }
 
-                this.pipedScriptCallback(this.graphsAbi[0].name, returnValues);
+                this.pipedScriptCallback(funcName, returnValues);
             }, 1000);
         },
         setGraphs: function() {
