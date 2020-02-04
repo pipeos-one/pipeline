@@ -188,7 +188,6 @@
 import Vue from 'vue';
 import pipecanvas from '@pipeos/pipecanvas';
 import {sourceBuilder, solidityBuilder, web3Builder} from '@pipeos/pipesource';
-import {pfunctionColorClass} from '../utils/utils';
 import Pipeos from '../namespace/namespace';
 import PaginatedList from '../components/PaginatedList';
 import PipeTree from '../components/PipeTree';
@@ -206,6 +205,8 @@ import 'swiper/dist/css/swiper.css';
 import {
     randomId,
     compiledContractProcess,
+    pfunctionColor,
+    pfunctionColorClass,
     debounce,
 } from '../utils/utils';
 
@@ -434,6 +435,7 @@ export default {
             domid: `#draw_canvas${activeCanvas + 1}`,
             width: canvasBox.width,
             height: canvasBox.height,
+            bodyColorFunction: pfunctionColor,
           }
         );
         newgraph.onChange(new_gr => {

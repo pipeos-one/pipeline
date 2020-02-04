@@ -1,16 +1,15 @@
 {
   "name": "@pipeos/pipecanvas",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "description": "Library for visualizing and editing Pipeline graphs in canvas",
-  "browser": "./dist/pipecanvas.min.js",
-  "main": "./src/index.js",
+  "main": "src/index.js",
   "scripts": {
     "build": "webpack --mode production",
     "test": "jest",
     "lint": "eslint src"
   },
   "dependencies": {
-    "@pipeos/pipejs": "^0.0.6",
+    "@pipeos/pipejs": "^0.0.10",
     "d3": "^5.14.2"
   },
   "devDependencies": {
