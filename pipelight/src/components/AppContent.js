@@ -28,6 +28,7 @@ class AppContent extends Component {
 
     this.state = {
       ...this.getWindowDimensions(),
+      pageSizes: this.getPageSizes(),
       selectedFunctions: [],
       pipeContext: [],
       canvases: 1,
@@ -95,8 +96,11 @@ class AppContent extends Component {
   //   }
   // }
 
-  getCanvasSize(width, height) {
-    return getPageSize(3 / 2, { width, height: height - this.FOOTER_HEIGHT });
+  getPageSizes(width, height) {
+    return {
+      canvas: getPageSize(3 / 2, { width, height: height - this.FOOTER_HEIGHT }),
+      page: getPageSize(3, { width, height }),
+    }
   }
 
   getWindowDimensions() {
@@ -111,16 +115,15 @@ class AppContent extends Component {
   }
 
   addCanvasGraph(activeCanvas) {
-    const { width, height } = this.state;
-    const canvasStyles = this.getCanvasSize(width, height);
-    console.log('canvasStyles', canvasStyles)
+    const { width, height } = this.state.pageSizes.canvas;
+
     const newgraph = pipecanvas(
       this.state.pipeContext[activeCanvas],
       this.state.graphsSource[activeCanvas],
       {
+        width,
+        height,
         domid: `#draw_canvas${activeCanvas}`,
-        width: canvasStyles.width,
-        height: canvasStyles.height,
         bodyColorFunction: pfunctionColor,
       }
     );
@@ -188,11 +191,15 @@ class AppContent extends Component {
   }
 
   onContentSizeChange() {
-    const dims = this.getWindowDimensions();
-    this.setState(dims);
+    const { width, height } = this.getWindowDimensions();
+    const pageSizes = this.getPageSizes(width, height);
+
+    this.setState({ width, height, pageSizes });
     this.state.pipeGraphs.forEach(pipegraph => {
-      const { width, height } = this.getCanvasSize(dims.width, dims.height);
-      pipegraph.setOptions({ width, height });
+      pipegraph.setOptions({
+        width: pageSizes.canvas.width,
+        height: pageSizes.canvas.height
+      });
       pipegraph.show();
     });
   }
@@ -230,13 +237,13 @@ class AppContent extends Component {
   }
 
   onGoToPipeoutput() {
-    const { width, height } = this.state;
-    const sizes = getPageSize(3, { width, height });
-    this.scrollRef.current.scrollTo({x: sizes.width, y: 0, animated: true});
+    const width = this.state.pageSizes.page.width + this.state.pageSizes.canvas.width;
+    this.scrollRef.current.scrollTo({x: width, y: 0, animated: true});
   }
 
   onGoToPipecanvas() {
-    this.scrollRef.current.scrollTo({x: 0, y: 0, animated: true});
+    const width = this.state.pageSizes.page.width;
+    this.scrollRef.current.scrollTo({x: width, y: 0, animated: true});
   }
 
   onGoToPiperun() {
@@ -244,10 +251,8 @@ class AppContent extends Component {
   }
 
   render() {
-    const { width, height, canvases, activeCanvas, treedata } = this.state;
-    const pageStyles = getPageSize(3, { width, height });
-    const canvasStyles = this.getCanvasSize(width, height);
-    console.log('render canvasStyles', canvasStyles)
+    const { pageSizes, canvases, activeCanvas, treedata } = this.state;
+
     // const canvasTabs = new Array(canvases).fill(0).map((canvas, i) => {
     //   return (
     //     <canvas id={'draw_canvas' + i} key={i}></canvas>
@@ -264,6 +269,7 @@ class AppContent extends Component {
           <Button
             small bordered dark
             onClick={() => this.setState({ activeCanvas: i })}
+            style={ styles.tabButtonStyle }
           >
             <Text>{'f_' + i}</Text>
           </Button>
@@ -291,16 +297,16 @@ class AppContent extends Component {
         onContentSizeChange={this.onContentSizeChange}
       >
         <Workspace
-          styles={{ ...this.props.styles, ...pageStyles }}
+          styles={{ ...this.props.styles, ...pageSizes.page }}
           onToggleItem={this.onToggleItem}
-          onGoToSearchList={ () => {} }
+          onGoBack={this.onGoToPipecanvas}
           onRemove={ () => {} }
           treedata={treedata}
         />
 
         <View style={{...this.props.styles, flex: 1}}>
           <View style={{
-            ...canvasStyles,
+            ...pageSizes.canvas,
             flex: 1,
             backgroundColor: "#fafafa"
           }}>
@@ -339,14 +345,14 @@ class AppContent extends Component {
         </View>
 
         <Pipeoutput
-          styles={{ ...this.props.styles, ...pageStyles }}
+          styles={{ ...this.props.styles, ...pageSizes.page }}
           data={this.state.pipeoutput}
           remixClient={this.remixClient}
           goBack={this.onGoToPipecanvas}
           onJsRun={this.onGoToPiperun}
         />
         <FunctionCall
-          styles={{ ...this.props.styles, ...pageStyles }}
+          styles={{ ...this.props.styles, ...pageSizes.page }}
           web3={this.web3}
           item={this.state.piperun}
           onRun={this.onPiperun}
@@ -366,5 +372,10 @@ const styles = StyleSheet.create(
       backgroundColor: '#cccccc',
       marginLeft: 15,
     },
+    tabButtonStyle: {
+      borderRadius: 10,
+      borderWidth: 1,
+      textTransform: 'lowercase',
+    }
   }
 )

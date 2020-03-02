@@ -42,9 +42,8 @@ export default function Workspace(props) {
         borderTopColor: '#cccccc',
       }}>
         <Right>
-          <Button small rounded style={styles.buttonStyle} onClick={() => console.log(treedata)}>
-            <Text>{treedata.length}</Text>
-            <Icon type="MaterialCommunityIcons" name='import' />
+          <Button small rounded style={styles.buttonStyle} onClick={props.onGoBack}>
+            <Icon type="MaterialCommunityIcons" name='chevron-right' />
           </Button>
         </Right>
       </View>

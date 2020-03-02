@@ -7,6 +7,7 @@ import {
   Button,
   Icon,
   Left,
+  Right,
 } from 'native-base';
 import { clipboardCopy } from '@pipeos/react-pipeos-components';
 import { uploadToFileManager } from '../utils/remix.js';
@@ -62,12 +63,14 @@ class Pipeoutput extends Component {
         activeViewText = soliditySource.source || '';
         outputActiveTabButtons.push((
           <TabSubBtn
+            key={1}
             icon={copyIcon}
             callback={() => clipboardCopy(activeViewText)}
           />
         ));
         outputActiveTabButtons.push((
           <TabSubBtn
+            key={2}
             icon={uploadIcon}
             callback={() => uploadToFileManager(remixClient)(activeViewText)}
           />
@@ -77,6 +80,7 @@ class Pipeoutput extends Component {
         activeViewText = JSON.stringify(deploymentArgs.map(dep => dep.address)) || '';
         outputActiveTabButtons.push((
           <TabSubBtn
+            key={3}
             icon={copyIcon}
             callback={() => clipboardCopy(activeViewText)}
           />
@@ -86,12 +90,14 @@ class Pipeoutput extends Component {
         activeViewText = web3jsSource.source || '';
         outputActiveTabButtons.push((
           <TabSubBtn
+            key={4}
             icon={copyIcon}
             callback={() => clipboardCopy(activeViewText)}
           />
         ));
         outputActiveTabButtons.push((
           <TabSubBtn
+            key={5}
             icon={playIcon}
             callback={onJsRun}
           />
@@ -101,6 +107,7 @@ class Pipeoutput extends Component {
         activeViewText = JSON.stringify(graphSource);
         outputActiveTabButtons.push((
           <TabSubBtn
+            key={6}
             icon={copyIcon}
             callback={() => clipboardCopy(activeViewText)}
           />
@@ -133,6 +140,7 @@ class Pipeoutput extends Component {
           small bordered dark
           key={i}
           onClick={() => this.setState({ activetab: name })}
+          style={ styles.tabButtonStyle }
         >
           <Text>{ name }</Text>
         </Button>
@@ -169,7 +177,9 @@ class Pipeoutput extends Component {
               <Icon type="MaterialCommunityIcons" name='chevron-left' />
             </Button>
           </Left>
-          { outputTabButtons }
+          <Right>
+            <View style={{ flexDirection: "row", flex: 1 }}>{ outputTabButtons }</View>
+          </Right>
         </View>
       </View>
     )
@@ -184,5 +194,10 @@ const styles = StyleSheet.create(
       backgroundColor: '#cccccc',
       marginLeft: 15,
     },
+    tabButtonStyle: {
+      borderRadius: 10,
+      borderWidth: 1,
+      textTransform: 'lowercase',
+    }
   }
 )
