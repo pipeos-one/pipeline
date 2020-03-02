@@ -335,6 +335,7 @@ class AppContent extends Component {
         <Pipeoutput
           styles={{ ...this.props.styles, ...pageStyles }}
           data={this.state.pipeoutput}
+          remixClient={this.remixClient}
           goBack={this.onGoToPipecanvas}
           onJsRun={this.onGoToPiperun}
         />

@@ -7,9 +7,26 @@ import {
   Button,
   Icon,
   Left,
-  Right,
 } from 'native-base';
-import { outputTabs } from '../config/pipeoutput';
+import { clipboardCopy } from '@pipeos/react-pipeos-components';
+import { uploadToFileManager } from '../utils/remix.js';
+
+function TabSubBtn(props) {
+  const { icon, callback } = props;
+  return (
+    <Button
+      small rounded
+      style={ styles.buttonStyle }
+      onClick={ callback }
+    >
+      <Icon type={ icon.type } name={ icon.name } />
+    </Button>
+  );
+}
+
+const copyIcon = {name: 'content-copy', type: 'MaterialCommunityIcons'};
+const uploadIcon = {name: 'upload', type: 'MaterialCommunityIcons'};
+const playIcon = {name: 'play', type: 'MaterialCommunityIcons'};
 
 class Pipeoutput extends Component {
   constructor(props) {
@@ -21,16 +38,16 @@ class Pipeoutput extends Component {
   }
 
   render() {
-    const { onJsRun } = this.props;
+    const { onJsRun, remixClient } = this.props;
     const {
       soliditySource={},
       deploymentArgs=[],
       web3jsSource={},
       graphSource={},
     } = this.props.data;
-    console.log('Pipeoutput', this.props.data);
-
     const { activetab } = this.state;
+
+    console.log('Pipeoutput', this.props.data);
 
     const textareaStyles = {
       minWidth: this.props.styles.minWidth - 5,
@@ -38,19 +55,62 @@ class Pipeoutput extends Component {
     }
 
     let activeViewText;
+    let outputActiveTabButtons = [];
 
-    switch(this.state.activetab) {
+    switch(activetab) {
       case 'sol':
         activeViewText = soliditySource.source || '';
+        outputActiveTabButtons.push((
+          <TabSubBtn
+            icon={copyIcon}
+            callback={() => clipboardCopy(activeViewText)}
+          />
+        ));
+        outputActiveTabButtons.push((
+          <TabSubBtn
+            icon={uploadIcon}
+            callback={() => uploadToFileManager(remixClient)(activeViewText)}
+          />
+        ));
         break;
       case 'deploy':
         activeViewText = JSON.stringify(deploymentArgs.map(dep => dep.address)) || '';
+        outputActiveTabButtons.push((
+          <TabSubBtn
+            icon={copyIcon}
+            callback={() => clipboardCopy(activeViewText)}
+          />
+        ));
         break;
       case 'js':
         activeViewText = web3jsSource.source || '';
+        outputActiveTabButtons.push((
+          <TabSubBtn
+            icon={copyIcon}
+            callback={() => clipboardCopy(activeViewText)}
+          />
+        ));
+        outputActiveTabButtons.push((
+          <TabSubBtn
+            icon={playIcon}
+            callback={onJsRun}
+          />
+        ));
         break;
       case 'graph':
         activeViewText = JSON.stringify(graphSource);
+        outputActiveTabButtons.push((
+          <TabSubBtn
+            icon={copyIcon}
+            callback={() => clipboardCopy(activeViewText)}
+          />
+        ));
+        // outputActiveTabButtons.push((
+        //   <TabSubBtn
+        //     icon={uploadIcon}
+        //     callback={() => uploadToFileManager(activeViewText)}
+        //   />
+        // ));
         break;
       default:
         activeViewText = '';
@@ -66,33 +126,18 @@ class Pipeoutput extends Component {
       />
     )
 
-    // Run js
-    outputTabs[2].buttons[1].callback = () => onJsRun('source');
-
-    const outputTabButtons = outputTabs.map((tab, i) => {
+    const tabNames = ['sol', 'deploy', 'js', 'graph'];
+    const outputTabButtons = tabNames.map((name, i) => {
       return (
         <Button
           small bordered dark
           key={i}
-          onClick={() => this.setState({ activetab: tab.name })}
+          onClick={() => this.setState({ activetab: name })}
         >
-          <Text>{ tab.name }</Text>
+          <Text>{ name }</Text>
         </Button>
       )
     });
-
-    const outputActiveTabButtons = outputTabs.find(tab => tab.name === activetab).buttons.map((btn, i) => {
-      return (
-        <Button
-          small rounded
-          style={ styles.buttonStyle }
-          key={i}
-          onClick={ () => btn.callback(activeViewText) }
-        >
-          <Icon type={ btn.icon.type } name={ btn.icon.name } />
-        </Button>
-      );
-    })
 
     return (
       <View style={{ ...this.props.styles, flex: 1 }}>

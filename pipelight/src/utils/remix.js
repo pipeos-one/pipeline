@@ -22,3 +22,20 @@ export async function createRemixClient(callbacks) {
   await pluginClient.onload();
   return pluginClient;
 }
+
+export const uploadToFileManager = remixClient => source => {
+  let name = `PipedContract_${new Date().getTime()}.sol`;
+  let fileName = `browser/${name}`;
+  try {
+    remixClient.call(
+        'fileManager',
+        'setFile',
+        fileName,
+        source,
+    );
+    return true;
+  } catch(e) {
+    console.error(`${fileName}, uploadToFileManager failed`, e);
+    return false;
+  }
+}
