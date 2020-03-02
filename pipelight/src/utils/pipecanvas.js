@@ -8,7 +8,7 @@ export function getPipegraphInfo(new_gr, activeCanvas, selectedFunctions) {
   const soliditySource = sourceBuilder(solidityBuilder)(new_gr)(`function${activeCanvas}`);
 
   const web3jsSource = sourceBuilder(web3Builder)(new_gr)(`function${activeCanvas}`);
-  const web3jsSourceFunction = (jsSource, runArguments) => `function() {
+  const web3jsSourceFunction = (jsSource, runArguments) => `function runGraph() {
   const provider = new ethers.providers.Web3Provider(web3.currentProvider);
   const signer = provider.getSigner();
   const graphArguments = [${runArguments.join(', ')}];

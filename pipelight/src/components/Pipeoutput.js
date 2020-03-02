@@ -45,6 +45,7 @@ class Pipeoutput extends Component {
       deploymentArgs=[],
       web3jsSource={},
       graphSource={},
+      web3jsSourceFunction,
     } = this.props.data;
     const { activetab } = this.state;
 
@@ -87,7 +88,11 @@ class Pipeoutput extends Component {
         ));
         break;
       case 'js':
-        activeViewText = web3jsSource.source || '';
+        activeViewText = web3jsSourceFunction(
+          web3jsSource.source || '',
+          [...new Set(deploymentArgs.map(depl => depl.address))]
+            .map(address => `"${address}"`),
+        );
         outputActiveTabButtons.push((
           <TabSubBtn
             key={4}

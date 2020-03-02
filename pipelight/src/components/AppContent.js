@@ -48,6 +48,7 @@ class AppContent extends Component {
     this.onToggleItem = this.onToggleItem.bind(this);
     this.onClearCanvas = this.onClearCanvas.bind(this);
     this.onAddCanvas = this.onAddCanvas.bind(this);
+    this.onGoToWorkspace = this.onGoToWorkspace.bind(this);
     this.onGoToPipeoutput = this.onGoToPipeoutput.bind(this);
     this.onGoToPipecanvas = this.onGoToPipecanvas.bind(this);
     this.onGoToPiperun = this.onGoToPiperun.bind(this);
@@ -237,13 +238,21 @@ class AppContent extends Component {
     this.setState({ selectedFunctions: [] });
   }
 
+  onGoToWorkspace() {
+    this.scrollRef.current.scrollTo({x: 0, y: 0, animated: true});
+  }
+
   onGoToPipeoutput() {
-    const width = this.state.pageSizes.page.width + this.state.pageSizes.canvas.width;
+    const { pageSizes } = this.state;
+    let width = pageSizes.page.width;
+    if (pageSizes.page.width === pageSizes.canvas.width) {
+      width += pageSizes.canvas.width;
+    }
     this.scrollRef.current.scrollTo({x: width, y: 0, animated: true});
   }
 
   onGoToPipecanvas() {
-    const width = this.state.pageSizes.page.width;
+    const { width } = this.state.pageSizes.page;
     this.scrollRef.current.scrollTo({x: width, y: 0, animated: true});
   }
 
@@ -349,7 +358,7 @@ class AppContent extends Component {
           styles={{ ...this.props.styles, ...pageSizes.page }}
           data={this.state.pipeoutput}
           remixClient={this.remixClient}
-          goBack={this.onGoToPipecanvas}
+          goBack={this.onGoToWorkspace}
           onJsRun={this.onGoToPiperun}
         />
         <FunctionCall
