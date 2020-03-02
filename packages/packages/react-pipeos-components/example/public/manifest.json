@@ -1,0 +1,8 @@
+{
+  "short_name": "@pipeos/react-pipeos-components",
+  "name": "@pipeos/react-pipeos-components",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}
