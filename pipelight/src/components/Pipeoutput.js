@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { StyleSheet } from 'react-native';
 import {
   View,
   Text,
@@ -11,6 +10,7 @@ import {
 } from 'native-base';
 import { clipboardCopy } from '@pipeos/react-pipeos-components';
 import { uploadToFileManager } from '../utils/remix.js';
+import styles from './Styles.js';
 
 function TabSubBtn(props) {
   const { icon, callback } = props;
@@ -187,17 +187,3 @@ class Pipeoutput extends Component {
 }
 
 export default Pipeoutput;
-
-const styles = StyleSheet.create(
-  {
-    buttonStyle: {
-      backgroundColor: '#cccccc',
-      marginLeft: 15,
-    },
-    tabButtonStyle: {
-      borderRadius: 10,
-      borderWidth: 1,
-      textTransform: 'lowercase',
-    }
-  }
-)

@@ -38,6 +38,8 @@ export default class FunctionCall extends Component {
       outputs: this.initOutputsState(),
     }
 
+    this.buttonStyle = props.buttonStyle || styles.buttonStyle;
+
     this.onValueChange = this.onValueChange.bind(this);
     this.onRun = this.onRun.bind(this);
   }
@@ -190,12 +192,12 @@ export default class FunctionCall extends Component {
           borderTopColor: '#cccccc',
         }}>
           <Left>
-            <Button small rounded style={styles.buttonStyle} onClick={this.props.onInfoClosed} >
+            <Button small rounded style={this.buttonStyle} onClick={this.props.onInfoClosed} >
               <Icon type='MaterialCommunityIcons' name='close' />
             </Button>
           </Left>
           <Right>
-            <Button small rounded style={styles.buttonStyle} onClick={this.onRun} >
+            <Button small rounded style={this.buttonStyle} onClick={this.onRun} >
               <Icon type='MaterialCommunityIcons' name='play' />
             </Button>
           </Right>

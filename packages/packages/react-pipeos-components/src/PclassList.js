@@ -18,6 +18,8 @@ export default class PclassList extends Component {
   constructor(props) {
     super(props);
 
+    this.buttonStyle = props.buttonStyle || styles.buttonStyle;
+
     this._renderHeader = this._renderHeader.bind(this);
     this._renderContent = this._renderContent.bind(this);
     this._renderListItem = this._renderListItem.bind(this);
@@ -28,7 +30,7 @@ export default class PclassList extends Component {
       return (
         <Button
           small rounded
-          style={styles.buttonStyle}
+          style={this.buttonStyle}
           key={i}
           onClick={() => btn.callback(item)}
         >
@@ -69,7 +71,7 @@ export default class PclassList extends Component {
 
   _renderContent(item) {
     let { pfunctionColor } = this.props;
-    if (!pfunctionColor) pfunctionColor = pfunctionColorDefault;
+    pfunctionColor = pfunctionColor || pfunctionColorDefault;
 
     const pfunctions = [];
     (item.pfunctions || []).forEach(pfunction => {
@@ -91,7 +93,7 @@ export default class PclassList extends Component {
         return (
           <Button
             small rounded
-            style={styles.buttonStyle}
+            style={this.buttonStyle}
             key={i}
             onClick={() => btn.callback({ pfunction, pclass: item })}
           >

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Dimensions, StyleSheet, ScrollView } from 'react-native';
+import { Dimensions, ScrollView } from 'react-native';
 import {
   View,
   Button,
@@ -20,6 +20,7 @@ import { getPipegraphInfo } from '../utils/pipecanvas.js';
 import { getWeb3 } from '../utils/utils.js';
 import { createRemixClient } from '../utils/remix.js';
 import testtreedata from '../utils/fixtures.js';
+import styles from './Styles.js';
 
 
 class AppContent extends Component {
@@ -353,6 +354,7 @@ class AppContent extends Component {
         />
         <FunctionCall
           styles={{ ...this.props.styles, ...pageSizes.page }}
+          buttonStyle={styles.buttonStyle}
           web3={this.web3}
           item={this.state.piperun}
           onRun={this.onPiperun}
@@ -365,17 +367,3 @@ class AppContent extends Component {
 }
 
 export default AppContent;
-
-const styles = StyleSheet.create(
-  {
-    buttonStyle: {
-      backgroundColor: '#cccccc',
-      marginLeft: 15,
-    },
-    tabButtonStyle: {
-      borderRadius: 10,
-      borderWidth: 1,
-      textTransform: 'lowercase',
-    }
-  }
-)

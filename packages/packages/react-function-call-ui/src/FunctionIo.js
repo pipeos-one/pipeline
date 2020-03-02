@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { StyleSheet } from 'react-native';
 import {
   View,
   Icon,
@@ -167,11 +166,3 @@ export default class FunctionIo extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create(
-  {
-    buttonStyle: {
-      backgroundColor: '#cccccc',
-    },
-  }
-)

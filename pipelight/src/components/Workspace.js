@@ -1,13 +1,12 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
 import {
   View,
   Right,
   Icon,
   Button,
-  Text,
 } from 'native-base';
 import { PclassList, pfunctionColor } from '@pipeos/react-pipeos-components';
+import styles from './Styles.js';
 
 export default function Workspace(props) {
   const { treedata } = props;
@@ -30,6 +29,7 @@ export default function Workspace(props) {
         data={treedata}
         buttons={buttons}
         styles={props.styles}
+        buttonStyle={styles.buttonStyle}
         pfunctionColor={pfunctionColor}
       />
 
@@ -50,11 +50,3 @@ export default function Workspace(props) {
     </View>
   )
 }
-
-const styles = StyleSheet.create(
-  {
-    buttonStyle: {
-      backgroundColor: '#cccccc',
-    },
-  },
-)
