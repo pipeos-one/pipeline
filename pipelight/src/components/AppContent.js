@@ -188,7 +188,13 @@ class AppContent extends Component {
   }
 
   onContentSizeChange() {
-    this.setState(this.getWindowDimensions());
+    const dims = this.getWindowDimensions();
+    this.setState(dims);
+    this.state.pipeGraphs.forEach(pipegraph => {
+      const { width, height } = this.getCanvasSize(dims.width, dims.height);
+      pipegraph.setOptions({ width, height });
+      pipegraph.show();
+    });
   }
 
   onToggleItem({ pfunction, pclass }) {
