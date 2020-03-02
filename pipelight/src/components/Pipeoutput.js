@@ -27,7 +27,6 @@ class Pipeoutput extends Component {
       deploymentArgs=[],
       web3jsSource={},
       graphSource={},
-      web3jsSourceFunction,
     } = this.props.data;
     console.log('Pipeoutput', this.props.data);
 
@@ -88,7 +87,7 @@ class Pipeoutput extends Component {
           small rounded
           style={ styles.buttonStyle }
           key={i}
-          onClick={ btn.callback }
+          onClick={ () => btn.callback(activeViewText) }
         >
           <Icon type={ btn.icon.type } name={ btn.icon.name } />
         </Button>

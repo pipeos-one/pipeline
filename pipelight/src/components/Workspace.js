@@ -7,8 +7,7 @@ import {
   Button,
   Text,
 } from 'native-base';
-import { PclassList } from '@pipeos/react-pipeos-components';
-import { pfunctionColor } from '../utils/utils.js';
+import { PclassList, pfunctionColor } from '@pipeos/react-pipeos-components';
 
 export default function Workspace(props) {
   const { treedata } = props;

@@ -12,6 +12,7 @@ import {
   Button,
   Thumbnail,
 } from 'native-base';
+import { pfunctionColor as pfunctionColorDefault } from './utils.js';
 
 export default class PclassList extends Component {
   constructor(props) {
@@ -67,7 +68,9 @@ export default class PclassList extends Component {
   }
 
   _renderContent(item) {
-    const { pfunctionColor } = this.props;
+    let { pfunctionColor } = this.props;
+    if (!pfunctionColor) pfunctionColor = pfunctionColorDefault;
+
     const pfunctions = [];
     (item.pfunctions || []).forEach(pfunction => {
       if (!pfunction.data.name) return;

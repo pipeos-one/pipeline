@@ -1,10 +1,12 @@
+import { clipboardCopy } from '@pipeos/react-pipeos-components';
+
 export const outputTabs = [
   {
     name: 'sol',
     buttons: [
       {
         icon: {name: 'content-copy', type: 'MaterialCommunityIcons'},
-        callback: () => {},
+        callback: clipboardCopy,
       },
       {
         icon: {name: 'upload', type: 'MaterialCommunityIcons'},
@@ -17,7 +19,7 @@ export const outputTabs = [
     buttons: [
       {
         icon: {name: 'content-copy', type: 'MaterialCommunityIcons'},
-        callback: () => {},
+        callback: clipboardCopy,
       },
     ]
   },
@@ -26,7 +28,7 @@ export const outputTabs = [
     buttons: [
       {
         icon: {name: 'content-copy', type: 'MaterialCommunityIcons'},
-        callback: () => {},
+        callback: clipboardCopy,
       },
       {
         icon: {name: 'play', type: 'MaterialCommunityIcons'},
@@ -39,7 +41,7 @@ export const outputTabs = [
     buttons: [
       {
         icon: {name: 'content-copy', type: 'MaterialCommunityIcons'},
-        callback: () => {},
+        callback: clipboardCopy,
       },
       {
         icon: {name: 'upload', type: 'MaterialCommunityIcons'},

@@ -23,33 +23,6 @@ export const getWeb3 = async () => {
     return web3Instance;
 };
 
-export function pfunctionColorClass(gapi) {
-    let colorClass = '';
-    if (gapi.type === 'event') {
-        colorClass = 'event';
-    } else if (gapi.payable) {
-        colorClass = 'payable';
-    } else if (!gapi.constant) {
-        colorClass = 'nonconstant';
-    } else {
-      colorClass = 'constant';
-    }
-    return colorClass;
-};
-
-export const colorMap = {
-    event: '#C9DEBB',
-    payable: '#CDE0F2',
-    nonconstant: '#E9DEDE',
-    constant: 'rgb(240, 239, 245)',
-};
-
-export function pfunctionColor(gapi) {
-    const colorClass = pfunctionColorClass(gapi);
-    return colorMap[colorClass];
-};
-
-
 const MIN_WIDTH = 800;
 export function getPageSize(noOfPages, {width, height}) {
   let pagewidth = width;
