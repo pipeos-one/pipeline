@@ -19,7 +19,6 @@ import { getPageSize } from '../utils/utils.js';
 import { getPipegraphInfo } from '../utils/pipecanvas.js';
 import { getWeb3 } from '../utils/utils.js';
 import { createRemixClient } from '../utils/remix.js';
-import testtreedata from '../utils/fixtures.js';
 import styles from './Styles.js';
 
 
@@ -38,7 +37,7 @@ class AppContent extends Component {
       graphsSource: [],
       pipeoutput: {},
       piperun: { pfunction: {gapi: {inputs: [], outputs: []}}, deployment: {} },
-      treedata: testtreedata,
+      treedata: [],
     }
 
     this.FOOTER_HEIGHT = 41;
@@ -330,18 +329,7 @@ class AppContent extends Component {
             borderTopWidth: 1,
             borderTopColor: '#cccccc',
           }}>
-            <Left>
-              <Button
-                small rounded
-                style={styles.buttonStyle}
-                onClick={this.onAddCanvas}
-              >
-                <Icon name="add" />
-              </Button>
-            </Left>
-            <View style={{flexDirection: "row", alignItems: "center"}}>
-              {canvasTabButtons}
-            </View>
+
             <Right>
               <Button
                 small rounded
@@ -376,3 +364,16 @@ class AppContent extends Component {
 }
 
 export default AppContent;
+
+// <Left>
+//   <Button
+//     small rounded
+//     style={styles.buttonStyle}
+//     onClick={this.onAddCanvas}
+//   >
+//     <Icon name="add" />
+//   </Button>
+// </Left>
+// <View style={{flexDirection: "row", alignItems: "center"}}>
+//   {canvasTabButtons}
+// </View>

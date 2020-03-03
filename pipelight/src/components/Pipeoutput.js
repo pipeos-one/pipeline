@@ -88,11 +88,11 @@ class Pipeoutput extends Component {
         ));
         break;
       case 'js':
-        activeViewText = web3jsSourceFunction(
+        activeViewText = web3jsSourceFunction ? web3jsSourceFunction(
           web3jsSource.source || '',
           [...new Set(deploymentArgs.map(depl => depl.address))]
             .map(address => `"${address}"`),
-        );
+        ): '';
         outputActiveTabButtons.push((
           <TabSubBtn
             key={4}
