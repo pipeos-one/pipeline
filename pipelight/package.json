@@ -1,0 +1,48 @@
+{
+  "name": "pipelight",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@pipeos/pipecanvas": "^0.0.8",
+    "@pipeos/pipesource": "^0.0.7",
+    "@pipeos/react-function-call-ui": "^0.0.1",
+    "@pipeos/react-pipeos-components": "^0.0.1",
+    "@remixproject/plugin": "^0.1.18",
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.3.2",
+    "@testing-library/user-event": "^7.1.2",
+    "ethers": "^4.0.45",
+    "native-base": "^2.13.8",
+    "react": "^16.13.0",
+    "react-art": "^16.13.0",
+    "react-dom": "^16.13.0",
+    "react-native-web": "^0.11.6",
+    "react-scripts": "3.4.0",
+    "roboto-fontface": "^0.10.0"
+  },
+  "scripts": {
+    "start": "react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "customize-cra": "^0.9.1",
+    "react-app-rewired": "^2.1.5"
+  }
+}

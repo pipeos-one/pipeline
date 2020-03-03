@@ -16,8 +16,23 @@ const stateMapR = {
 
 const sourceBuilder = (langBuilder) => (enrichedGraph) => (functionName = "function00") => {
   if (!langBuilder) throw new Error('Language not available');
-  if (enrichedGraph.runnable_graph.length === 0) {
-    return {source: '', inputs: [], outputs: []};
+
+  const runlen = enrichedGraph.runnable_graph.length;
+  if (
+    runlen === 0
+    || (runlen === 1 && enrichedGraph.runnable_graph[0].length === 0)
+  ) {
+    return {
+      source: '',
+      gapi: {
+        name: functionName,
+        payable: false,
+        stateMutability: 'pure',
+        inputs: [],
+        outputs: [],
+      },
+      arguments: []
+    };
   }
   const enrichedNodes = enrichedGraphSteps(enrichedGraph);
   const inputs = enrichedNodes.shift() || [];
