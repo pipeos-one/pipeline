@@ -329,7 +329,15 @@ class AppContent extends Component {
             borderTopWidth: 1,
             borderTopColor: '#cccccc',
           }}>
-
+            <Left>
+              <Button
+                small rounded
+                style={styles.buttonStyle}
+                onClick={this.onGoToWorkspace}
+              >
+                <Icon type="MaterialCommunityIcons" name='chevron-left' />
+              </Button>
+            </Left>
             <Right>
               <Button
                 small rounded
