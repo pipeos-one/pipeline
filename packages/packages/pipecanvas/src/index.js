@@ -548,13 +548,13 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
   }
 
   function addFunction(pfunction, index) {
-    console.log('addFunction pfunction', pfunction);
+    // console.log('addFunction pfunction', pfunction);
     pipe1.add_indexed_func(pfunction);
-    console.log(current_stage.settings.r_graph);
+    // console.log(current_stage.settings.r_graph);
     const lastIndex = Math.max(100,
       ...Object.keys(current_stage.settings.r_graph.rich_graph.init.n).filter(key => key < 3000)
     );
-    console.log('lastIndex', lastIndex);
+    // console.log('lastIndex', lastIndex);
     let new_gr = JSON.parse(JSON.stringify(current_stage.settings.r_graph.rich_graph.init))
 
     new_gr = pipe1.add_node(new_gr) ({i: lastIndex + 1, id: pfunction._id})
