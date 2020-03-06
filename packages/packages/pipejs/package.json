@@ -9,6 +9,7 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@pipeos/sanctuary-types": "0.0.1",
     "big-integer": "^1.6.48",
     "sanctuary": "^2.0.1",
     "sanctuary-def": "^0.20.1"

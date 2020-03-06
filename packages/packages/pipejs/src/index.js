@@ -4,11 +4,13 @@ const Sanct = require ('sanctuary');
 const SDef = require ('sanctuary-def');
 const bigInt = require("big-integer");
 
+import * as pipeosTypes from '@pipeos/sanctuary-types';
+
 function pipe() {
   window.S = Sanct;
 
   let pipejs = {
-    sol: {},
+    types: pipeosTypes.pipeos,
     settings: {
       id: "5bc59e192817116e84bdd831",
       baseurl: "http://example.com/my-package#",
@@ -25,12 +27,7 @@ function pipe() {
         "sources": {"javascript":"f=>f"},
         "graph":{},
         "gapi":{"constant":true,"inputs":[typing],"name":"io","outputs":[typing],"payable":false,"stateMutability":"view","type":"function"},
-        // "chainids":["3"]
       },
-      // "tags": ["pipeline"],
-      // "categories":{
-      //   "tags":[]
-      // },
       "timestamp":"2019-03-22T14:38:36.112Z",
       "pclass": {
         _id: "0x0",
@@ -41,85 +38,12 @@ function pipe() {
     }
   }
 
-  let sol = {}
-  let zero = bigInt();
-  let two = bigInt(2);
-
-  let cast = type => obj => {
-    const names = Object.keys (type.types);
-    const types = Object.values (type.types);
-    const values = Object.values (obj);
-    return values.length === types.length &&
-           values.every ((v, idx) => Sanct.is (types[idx]) (v))
-           ? Sanct.unchecked.fromPairs (Sanct.unchecked.zip (names) (values))
-           : Sanct.Nothing;
-  };
-
   let env = SDef.env;
 
   let def = SDef.create ({
     checkTypes: true,
     env,
   });
-
-  let like = t1 => t2 =>
-    t1.type === 'RECORD' &&
-    t2.type === 'RECORD' &&
-    Sanct.equals (Object.values (t1.types)) (Object.values (t2.types));
-
-
-  Sanct.map (((y)=>{
-  sol["uint"+y*8] = SDef.NullaryType
-  ('uint'+y*8)
-  ('uint'+y*8)
-  ([])
-  (x => bigInt.isInstance(x) &&
-        x.geq(0) &&
-        x.lesser(two.pow(new bigInt(y*8))));
-
-  sol["int"+y*8] = SDef.NullaryType
-    ('int'+y*8)
-    ('int'+y*8)
-    ([])
-    (x => bigInt.isInstance(x) &&
-          x.geq(-two.pow(new bigInt(y*8-1))) &&
-          x.lesser(two.pow(new bigInt(y*8-1))));
-
-  sol["bytes"+y] = SDef.NullaryType
-    ('bytes'+y)
-    ('bytes'+y)
-    ([])
-    (x => bigInt.isInstance(x) &&
-          x.geq(0) &&
-          x.lesser(two.pow(new bigInt(y*8))));
-})) (Sanct.range (1) (33));
-
-  pipejs.sol = sol;
-  pipejs.addType= function (name, type){
-    pipejs.sol[name] = type
-  }
-
-  let types =
-  [
-    ["string", SDef.String],
-    ["bytes" , SDef.String],
-    ["number", SDef.Number],
-    ["number[]", SDef.Array(SDef.Number)],
-    ["string", SDef.String],
-    ["string[]", SDef.Array(SDef.String)],
-    ["object", SDef.Object],
-    ["object[]", SDef.Array(SDef.Object)],
-    ["function", SDef.Any],
-    ["address", pipejs.sol["bytes20"]],
-    ["byte", pipejs.sol["bytes1"]],
-    ["uint", pipejs.sol["uint256"]],
-    ["int", pipejs.sol["int256"]],
-    ["bool", pipejs.sol["uint8"]],
-    ["tuple", SDef.Any], // has to bbe better defined SDef.RecordType
-    ["any", SDef.Any]
-  ]
-  //console.log(types)
-  types.map(x=>pipejs.addType(x[0],x[1]))
 
   let pl = {}
   pl["mongoid"] = SDef.NullaryType  ('mongoid') (pipejs.settings.baseurl+'mongoid') ([])
@@ -145,7 +69,7 @@ pl["rich_edge"] = SDef.NullaryType  ('edge') (pipejs.settings.baseurl+'edge') ([
   (x  => Sanct.is (SDef.RecordType({
     "e": pl["edge"], "svg_id": SDef.String, "type": SDef.String
     })) (x) &&
-    Sanct.is (SDef.Type) (sol[x.type])
+    Sanct.is (SDef.Type) (pipejs.types[x.type])
   )
 // pl["rich_edge"] = SDef.NullaryType  ('edge') (baseurl+'edge') ([])
 //   (x => Sanct.is (SDef.Array (SDef.Number)) (x) && Sanct.equals (5) (x.length) )
@@ -180,7 +104,7 @@ pl["abi_io_function"]  = SDef.NullaryType ('abi_io_function') (pipejs.settings.b
         "type": SDef.String,
         // TODO components
       })) (x) &&
-      Sanct.is (SDef.Type) (sol[x.type])
+      Sanct.is (SDef.Type) (pipejs.types[x.type])
     )
 
 pl["abi_io_event"]  = SDef.NullaryType ('abi_io_event') (pipejs.settings.baseurl+'abi_io_event') ([])
@@ -191,7 +115,7 @@ pl["abi_io_event"]  = SDef.NullaryType ('abi_io_event') (pipejs.settings.baseurl
         // TODO components
         "indexed": SDef.Boolean,
       })) (x) &&
-      Sanct.is (SDef.Type) (sol[x.type])
+      Sanct.is (SDef.Type) (pipejs.types[x.type])
     )
 
 pl['abi_ios_function'] = SDef.NullaryType ('abi_ios_function') (pipejs.settings.baseurl+'abi_ios_function') ([])
