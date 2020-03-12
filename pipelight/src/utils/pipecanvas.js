@@ -1,7 +1,9 @@
+import { ethers } from 'ethers';
 import {sourceBuilder, solidityBuilder, web3Builder} from '@pipeos/pipesource';
 
-export function getPipegraphInfo(new_gr, activeCanvas, selectedFunctions) {
-  console.log('onChange new_gr', new_gr);
+export function getPipegraphInfo(newGraph, activeCanvas, selectedFunctions) {
+  console.log('onChange new_gr', newGraph);
+  const new_gr = JSON.parse(JSON.stringify(newGraph));
   const graphSource = {...new_gr.rich_graph.init};
 
   // TODO: for non-Solidity graphs
@@ -20,6 +22,7 @@ export function getPipegraphInfo(new_gr, activeCanvas, selectedFunctions) {
 }
 `
   let deploymentArgs = [];
+  let graphStepsAbi = {};
   Object.values(new_gr.rich_graph.init.n).map(node => {
     return {
       _id: node.id,
@@ -37,6 +40,16 @@ export function getPipegraphInfo(new_gr, activeCanvas, selectedFunctions) {
                 contractName: functionObj.pclass.data.name,
             };
             deploymentArgs.push(contract_address);
+
+            const abii = new ethers.utils.Interface([functionObj.data.gapi]);
+
+            graphStepsAbi[functionObj._id] = {
+                name: node.funcName,
+                abi: functionObj.data.gapi,
+                signature: abii.functions[functionObj.data.gapi.name].sighash,
+                deployment: deployment.openapiid ? `http://${deployment.host}${deployment.basePath}` : deployment.address,
+                contractName: functionObj.pclass.data.name,
+            }
         }
     });
       // selectedFunctions.forEach(pipedFunction => {
@@ -53,5 +66,5 @@ export function getPipegraphInfo(new_gr, activeCanvas, selectedFunctions) {
       // });
   });
 
-  return { soliditySource, deploymentArgs, web3jsSource, graphSource, web3jsSourceFunction }
+  return { soliditySource, deploymentArgs, web3jsSource, graphSource, web3jsSourceFunction, graphStepsAbi }
 }

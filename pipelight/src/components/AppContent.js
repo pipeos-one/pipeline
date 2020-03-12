@@ -10,7 +10,7 @@ import {
 } from 'native-base';
 import { ethers } from 'ethers';
 import pipecanvas from '@pipeos/pipecanvas';
-import { solidityBuilder } from '@pipeos/pipesource';
+import { solidityBuilder, enrichedGraphSteps } from '@pipeos/pipesource';
 import { FunctionCall } from '@pipeos/react-function-call-ui';
 import { pfunctionColor } from '@pipeos/react-pipeos-components';
 import Workspace from './Workspace.js';
@@ -19,6 +19,10 @@ import { getPageSize } from '../utils/utils.js';
 import { getPipegraphInfo } from '../utils/pipecanvas.js';
 import { getWeb3 } from '../utils/utils.js';
 import { createRemixClient } from '../utils/remix.js';
+import { getInterpreter } from '../utils/interpreter.js';
+import { saveGraph } from '../utils/graph.js';
+import { getEtherscanTx } from '../utils/chain.js';
+import { buildinterpreterArgs, buildinterpreterInputs } from '../utils/interpreter.js';
 import styles from './Styles.js';
 
 
@@ -38,6 +42,10 @@ class AppContent extends Component {
       pipeoutput: {},
       piperun: { pfunction: {gapi: {inputs: [], outputs: []}}, deployment: {} },
       treedata: [],
+      pipeinterpreter: {},
+      web3: null,
+      storedGraph: null,
+      runInterpreter: false,
     }
 
     this.FOOTER_HEIGHT = 41;
@@ -52,6 +60,10 @@ class AppContent extends Component {
     this.onGoToPipecanvas = this.onGoToPipecanvas.bind(this);
     this.onGoToPiperun = this.onGoToPiperun.bind(this);
     this.onPiperun = this.onPiperun.bind(this);
+    this.saveGraph = this.saveGraph.bind(this);
+    this.onRunInterpreter = this.onRunInterpreter.bind(this);
+    this.onJsRun = this.onJsRun.bind(this);
+    this.onInterpreterRun = this.onInterpreterRun.bind(this);
 
     this.loadData = this.loadData.bind(this);
 
@@ -69,7 +81,11 @@ class AppContent extends Component {
   }
 
   async setWeb3() {
-    this.web3 = await getWeb3();
+    const web3 = await getWeb3();
+    this.setState({
+      web3,
+      pipeinterpreter: getInterpreter(web3),
+    });
   }
 
   async setRemixClient() {
@@ -115,6 +131,78 @@ class AppContent extends Component {
     return dims;
   }
 
+  async saveGraph(name) {
+    const graphData = {
+      data: {
+        name,
+        markdown: '# ' + name,
+      },
+      metadata: {categories: ['pgraph']},
+    }
+    const chainid = parseInt(this.state.web3.version.network);
+    const { savedGraph, receipt } = await saveGraph(
+      chainid,
+      this.state.pipeinterpreter.full,
+      graphData,
+      this.state.pipeoutput,
+    );
+    console.log('response', savedGraph, receipt, receipt.transactionHash);
+
+    this.setState({ storedGraph: savedGraph });
+    const link = getEtherscanTx(chainid, receipt.transactionHash);
+    return { savedGraph, link };
+  }
+
+  onJsRun() {
+    this.setState({ runInterpreter: false });
+    this.onGoToPiperun();
+  }
+
+  onInterpreterRun() {
+    this.setState({ runInterpreter: true });
+    this.onGoToPiperun();
+  }
+
+  async onRunInterpreter(inputValues) {
+    const { pipegraph, graphStepsAbi, soliditySource, interpreterGraph } = this.state.pipeoutput;
+    let isTransaction = false;
+    let pipeinterpreter;
+    if (soliditySource.gapi.stateMutability === 'view' || soliditySource.gapi.stateMutability === 'pure') {
+      pipeinterpreter = this.state.pipeinterpreter.view;
+    } else {
+      pipeinterpreter = this.state.pipeinterpreter.full;
+      isTransaction = true;
+    }
+    const inputs = soliditySource.gapi.inputs.map((inp, i) => {
+      return { type: inp.type, value: inputValues[i]};
+    })
+    let input = buildinterpreterInputs(inputs);
+
+    let result;
+    const payValue = interpreterGraph.steps
+      .map(step => {
+        return step.payIndex ? (inputValues[step.payIndex - 1] || 0) : 0
+      })
+      .reduce((accum, value) => accum += value, 0);
+
+    if (this.state.savedGraph) {
+      const index = this.state.savedGraph.data.onchainid;
+      result = await pipeinterpreter.run(index, input, { value: payValue });
+    } else {
+      const graphData = {
+        steps: interpreterGraph.steps,
+        outputIndexes: interpreterGraph.outputIndexes,
+      }
+      // input.outputIndexes = graphData.allArgs[0].outputIndexes;
+      result = await pipeinterpreter.runMemory(graphData, input, { value: payValue });
+    }
+
+    if (isTransaction) return result;
+
+    const parsedResult = ethers.utils.defaultAbiCoder.decode(soliditySource.gapi.outputs.map(out => out.type), result);
+    return parsedResult;
+  }
+
   addCanvasGraph(activeCanvas) {
     const { width, height } = this.state.pageSizes.canvas;
 
@@ -134,13 +222,22 @@ class AppContent extends Component {
         this.state.activeCanvas,
         this.state.selectedFunctions,
       );
+      const newGraph = JSON.parse(JSON.stringify(new_gr));
+      newGraph.enriched_graph = enrichedGraphSteps(new_gr);
+      pipeoutput.pipegraph = newGraph;
+
+      pipeoutput.interpreterGraph = buildinterpreterArgs(
+        [pipeoutput.pipegraph.rich_graph],
+        pipeoutput.graphStepsAbi,
+        [pipeoutput.soliditySource.gapi],
+      ).allArgs[0];
 
       const piperun = {
         pfunction: {
           gapi: pipeoutput.web3jsSource.gapi,
           signatureString: 'signatureString',
         },
-        deployment: { chainid: this.web3.version.network}
+        deployment: { chainid: this.state.web3.version.network}
       }
       this.setState({ pipeoutput, piperun });
     });
@@ -206,7 +303,7 @@ class AppContent extends Component {
   }
 
   onToggleItem({ pfunction, pclass }) {
-    console.log('onToggleItem', pfunction, pclass);
+    // console.log('onToggleItem', pfunction, pclass);
     const pfunc = this.prepGraphFunction(pfunction, pclass);
     const selectedFunctions = this.state.selectedFunctions;
     const pipeContext = this.state.pipeContext;
@@ -260,7 +357,7 @@ class AppContent extends Component {
   }
 
   render() {
-    const { pageSizes, canvases, activeCanvas, treedata } = this.state;
+    const { pageSizes, canvases, activeCanvas, treedata, runInterpreter } = this.state;
 
     // const canvasTabs = new Array(canvases).fill(0).map((canvas, i) => {
     //   return (
@@ -355,17 +452,30 @@ class AppContent extends Component {
           data={this.state.pipeoutput}
           remixClient={this.remixClient}
           goBack={this.onGoToWorkspace}
-          onJsRun={this.onGoToPiperun}
+          onJsRun={this.onJsRun}
+          onGraphSave={this.saveGraph}
+          onRunInterpreter={this.onInterpreterRun}
         />
-        <FunctionCall
-          styles={{ ...this.props.styles, ...pageSizes.page }}
-          buttonStyle={styles.buttonStyle}
-          web3={this.web3}
-          item={this.state.piperun}
-          onRun={this.onPiperun}
-          onInfoClosed={this.onGoToPipeoutput}
-          pfunctionColor={pfunctionColor}
-        />
+        {runInterpreter
+          ? <FunctionCall
+              styles={{ ...this.props.styles, ...pageSizes.page }}
+              buttonStyle={styles.buttonStyle}
+              web3={this.state.web3}
+              item={this.state.piperun}
+              onRun={this.onRunInterpreter}
+              onInfoClosed={this.onGoToPipeoutput}
+              pfunctionColor={pfunctionColor}
+            />
+          : <FunctionCall
+            styles={{ ...this.props.styles, ...pageSizes.page }}
+            buttonStyle={styles.buttonStyle}
+            web3={this.state.web3}
+            item={this.state.piperun}
+            onRun={this.onPiperun}
+            onInfoClosed={this.onGoToPipeoutput}
+            pfunctionColor={pfunctionColor}
+          />
+        }
       </ScrollView>
     )
   }
