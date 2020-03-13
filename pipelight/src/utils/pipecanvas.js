@@ -52,18 +52,6 @@ export function getPipegraphInfo(newGraph, activeCanvas, selectedFunctions) {
             }
         }
     });
-      // selectedFunctions.forEach(pipedFunction => {
-      //     let functionObj = pipedFunction.find(func => func._id === node._id);
-      //     if (functionObj) {
-      //         let deployment = functionObj.pclass.deployment.pclassi;
-      //         let contract_address = {
-      //             funcName: node.funcName,
-      //             deployment: deployment.openapiid ? `http://${deployment.host}${deployment.basePath}` : deployment.address,
-      //             contractName: functionObj.pclass.name,
-      //         };
-      //         deploymentArgs.push(contract_address);
-      //     }
-      // });
   });
 
   return { soliditySource, deploymentArgs, web3jsSource, graphSource, web3jsSourceFunction, graphStepsAbi }

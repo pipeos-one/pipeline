@@ -37,26 +37,35 @@ class GraphDetails extends Component {
 
     this.state = {
       name: 'GraphName',
+      namespace: 'test',
       savedGraph: null,
       link: null,
+      saving: false,
     }
 
     this.onChangeName = this.onChangeName.bind(this);
     this.onGraphSave = this.onGraphSave.bind(this);
+    this.onChangeNamespace = this.onChangeNamespace.bind(this);
   }
 
   onChangeName(name) {
     this.setState({ name });
   }
 
+  onChangeNamespace(namespace) {
+    this.setState({ namespace });
+  }
+
   async onGraphSave() {
-    const { savedGraph, link } = await this.props.onGraphSave(this.state.name);
-    this.setState({ savedGraph, link });
+    const { name, namespace } = this.state;
+    this.setState({ saving: true });
+    const { savedGraph, link } = await this.props.onGraphSave({ name, namespace });
+    this.setState({ savedGraph, link, saving: false });
   }
 
   render() {
     const { props } = this;
-    const { savedGraph, link } = this.state;
+    const { savedGraph, link, saving } = this.state;
 
     const afterSave = savedGraph
       ? (
@@ -77,23 +86,39 @@ class GraphDetails extends Component {
             </View>
           </Item>
         )
-      : (<></>)
+      : (saving ? <Text>Saving...</Text> : <></>)
 
     return (
-      <View style={props.styles}>
+      <View style={{
+        ...props.styles,
+        height: props.styles.height * 2,
+        maxWidth: props.styles.width,
+      }}>
           <Textarea
             disabled
             bordered={true}
-            value={JSON.stringify(props.interpreterGraph.steps)}
-            style={{...props.styles, height: props.styles.height / 2}}
+            value={ JSON.stringify(props.interpreterGraph || {}) }
+            style={{ ...props.styles, height: props.styles.height }}
           />
-          <Item>
-            <View style={{
-              flex: 1,
-              flexDirection: "row",
-              alignItems: "center",
-            }}>
+            <Item>
               <Input
+                style={{
+                  width: props.styles.width / 2 - 35,
+                  borderColor: '#a8b3bc',
+                  borderStyle: 'solid',
+                  borderRightWidth: '1px',
+                  marginRight: '1px',
+                }}
+                placeholder='Namespace'
+                onChangeText={ text => this.onChangeNamespace(text) }
+              />
+              <Input
+                style={{
+                  width: props.styles.width / 2 - 35,
+                  borderColor: '#a8b3bc',
+                  borderStyle: 'solid',
+                  borderLeftWidth: '1px',
+                }}
                 placeholder='Graph Name'
                 onChangeText={ text => this.onChangeName(text) }
               />
@@ -102,10 +127,9 @@ class GraphDetails extends Component {
                 style={ styles.buttonStyle }
                 onClick={ this.onGraphSave }
               >
-                <Text>save on chain</Text>
+                <Icon type="MaterialCommunityIcons" name='check-bold' />
               </Button>
-            </View>
-          </Item>
+            </Item>
           {afterSave}
       </View>
     )
@@ -194,7 +218,7 @@ class Pipeoutput extends Component {
         break;
       case 'graph':
         activeViewText = JSON.stringify(graphSource);
-        textareaStyles.minHeight = textareaStyles.minHeight / 2;
+        textareaStyles.minHeight = textareaStyles.minHeight / 3;
         outputActiveTabButtons.push((
           <TabSubBtn
             key={6}

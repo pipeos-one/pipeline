@@ -20,7 +20,7 @@ import { getPipegraphInfo } from '../utils/pipecanvas.js';
 import { getWeb3 } from '../utils/utils.js';
 import { createRemixClient } from '../utils/remix.js';
 import { getInterpreter } from '../utils/interpreter.js';
-import { saveGraph } from '../utils/graph.js';
+import { saveGraph, getGraphs, getGraphContext } from '../utils/graph.js';
 import { getEtherscanTx } from '../utils/chain.js';
 import { buildinterpreterArgs, buildinterpreterInputs } from '../utils/interpreter.js';
 import styles from './Styles.js';
@@ -44,6 +44,7 @@ class AppContent extends Component {
       treedata: [],
       pipeinterpreter: {},
       web3: null,
+      graphdata: [],
       storedGraph: null,
       runInterpreter: false,
     }
@@ -53,6 +54,7 @@ class AppContent extends Component {
 
     this.onContentSizeChange = this.onContentSizeChange.bind(this);
     this.onToggleItem = this.onToggleItem.bind(this);
+    this.onGraphLoad = this.onGraphLoad.bind(this);
     this.onClearCanvas = this.onClearCanvas.bind(this);
     this.onAddCanvas = this.onAddCanvas.bind(this);
     this.onGoToWorkspace = this.onGoToWorkspace.bind(this);
@@ -82,10 +84,14 @@ class AppContent extends Component {
 
   async setWeb3() {
     const web3 = await getWeb3();
-    this.setState({
-      web3,
-      pipeinterpreter: getInterpreter(web3),
-    });
+    const pipeinterpreter = getInterpreter(web3);
+    this.setState({ web3, pipeinterpreter });
+    this.setGraphs(parseInt(web3.version.network));
+  }
+
+  async setGraphs(chainid) {
+    const graphdata = await getGraphs(chainid);
+    this.setState({ graphdata });
   }
 
   async setRemixClient() {
@@ -131,13 +137,13 @@ class AppContent extends Component {
     return dims;
   }
 
-  async saveGraph(name) {
+  async saveGraph({ name, namespace }) {
     const graphData = {
       data: {
-        name,
+        name: `${namespace}.${name}`,
         markdown: '# ' + name,
       },
-      metadata: {categories: ['pgraph']},
+      metadata: {categories: ['pgraph'], namespace},
     }
     const chainid = parseInt(this.state.web3.version.network);
     const { savedGraph, receipt } = await saveGraph(
@@ -164,38 +170,46 @@ class AppContent extends Component {
   }
 
   async onRunInterpreter(inputValues) {
-    const { pipegraph, graphStepsAbi, soliditySource, interpreterGraph } = this.state.pipeoutput;
+    const { soliditySource, interpreterGraph } = this.state.pipeoutput;
     let isTransaction = false;
     let pipeinterpreter;
-    if (soliditySource.gapi.stateMutability === 'view' || soliditySource.gapi.stateMutability === 'pure') {
+    let result;
+
+    if (
+      soliditySource.gapi.stateMutability === 'view'
+      || soliditySource.gapi.stateMutability === 'pure'
+    ) {
       pipeinterpreter = this.state.pipeinterpreter.view;
     } else {
       pipeinterpreter = this.state.pipeinterpreter.full;
       isTransaction = true;
     }
+
     const inputs = soliditySource.gapi.inputs.map((inp, i) => {
       return { type: inp.type, value: inputValues[i]};
     })
-    let input = buildinterpreterInputs(inputs);
+    const input = buildinterpreterInputs(inputs);
 
-    let result;
     const payValue = interpreterGraph.steps
       .map(step => {
         return step.payIndex ? (inputValues[step.payIndex - 1] || 0) : 0
       })
       .reduce((accum, value) => accum += value, 0);
+    const txconfig = payValue ? { value: payValue } : {};
 
     if (this.state.savedGraph) {
       const index = this.state.savedGraph.data.onchainid;
-      result = await pipeinterpreter.run(index, input, { value: payValue });
+      console.log('Running graph in the PipeGraphInterpreter (run)...', index, input, txconfig);
+      result = await pipeinterpreter.run(index, input, txconfig);
     } else {
       const graphData = {
         steps: interpreterGraph.steps,
         outputIndexes: interpreterGraph.outputIndexes,
       }
-      // input.outputIndexes = graphData.allArgs[0].outputIndexes;
-      result = await pipeinterpreter.runMemory(graphData, input, { value: payValue });
+      console.log('Running graph in the PipeGraphInterpreter (runMemory)...', graphData, input);
+      result = await pipeinterpreter.runMemory(graphData, input, txconfig);
     }
+    console.log('-- Result: ', result);
 
     if (isTransaction) return result;
 
@@ -217,29 +231,7 @@ class AppContent extends Component {
       }
     );
     newgraph.onChange(new_gr => {
-      const pipeoutput = getPipegraphInfo(
-        new_gr,
-        this.state.activeCanvas,
-        this.state.selectedFunctions,
-      );
-      const newGraph = JSON.parse(JSON.stringify(new_gr));
-      newGraph.enriched_graph = enrichedGraphSteps(new_gr);
-      pipeoutput.pipegraph = newGraph;
-
-      pipeoutput.interpreterGraph = buildinterpreterArgs(
-        [pipeoutput.pipegraph.rich_graph],
-        pipeoutput.graphStepsAbi,
-        [pipeoutput.soliditySource.gapi],
-      ).allArgs[0];
-
-      const piperun = {
-        pfunction: {
-          gapi: pipeoutput.web3jsSource.gapi,
-          signatureString: 'signatureString',
-        },
-        deployment: { chainid: this.state.web3.version.network}
-      }
-      this.setState({ pipeoutput, piperun });
+      this.onGraphChange(new_gr);
     });
     newgraph.show();
 
@@ -248,15 +240,41 @@ class AppContent extends Component {
     this.setState({ pipeGraphs });
   }
 
+  onGraphChange(new_gr) {
+    const pipeoutput = getPipegraphInfo(
+      new_gr,
+      this.state.activeCanvas,
+      this.state.selectedFunctions,
+    );
+    const newGraph = JSON.parse(JSON.stringify(new_gr));
+    newGraph.enriched_graph = enrichedGraphSteps(new_gr);
+    pipeoutput.pipegraph = newGraph;
+
+    pipeoutput.interpreterGraph = buildinterpreterArgs(
+      [pipeoutput.pipegraph.rich_graph],
+      pipeoutput.graphStepsAbi,
+      [pipeoutput.soliditySource.gapi],
+    ).allArgs[0];
+
+    const piperun = {
+      pfunction: {
+        gapi: pipeoutput.web3jsSource.gapi,
+        signatureString: 'signatureString',
+      },
+      deployment: { chainid: this.state.web3.version.network}
+    }
+    console.log('onGraphChange pipeoutput', pipeoutput);
+    this.setState({ pipeoutput, piperun });
+  }
+
   async onPiperun(inputs) {
+    console.log('Running JavaScript script...');
     const { pipeoutput } = this.state;
-    console.log('pipeoutput', pipeoutput)
     const sourcecode = pipeoutput.web3jsSourceFunction(
       pipeoutput.web3jsSource.source,
       [...new Set(pipeoutput.deploymentArgs.map(depl => depl.address))]
         .map(address => `"${address}"`),
     );
-    console.log('sourcecode', sourcecode);
     const runnableSource = `(function(){return ${sourcecode}})()`;
     const runnableFunction = await eval(runnableSource);
     return await runnableFunction(...inputs);
@@ -303,7 +321,6 @@ class AppContent extends Component {
   }
 
   onToggleItem({ pfunction, pclass }) {
-    // console.log('onToggleItem', pfunction, pclass);
     const pfunc = this.prepGraphFunction(pfunction, pclass);
     const selectedFunctions = this.state.selectedFunctions;
     const pipeContext = this.state.pipeContext;
@@ -318,6 +335,35 @@ class AppContent extends Component {
 
     this.setState({ selectedFunctions, pipeContext });
     this.state.pipeGraphs[this.state.activeCanvas].addFunction(pfunc);
+  }
+
+  async onGraphLoad({ pfunction, pclass }) {
+    console.log('onGraphLoad', pfunction, pclass);
+    const selectedFunctions = this.state.selectedFunctions;
+    const pipeContext = this.state.pipeContext;
+    const context = await getGraphContext(pfunction.data.shortPgraph);
+
+    if (!selectedFunctions[this.state.activeCanvas]) {
+      selectedFunctions[this.state.activeCanvas] = {};
+      pipeContext[this.state.activeCanvas] = {};
+    }
+
+    context.forEach(pfunction => {
+      const pclass = pfunction.pclass;
+      const pfunc = this.prepGraphFunction(pfunction, pclass);
+
+      selectedFunctions[this.state.activeCanvas][pfunc._id] = Object.assign({}, pfunction, { pclass });
+      pipeContext[this.state.activeCanvas][pfunc._id] = pfunc;
+    });
+
+    this.setState({ selectedFunctions, pipeContext, savedGraph: pfunction });
+
+    const pipegraph = this.state.pipeGraphs[this.state.activeCanvas];
+    pipegraph.clear();
+    pipegraph.setGraph(pfunction.data.shortPgraph, pipeContext[this.state.activeCanvas]);
+    pipegraph.show();
+
+    this.onGraphChange(pipegraph.getGraph());
   }
 
   onAddCanvas() {
@@ -357,7 +403,7 @@ class AppContent extends Component {
   }
 
   render() {
-    const { pageSizes, canvases, activeCanvas, treedata, runInterpreter } = this.state;
+    const { pageSizes, canvases, activeCanvas, treedata, graphdata, runInterpreter } = this.state;
 
     // const canvasTabs = new Array(canvases).fill(0).map((canvas, i) => {
     //   return (
@@ -405,9 +451,11 @@ class AppContent extends Component {
         <Workspace
           styles={{ ...this.props.styles, ...pageSizes.page }}
           onToggleItem={this.onToggleItem}
+          onGraphLoad={this.onGraphLoad}
           onGoBack={this.onGoToPipecanvas}
           onRemove={ () => {} }
           treedata={treedata}
+          graphdata={graphdata}
         />
 
         <View style={{...this.props.styles, flex: 1}}>

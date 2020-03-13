@@ -1205,10 +1205,10 @@
   resolved "https://registry.yarnpkg.com/@pipeos/react-function-call-ui/-/react-function-call-ui-0.0.1.tgz#0f2649e78238d68fa60d39cd22576bb67ed82b2f"
   integrity sha512-oosnX108CSL0nyureE9mR3kr97hKNFvtrJzw/wJ0Fn23KEGz+Va99jjSCluhUXwjk9EA5TiFID3KzquPeORIJQ==
 
-"@pipeos/react-pipeos-components@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@pipeos/react-pipeos-components/-/react-pipeos-components-0.0.1.tgz#1269f44aab2904c475f9de02d6b40097cbabe5aa"
-  integrity sha512-ihav1WvsMEodzJPzodX5qWgyzuBFMNyGeegqiBK5tAdBlwn4jG+PSB4h3UsMex/A3coNFV/TDztl4ZuAD6c4IA==
+"@pipeos/react-pipeos-components@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@pipeos/react-pipeos-components/-/react-pipeos-components-0.0.2.tgz#6152f7f933015b5dc7f5af89c4f2d46cede7a803"
+  integrity sha512-avAfTmvd3zBkGAJlG8D2ShzgK3itA0vF/duBHA2WzsGtONPuhGCBh3x9e4OvKPtyboDXRDrwhB3PVkdVPtTxWQ==
 
 "@remixproject/plugin@^0.1.18":
   version "0.1.18"

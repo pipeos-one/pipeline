@@ -37,3 +37,8 @@ export function getPageSize(noOfPages, {width, height}) {
     height: height,
   };
 }
+
+export function getSignatureString(fgapi) {
+  const inputTypes = (fgapi.inputs || []).map((input) => input.type);
+  return `${fgapi.name || ''}(${inputTypes.join(',')})`;
+}

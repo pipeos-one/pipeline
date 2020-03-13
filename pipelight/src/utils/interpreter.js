@@ -58,15 +58,12 @@ export const buildinterpreterArgs = (graphObj, stepsAbi, graphAbi) => {
     });
     inputLen = graphAbi[i].inputs.length + 1;
 
-    console.log('** inputs ini ', JSON.stringify(inputs));
-
     allInputs[i] = [[], []]
     allInputs[i][0] = graphAbi[i].inputs.map(inp => {
       inp.functionName = graphAbi[i].name;
       return inp;
     });
-    console.log('stepskey', stepskey);
-    console.log('portkey', portkey);
+
     stepskey.forEach((key, j) => {
       const step = graph.n[key];
 
@@ -98,23 +95,15 @@ export const buildinterpreterArgs = (graphObj, stepsAbi, graphAbi) => {
       }
     });
 
-    console.log('** inputs', JSON.stringify(inputs));
-
     // graph.e[i] = [step_i, output_i+1, step_i, input_i+1]
     graph.e.forEach((edge, i) => {
-      console.log('** edge', edge);
       const stepOut_i = parseInt(edge[0]);
       const stepOutArg_i = parseInt(edge[1]);
       const stepIn_i = parseInt(edge[2]);
       const stepInArg_i = parseInt(edge[3]);
       const inputKey = `${stepOut_i}o${stepOutArg_i}`;
       const inputIndex = inputs[inputKey];
-      console.log('** inputIndex', inputKey, inputIndex, inputs);
-      console.log('** stepIn_i', stepIn_i)
-      // if (!args.steps[stepIn_i]) {
-      //   args.outputIndexes.push(inputIndex);
-      //   return;
-      // }
+
       const stepno = stepskey.findIndex(k => k === stepIn_i);
       if (stepno < 0) {
         args.outputIndexes.push(inputIndex);
