@@ -43,11 +43,18 @@ export function getPipegraphInfo(newGraph, activeCanvas, selectedFunctions) {
 
             const abii = new ethers.utils.Interface([functionObj.data.gapi]);
 
+            const addressOrGraphId =  deployment.openapiid
+              ? `http://${deployment.host}${deployment.basePath}`
+              : (functionObj.data.onchainid
+                ? functionObj.data.onchainid
+                : deployment.address
+              );
+
             graphStepsAbi[functionObj._id] = {
                 name: node.funcName,
                 abi: functionObj.data.gapi,
                 signature: abii.functions[functionObj.data.gapi.name].sighash,
-                deployment: deployment.openapiid ? `http://${deployment.host}${deployment.basePath}` : deployment.address,
+                deployment: addressOrGraphId,
                 contractName: functionObj.pclass.data.name,
             }
         }

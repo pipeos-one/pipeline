@@ -64,6 +64,13 @@ export default class Workspace extends Component {
           callback: props.onGraphLoad,
           icon: {
             type: 'MaterialCommunityIcons',
+            name: 'eye',
+          }
+        },
+        {
+          callback: props.onGraphNodeItem,
+          icon: {
+            type: 'MaterialCommunityIcons',
             name: 'import',
           }
         }

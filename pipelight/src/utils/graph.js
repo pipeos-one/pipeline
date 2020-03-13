@@ -113,7 +113,19 @@ export function graphsToPclass(graphs) {
         pclassInstances: [],
       }
     }
+    pclasses[graph.metadata.namespace].data.name = graph.metadata.namespace;
     let pfunction = { ...graph, pclassid: graph.metadata.namespace };
+    const gapi = { ...pfunction.data.gapi };
+    gapi.inputs = gapi.inputs.map(io => {
+      return { name: io.name, type: io.type };
+    });
+    gapi.outputs = gapi.outputs.map(io => {
+      return { name: io.name, type: io.type };
+    });
+    gapi.constant = gapi.stateMutability === 'view' || gapi.stateMutability === 'pure';
+    gapi.payable = gapi.stateMutability === 'payable';
+    pfunction.data.gapi = gapi;
+
     pfunction.data.signatureString = getSignatureString(graph.data.gapi);
     const abii = new ethers.utils.Interface([graph.data.gapi]);
     pfunction.data.signature = abii.functions[graph.data.gapi.name].sighash;

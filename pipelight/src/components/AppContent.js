@@ -55,6 +55,7 @@ class AppContent extends Component {
     this.onContentSizeChange = this.onContentSizeChange.bind(this);
     this.onToggleItem = this.onToggleItem.bind(this);
     this.onGraphLoad = this.onGraphLoad.bind(this);
+    this.onGraphNodeItem = this.onGraphNodeItem.bind(this);
     this.onClearCanvas = this.onClearCanvas.bind(this);
     this.onAddCanvas = this.onAddCanvas.bind(this);
     this.onGoToWorkspace = this.onGoToWorkspace.bind(this);
@@ -337,6 +338,10 @@ class AppContent extends Component {
     this.state.pipeGraphs[this.state.activeCanvas].addFunction(pfunc);
   }
 
+  onGraphNodeItem({ pfunction, pclass }) {
+    this.onToggleItem({ pfunction, pclass });
+  }
+
   async onGraphLoad({ pfunction, pclass }) {
     console.log('onGraphLoad', pfunction, pclass);
     const selectedFunctions = this.state.selectedFunctions;
@@ -452,6 +457,7 @@ class AppContent extends Component {
           styles={{ ...this.props.styles, ...pageSizes.page }}
           onToggleItem={this.onToggleItem}
           onGraphLoad={this.onGraphLoad}
+          onGraphNodeItem={this.onGraphNodeItem}
           onGoBack={this.onGoToPipecanvas}
           onRemove={ () => {} }
           treedata={treedata}

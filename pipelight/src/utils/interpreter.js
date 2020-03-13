@@ -164,6 +164,11 @@ export function prepareGraphProxyInputs(types=[], values=[]) {
     return {inputs, starts, inputHasSlotSize}
 }
 
-function buildStepData(address, functionSig) {
-  return IS_NOT_GRAPH_FLAG + address.slice(2) + functionSig.slice(2);
+function buildStepData(addressOrGraphId, functionSig) {
+  if (addressOrGraphId.length === 42) {
+    return IS_NOT_GRAPH_FLAG + addressOrGraphId.slice(2) + functionSig.slice(2);
+  }
+  return ethers.utils.hexZeroPad(ethers.utils.hexlify(
+    parseInt(addressOrGraphId)
+  ), 30);
 }
