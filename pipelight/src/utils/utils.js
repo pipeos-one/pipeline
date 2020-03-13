@@ -42,3 +42,17 @@ export function getSignatureString(fgapi) {
   const inputTypes = (fgapi.inputs || []).map((input) => input.type);
   return `${fgapi.name || ''}(${inputTypes.join(',')})`;
 }
+
+export function gapiStripTemporary(gapi) {
+  const newgapi = JSON.parse(JSON.stringify(gapi));
+  newgapi.inputs = newgapi.inputs.filter(io => !io.temporary);
+  newgapi.outputs = newgapi.outputs.filter(io => !io.temporary);
+  return newgapi;
+}
+
+export function gapiStripPayable(gapi) {
+  const newgapi = JSON.parse(JSON.stringify(gapi));
+  newgapi.inputs = newgapi.inputs.filter(io => !io.payable);
+  newgapi.outputs = newgapi.outputs.filter(io => !io.payable);
+  return newgapi;
+}

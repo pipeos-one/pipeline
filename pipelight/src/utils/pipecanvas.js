@@ -1,5 +1,6 @@
 import { ethers } from 'ethers';
 import {sourceBuilder, solidityBuilder, web3Builder} from '@pipeos/pipesource';
+import { gapiStripTemporary, gapiStripPayable } from './utils.js';
 
 export function getPipegraphInfo(newGraph, activeCanvas, selectedFunctions) {
   console.log('onChange new_gr', newGraph);
@@ -41,7 +42,11 @@ export function getPipegraphInfo(newGraph, activeCanvas, selectedFunctions) {
             };
             deploymentArgs.push(contract_address);
 
-            const abii = new ethers.utils.Interface([functionObj.data.gapi]);
+            const abii = new ethers.utils.Interface([
+              gapiStripTemporary(
+                gapiStripPayable(functionObj.data.gapi)
+              )
+            ]);
 
             const addressOrGraphId =  deployment.openapiid
               ? `http://${deployment.host}${deployment.basePath}`

@@ -207,7 +207,7 @@ class AppContent extends Component {
         steps: interpreterGraph.steps,
         outputIndexes: interpreterGraph.outputIndexes,
       }
-      console.log('Running graph in the PipeGraphInterpreter (runMemory)...', graphData, input);
+      console.log('Running graph in the PipeGraphInterpreter (runMemory)...', graphData, input, txconfig);
       result = await pipeinterpreter.runMemory(graphData, input, txconfig);
     }
     console.log('-- Result: ', result);

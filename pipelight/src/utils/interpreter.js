@@ -1,4 +1,5 @@
 import { ethers } from 'ethers';
+import { gapiStripTemporary } from './utils.js';
 import PIPE_INTERPRETER from './interpreter_config.js';
 
 const SLOT_SIZE_MULTI = {
@@ -26,11 +27,21 @@ export const getSizeSlotBools = (types) => {
   });
 };
 
-export const buildinterpreterArgs = (graphObj, stepsAbi, graphAbi) => {
-  console.log('buildinterpreterArgs', graphObj, stepsAbi, graphAbi);
+export const buildinterpreterArgs = (graphObj, graphStepsAbi, graphAbi) => {
+  console.log('buildinterpreterArgs', graphObj, graphStepsAbi, graphAbi);
   const allArgs = [];
   const allInputs = [];
   let isTransaction = false;
+
+  // There may be some temporary outputs for transaction receipts
+  const stepsAbi = {};
+  Object.keys(graphStepsAbi).forEach(key => {
+    const orig = graphStepsAbi[key];
+    stepsAbi[key] = {
+      ...orig,
+      abi: gapiStripTemporary(orig.abi)
+    };
+  });
 
   graphObj.forEach((graph, i) => {
     const stepskey = [], portkey = [];
@@ -106,7 +117,7 @@ export const buildinterpreterArgs = (graphObj, stepsAbi, graphAbi) => {
 
       const stepno = stepskey.findIndex(k => k === stepIn_i);
       if (stepno < 0) {
-        args.outputIndexes.push(inputIndex);
+        if (inputIndex) args.outputIndexes.push(inputIndex);
         return;
       }
       if (
