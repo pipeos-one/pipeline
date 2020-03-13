@@ -32,14 +32,15 @@ export function debounce(func, wait, immediate) {
 
 export function pfunctionColorClass(gapi) {
   let colorClass = '';
+  const constant = gapi.stateMutability === 'view' || gapi.stateMutability === 'pure';
   if (gapi.type === 'event') {
     colorClass = 'event';
-  } else if (gapi.payable) {
+  } else if (gapi.payable || gapi.stateMutability === 'payable') {
     colorClass = 'payable';
-  } else if (!gapi.constant) {
-    colorClass = 'nonconstant';
-  } else {
+  } else if (gapi.constant || constant) {
     colorClass = 'constant';
+  } else {
+    colorClass = 'nonconstant';
   }
   return colorClass;
 };
