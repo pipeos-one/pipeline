@@ -24,7 +24,7 @@ import { saveGraph, getGraphs, getGraphContext } from '../utils/graph.js';
 import { getEtherscanTx } from '../utils/chain.js';
 import { buildinterpreterArgs, buildinterpreterInputs } from '../utils/interpreter.js';
 import styles from './Styles.js';
-
+import solfixtures from '../fixtures/index.js';
 
 class AppContent extends Component {
   constructor(props) {
@@ -41,9 +41,9 @@ class AppContent extends Component {
       graphsSource: [],
       pipeoutput: {},
       piperun: { pfunction: {gapi: {inputs: [], outputs: []}}, deployment: {} },
-      treedata: [],
       pipeinterpreter: {},
       web3: null,
+      treedata: [],
       graphdata: [],
       storedGraph: null,
       runInterpreter: false,
@@ -85,9 +85,11 @@ class AppContent extends Component {
 
   async setWeb3() {
     const web3 = await getWeb3();
+    const chainid = parseInt(web3.version.network);
+    const treedata = solfixtures[chainid];
     const pipeinterpreter = getInterpreter(web3);
-    this.setState({ web3, pipeinterpreter });
-    this.setGraphs(parseInt(web3.version.network));
+    this.setState({ web3, pipeinterpreter, treedata });
+    this.setGraphs(chainid);
   }
 
   async setGraphs(chainid) {
