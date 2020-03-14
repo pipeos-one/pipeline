@@ -26,6 +26,8 @@ import { buildinterpreterArgs, buildinterpreterInputs } from '../utils/interpret
 import { getContractFixtures } from '../utils/fixtures.js';
 import styles from './Styles.js';
 
+const DEFAULT_PIPERUN = { pfunction: {gapi: {inputs: [], outputs: []}}, deployment: {} };
+
 class AppContent extends Component {
   constructor(props) {
     super(props);
@@ -40,7 +42,7 @@ class AppContent extends Component {
       pipeGraphs: [],
       graphsSource: [],
       pipeoutput: {},
-      piperun: { pfunction: {gapi: {inputs: [], outputs: []}}, deployment: {} },
+      piperun: JSON.parse(JSON.stringify(DEFAULT_PIPERUN)),
       pipeinterpreter: {},
       web3: null,
       treedata: [],
@@ -382,10 +384,17 @@ class AppContent extends Component {
   }
 
   onClearCanvas(canvasNo) {
-    // TODO
-    // console.log('onClearCanvas', canvasNo);
-    this.state.pipeGraphs[this.state.activeCanvas].clear();
-    this.setState({ selectedFunctions: [] });
+    canvasNo = canvasNo || this.state.activeCanvas;
+
+    this.state.pipeGraphs[canvasNo].clear();
+    this.setState({
+      selectedFunctions: [],
+      pipeContext: [],
+      graphsSource: [],
+      pipeoutput: {},
+      piperun: JSON.parse(JSON.stringify(DEFAULT_PIPERUN)),
+      storedGraph: null,
+    });
   }
 
   onGoToWorkspace() {
@@ -492,6 +501,13 @@ class AppContent extends Component {
                 <Icon type="MaterialCommunityIcons" name='chevron-left' />
               </Button>
             </Left>
+            <Button
+              small rounded
+              style={styles.buttonStyle}
+              onClick={() => this.onClearCanvas()}
+            >
+              <Icon type="MaterialCommunityIcons" name='close' />
+            </Button>
             <Right>
               <Button
                 small rounded
