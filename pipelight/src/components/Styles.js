@@ -4,7 +4,7 @@ const styles = StyleSheet.create(
   {
     buttonStyle: {
       backgroundColor: '#a8b3bc',
-      marginLeft: 15,
+      marginLeft: 10,
     },
     tabButtonStyle: {
       borderRadius: 10,

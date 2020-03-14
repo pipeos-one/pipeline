@@ -19,6 +19,7 @@ export default class PclassList extends Component {
     super(props);
 
     this.buttonStyle = props.buttonStyle || styles.buttonStyle;
+    this.buttonOffset = 52;
 
     this._renderHeader = this._renderHeader.bind(this);
     this._renderContent = this._renderContent.bind(this);
@@ -38,6 +39,7 @@ export default class PclassList extends Component {
         </Button>
       )
     });
+    const btnOffset = headerButtons.length * this.buttonOffset + 110;
 
     return (
       <View
@@ -56,7 +58,7 @@ export default class PclassList extends Component {
             : <Icon style={{ fontSize: 18 }} name='add-circle' />
           }
           <Text
-            style={{ fontFamily: null, fontWeight: '400', paddingLeft: 10, maxWidth: this.props.styles.minWidth - 160 }}
+            style={{ fontFamily: null, fontWeight: '400', paddingLeft: 10, maxWidth: this.props.styles.minWidth - btnOffset }}
           >
             {item.data.name}
           </Text>
@@ -102,6 +104,8 @@ export default class PclassList extends Component {
         )
       });
 
+      const btnOffset = contentButtons.length * this.buttonOffset + 110;
+
       pfunctions.push((
         <ListItem key={pfunction._id} style={{ backgroundColor: pfunctionColor(pfunction.data.gapi) }}>
           <Left>
@@ -117,12 +121,14 @@ export default class PclassList extends Component {
                 />
               }
               <Text
-                style={{ fontFamily: null, paddingLeft: 10, maxWidth: this.props.styles.minWidth - 170}}
+                style={{ fontFamily: null, paddingLeft: 10, maxWidth: this.props.styles.minWidth - btnOffset}}
               >{signature}</Text>
             </View>
           </Left>
           <Right>
-            {contentButtons}
+            <View style={{flexDirection: 'row'}}>
+              {contentButtons}
+            </View>
           </Right>
         </ListItem>
       ));
@@ -168,7 +174,7 @@ const styles = StyleSheet.create(
   {
     buttonStyle: {
       backgroundColor: '#cccccc',
-      marginLeft: 15,
+      marginLeft: 10,
     },
   }
 )

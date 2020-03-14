@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { Component } from 'react';
 import {
   View,
   Right,
+  Left,
   Icon,
   Button,
   Text,
@@ -10,7 +11,7 @@ import {
 import { PclassList, pfunctionColor } from '@pipeos/react-pipeos-components';
 import styles from './Styles.js';
 
-function LoadInfo(props) {
+function EmptyContractsInfo(props) {
   return (
     <View style={props.styles}>
       <H2>Load contracts from ChainLens:</H2>
@@ -22,55 +23,132 @@ function LoadInfo(props) {
   )
 }
 
-export default function Workspace(props) {
-  const { treedata } = props;
-
-  const buttons = {
-    header: [],
-    contentItem: [
-      {
-        callback: props.onToggleItem,
-        icon: {
-          type: 'MaterialCommunityIcons',
-          name: 'import',
-        }
-      }
-    ],
-  }
-
-  const loadInfoStyles = {
-    width: props.styles.width,
-    height: props.styles.height - 36,
-    maxHeight: props.styles.height - 36,
-  }
+function EmptyGraphsInfo(props) {
   return (
-    <View style={{...props.styles, flex: 1}}>
-      {
-        treedata.length > 0
-        ? <PclassList
-          data={treedata}
-          buttons={buttons}
-          styles={props.styles}
-          buttonStyle={styles.buttonStyle}
-          pfunctionColor={pfunctionColor}
-        />
-        : <LoadInfo styles={loadInfoStyles}/>
-      }
-
-      <View style={{
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-        padding: 5,
-        borderTopWidth: 1,
-        borderTopColor: '#cccccc',
-      }}>
-        <Right>
-          <Button small rounded style={styles.buttonStyle} onClick={props.onGoBack}>
-            <Icon type="MaterialCommunityIcons" name='chevron-right' />
-          </Button>
-        </Right>
-      </View>
+    <View style={props.styles}>
+      <H2>No graphs found</H2>
     </View>
   )
+}
+
+export default class Workspace extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      activetab: 'graphs',
+    }
+  }
+
+  render() {
+    const { props } = this;
+    const { treedata, graphdata } = props;
+    const { activetab } = this.state;
+
+    const contractButtons = {
+      header: [],
+      contentItem: [
+        {
+          callback: props.onToggleItem,
+          icon: {
+            type: 'MaterialCommunityIcons',
+            name: 'import',
+          }
+        }
+      ],
+    }
+    const graphButtons = {
+      header: [],
+      contentItem: [
+        {
+          callback: props.onGraphLoad,
+          icon: {
+            type: 'MaterialCommunityIcons',
+            name: 'eye',
+          }
+        },
+        {
+          callback: props.onGraphNodeItem,
+          icon: {
+            type: 'MaterialCommunityIcons',
+            name: 'import',
+          }
+        }
+      ],
+    }
+
+    const emptyInfoStyles = {
+      width: props.styles.width,
+      height: props.styles.height - 36,
+      maxHeight: props.styles.height - 36,
+    }
+
+    const tabButtons = [];
+    tabButtons.push((
+      <Button
+        small bordered dark
+        key={0}
+        onClick={() => this.setState({ activetab: 'graphs' })}
+        style={ styles.tabButtonStyle }
+      >
+        <Text>graphs</Text>
+      </Button>
+    ));
+    tabButtons.push((
+      <Button
+        small bordered dark
+        key={1}
+        onClick={() => this.setState({ activetab: 'contracts' })}
+        style={ styles.tabButtonStyle }
+      >
+        <Text>contracts</Text>
+      </Button>
+    ));
+
+    let mainView;
+    if (activetab === 'graphs') {
+      mainView = graphdata.length > 0
+        ? <PclassList
+            data={graphdata}
+            buttons={graphButtons}
+            styles={props.styles}
+            buttonStyle={styles.buttonStyle}
+            pfunctionColor={pfunctionColor}
+          />
+        : <EmptyGraphsInfo styles={emptyInfoStyles}/>
+    } else {
+      mainView = treedata.length > 0
+        ? <PclassList
+            data={treedata}
+            buttons={contractButtons}
+            styles={props.styles}
+            buttonStyle={styles.buttonStyle}
+            pfunctionColor={pfunctionColor}
+          />
+        : <EmptyContractsInfo styles={emptyInfoStyles}/>
+    }
+
+    return (
+      <View style={{...props.styles, flex: 1}}>
+        { mainView }
+        <View style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: 5,
+          borderTopWidth: 1,
+          borderTopColor: '#cccccc',
+        }}>
+          <Left>
+            <View style={{ flexDirection: "row", flex: 1 }}>{ tabButtons }</View>
+          </Left>
+          <Right>
+            <Button small rounded style={styles.buttonStyle} onClick={props.onGoBack}>
+              <Icon type="MaterialCommunityIcons" name='chevron-right' />
+            </Button>
+          </Right>
+        </View>
+      </View>
+    )
+  }
 }

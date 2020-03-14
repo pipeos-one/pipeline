@@ -1,7 +1,10 @@
+import { ethers } from 'ethers';
 import {sourceBuilder, solidityBuilder, web3Builder} from '@pipeos/pipesource';
+import { gapiStripTemporary, gapiStripPayable } from './utils.js';
 
-export function getPipegraphInfo(new_gr, activeCanvas, selectedFunctions) {
-  console.log('onChange new_gr', new_gr);
+export function getPipegraphInfo(newGraph, activeCanvas, selectedFunctions) {
+  console.log('onChange new_gr', newGraph);
+  const new_gr = JSON.parse(JSON.stringify(newGraph));
   const graphSource = {...new_gr.rich_graph.init};
 
   // TODO: for non-Solidity graphs
@@ -20,6 +23,7 @@ export function getPipegraphInfo(new_gr, activeCanvas, selectedFunctions) {
 }
 `
   let deploymentArgs = [];
+  let graphStepsAbi = {};
   Object.values(new_gr.rich_graph.init.n).map(node => {
     return {
       _id: node.id,
@@ -37,21 +41,30 @@ export function getPipegraphInfo(new_gr, activeCanvas, selectedFunctions) {
                 contractName: functionObj.pclass.data.name,
             };
             deploymentArgs.push(contract_address);
+
+            const abii = new ethers.utils.Interface([
+              gapiStripTemporary(
+                gapiStripPayable(functionObj.data.gapi)
+              )
+            ]);
+
+            const addressOrGraphId =  deployment.openapiid
+              ? `http://${deployment.host}${deployment.basePath}`
+              : (functionObj.data.onchainid
+                ? functionObj.data.onchainid
+                : deployment.address
+              );
+
+            graphStepsAbi[functionObj._id] = {
+                name: node.funcName,
+                abi: functionObj.data.gapi,
+                signature: abii.functions[functionObj.data.gapi.name].sighash,
+                deployment: addressOrGraphId,
+                contractName: functionObj.pclass.data.name,
+            }
         }
     });
-      // selectedFunctions.forEach(pipedFunction => {
-      //     let functionObj = pipedFunction.find(func => func._id === node._id);
-      //     if (functionObj) {
-      //         let deployment = functionObj.pclass.deployment.pclassi;
-      //         let contract_address = {
-      //             funcName: node.funcName,
-      //             deployment: deployment.openapiid ? `http://${deployment.host}${deployment.basePath}` : deployment.address,
-      //             contractName: functionObj.pclass.name,
-      //         };
-      //         deploymentArgs.push(contract_address);
-      //     }
-      // });
   });
 
-  return { soliditySource, deploymentArgs, web3jsSource, graphSource, web3jsSourceFunction }
+  return { soliditySource, deploymentArgs, web3jsSource, graphSource, web3jsSourceFunction, graphStepsAbi }
 }
