@@ -82,8 +82,10 @@ export async function getGraphs(chainid, limit, skip = 0) {
 
 export async function getGraphContext(shortPgraph) {
   const api = `${CHAINLENS_API}/pfunction`;
+  const graphapi = `${CHAINLENS_API}/graph`;
   const context = [];
   const pfunctionids = [];
+  const graphids = [];
   const filter = '{"include":[{"relation":"pclass","scope":{"include":[{"relation":"pclassInstances"}]}}]}';
 
   Object.keys(shortPgraph.n).forEach(port => {
@@ -95,49 +97,84 @@ export async function getGraphContext(shortPgraph) {
     const response = await fetch(`${api}/${_id}?filter=${filter}`);
     const pfunction = await response.json();
 
+    if (pfunction && !pfunction.error) {
+      context.push(pfunction);
+    } else {
+      graphids.push(_id);
+    }
+  }
+
+  for (let _id of graphids) {
+    const response = await fetch(`${graphapi}/${_id}`);
+    const graph = await response.json();
+    const pfunction = graphToPfunction(graph);
+    pfunction.pclass = graphToPclassFull(graph);
     context.push(pfunction);
   }
+
   return context;
+}
+
+export function graphToPclassFull(graph) {
+  const pclass = graphToPclass(graph);
+  pclass.pfunctions.push(graphToPfunction(graph));
+  pclass.pclassInstances.push(graphToPclassi(graph));
+  return pclass;
 }
 
 export function graphsToPclass(graphs) {
   console.log('graphs', graphs);
   const pclasses = {};
   graphs.forEach(graph => {
-    if (!pclasses[graph.metadata.namespace]) {
-      pclasses[graph.metadata.namespace] = {
-        ...graph,
-        _id: graph.metadata.namespace,
-        name: graph.metadata.namespace,
-        pfunctions: [],
-        pclassInstances: [],
-      }
+    let pclass = pclasses[graph.metadata.namespace];
+    if (!pclass) {
+      pclass = graphToPclass(graph);
     }
-    pclasses[graph.metadata.namespace].data.name = graph.metadata.namespace;
-    let pfunction = { ...graph, pclassid: graph.metadata.namespace };
-    const gapi = { ...pfunction.data.gapi };
-    gapi.inputs = gapi.inputs.map(io => {
-      return { name: io.name, type: io.type };
-    });
-    gapi.outputs = gapi.outputs.map(io => {
-      return { name: io.name, type: io.type };
-    });
-    gapi.constant = gapi.stateMutability === 'view' || gapi.stateMutability === 'pure';
-    gapi.payable = gapi.stateMutability === 'payable';
-    pfunction.data.gapi = gapi;
 
-    pfunction.data.signatureString = getSignatureString(graph.data.gapi);
-    const abii = new ethers.utils.Interface([graph.data.gapi]);
-    pfunction.data.signature = abii.functions[graph.data.gapi.name].sighash;
-    pclasses[graph.metadata.namespace].pfunctions.push(pfunction);
+    pclass.pfunctions.push(graphToPfunction(graph));
+    pclass.pclassInstances.push(graphToPclassi(graph));
 
-    let pclassi = {
-      ...graph,
-      type: 'graph',
-    };
-    pclassi.data.deployment = {address: graph.data.onchainid.toString()};
-    pclasses[graph.metadata.namespace].pclassInstances.push(pclassi);
+    pclasses[graph.metadata.namespace] = pclass;
   });
   console.log('pclasses', pclasses);
   return Object.values(pclasses);
+}
+
+export function graphToPfunction(graph) {
+  let pfunction = { ...graph, pclassid: graph.metadata.namespace };
+  const gapi = { ...pfunction.data.gapi };
+
+  gapi.inputs = gapi.inputs.map(io => {
+    return { name: io.name, type: io.type };
+  });
+  gapi.outputs = gapi.outputs.map(io => {
+    return { name: io.name, type: io.type };
+  });
+  gapi.constant = gapi.stateMutability === 'view' || gapi.stateMutability === 'pure';
+  gapi.payable = gapi.stateMutability === 'payable';
+  pfunction.data.gapi = gapi;
+
+  pfunction.data.signatureString = getSignatureString(graph.data.gapi);
+  const abii = new ethers.utils.Interface([graph.data.gapi]);
+  pfunction.data.signature = abii.functions[graph.data.gapi.name].sighash;
+
+  return pfunction;
+}
+
+export function graphToPclassi(graph) {
+  let pclassi = { ...graph, type: 'graph' };
+  pclassi.data.deployment = {address: graph.data.onchainid.toString()};
+  return pclassi;
+}
+
+export function graphToPclass(graph) {
+  const pclass = {
+    ...graph,
+    _id: graph.metadata.namespace,
+    name: graph.metadata.namespace,
+    pfunctions: [],
+    pclassInstances: [],
+  }
+  pclass.data.name = graph.metadata.namespace;
+  return pclass;
 }
