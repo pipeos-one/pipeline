@@ -36,7 +36,7 @@ export default class Workspace extends Component {
     super(props);
 
     this.state = {
-      activetab: 'graphs',
+      activetab: 'contracts',
     }
   }
 
@@ -87,21 +87,21 @@ export default class Workspace extends Component {
     tabButtons.push((
       <Button
         small bordered dark
-        key={0}
-        onClick={() => this.setState({ activetab: 'graphs' })}
-        style={ styles.tabButtonStyle }
-      >
-        <Text>graphs</Text>
-      </Button>
-    ));
-    tabButtons.push((
-      <Button
-        small bordered dark
         key={1}
         onClick={() => this.setState({ activetab: 'contracts' })}
         style={ styles.tabButtonStyle }
       >
         <Text>contracts</Text>
+      </Button>
+    ));
+    tabButtons.push((
+      <Button
+        small bordered dark
+        key={0}
+        onClick={() => this.setState({ activetab: 'graphs' })}
+        style={ styles.tabButtonStyle }
+      >
+        <Text>graphs</Text>
       </Button>
     ));
 
