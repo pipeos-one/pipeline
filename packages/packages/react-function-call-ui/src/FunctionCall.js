@@ -99,8 +99,11 @@ export default class FunctionCall extends Component {
     } : null;
   }
 
-  onValueChange(value) {
-    this.setState({ inputs: value });
+  onValueChange(inputs) {
+    this.setState({ inputs });
+    if (this.props.onChange) {
+      this.props.onChange({ inputs, outputs: this.state.outputs });
+    }
   }
 
   async onRun() {
@@ -134,12 +137,13 @@ export default class FunctionCall extends Component {
         }
         return receipt[comp.name];
       });
-      this.setState({ outputs });
-
-      return;
     }
 
     this.setState({ outputs });
+
+    if (this.props.onChange) {
+      this.props.onChange({ inputs: this.state.inputs, outputs});
+    }
   }
 
   render() {
