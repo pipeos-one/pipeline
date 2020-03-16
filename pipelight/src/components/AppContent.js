@@ -51,6 +51,7 @@ class AppContent extends Component {
       graphdata: [],
       savedGraph: null,
       pipeoutputComponent: 'runJavascript',
+      runInterpreterValues: null,
     }
 
     this.FOOTER_HEIGHT = 41;
@@ -72,6 +73,7 @@ class AppContent extends Component {
     this.onRunInterpreter = this.onRunInterpreter.bind(this);
     this.onJsRun = this.onJsRun.bind(this);
     this.onInterpreterRun = this.onInterpreterRun.bind(this);
+    this.onRunInterpreterValueChange = this.onRunInterpreterValueChange.bind(this);
 
     this.loadData = this.loadData.bind(this);
 
@@ -235,6 +237,10 @@ class AppContent extends Component {
 
     const parsedResult = ethers.utils.defaultAbiCoder.decode(soliditySource.gapi.outputs.map(out => out.type), result);
     return parsedResult;
+  }
+
+  onRunInterpreterValueChange(values) {
+    this.setState({ runInterpreterValues: JSON.stringify(values)});
   }
 
   addCanvasGraph(activeCanvas) {
@@ -434,9 +440,11 @@ class AppContent extends Component {
   }
 
   render() {
-    const { pageSizes, canvases, activeCanvas, treedata, graphdata, pipeoutputComponent, savedGraph } = this.state;
+    const { pageSizes, canvases, activeCanvas, treedata, graphdata, pipeoutputComponent, savedGraph, pipeoutput, runInterpreterValues } = this.state;
 
     const markdown = savedGraph && savedGraph.data && savedGraph.data.markdown ? savedGraph.data.markdown : '';
+    const namespace = savedGraph && savedGraph.metadata && savedGraph.metadata.namespace ? savedGraph.metadata.namespace : '';
+    const graphgapi = pipeoutput.soliditySource ? pipeoutput.soliditySource.gapi: null;
 
     // const canvasTabs = new Array(canvases).fill(0).map((canvas, i) => {
     //   return (
@@ -497,6 +505,8 @@ class AppContent extends Component {
             {markdown
               ? <GraphMarkdown
                 value={markdown}
+                gapi={graphgapi}
+                gapiValues={runInterpreterValues}
                 preview={'preview'}
                 styles={{ ...mdStyles }}
                 onChange={this.onChangeMarkdown}
@@ -510,6 +520,7 @@ class AppContent extends Component {
               item={this.state.piperun}
               onRun={this.onRunInterpreter}
               onInfoClosed={this.onGoToPipeoutput}
+              onChange={this.onRunInterpreterValueChange}
               pfunctionColor={pfunctionColor}
             />
           </View>
@@ -520,8 +531,9 @@ class AppContent extends Component {
           <GraphSave
             styles={{ ...this.props.styles, ...pageSizes.canvas }}
             buttonStyle={styles.buttonStyle}
-            gapi={this.state.pipeoutput.soliditySource ? this.state.pipeoutput.soliditySource.gapi: null}
+            gapi={graphgapi}
             markdown={markdown}
+            namespace={namespace}
             goBack={this.onGoToPipeoutput}
             onGraphSave={this.saveGraph}
           />

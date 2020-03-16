@@ -17,8 +17,8 @@ export default class GraphSave extends Component {
     super(props);
 
     this.state = {
-      name: 'GraphName',
-      namespace: 'test',
+      name: '',
+      namespace: props.namespace,
       markdown: props.markdown,
       savedGraph: null,
       link: null,
@@ -34,6 +34,10 @@ export default class GraphSave extends Component {
   componentDidUpdate(prevProps) {
     if (this.props.markdown !== prevProps.markdown) {
       this.setState({ markdown: this.props.markdown});
+    }
+
+    if (this.props.namespace !== prevProps.namespace) {
+      this.setState({ namespace: this.props.namespace});
     }
   }
 
@@ -62,7 +66,7 @@ export default class GraphSave extends Component {
 
   render() {
     const { props } = this;
-    const { savedGraph, link, saving, markdown } = this.state;
+    const { savedGraph, link, saving, markdown, namespace } = this.state;
     const editorHeight = props.styles.height - 100;
 
     const afterSave = savedGraph
@@ -98,6 +102,7 @@ export default class GraphSave extends Component {
                 borderRightWidth: '1px',
                 marginRight: '1px',
               }}
+              value={namespace}
               placeholder='Namespace'
               onChangeText={ text => this.onChangeNamespace(text) }
             />
@@ -114,6 +119,7 @@ export default class GraphSave extends Component {
           </Item>
           <GraphMarkdown
             value={markdown}
+            gapi={props.gapi}
             styles={{ height: editorHeight }}
             onChange={this.onChangeMarkdown}
           />
