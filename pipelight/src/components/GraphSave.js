@@ -19,7 +19,7 @@ export default class GraphSave extends Component {
     this.state = {
       name: 'GraphName',
       namespace: 'test',
-      markdown: '',
+      markdown: props.markdown,
       savedGraph: null,
       link: null,
       saving: false,
@@ -29,6 +29,12 @@ export default class GraphSave extends Component {
     this.onChangeName = this.onChangeName.bind(this);
     this.onChangeMarkdown = this.onChangeMarkdown.bind(this);
     this.onGraphSave = this.onGraphSave.bind(this);
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.markdown !== prevProps.markdown) {
+      this.setState({ markdown: this.props.markdown});
+    }
   }
 
   onChangeName(name) {

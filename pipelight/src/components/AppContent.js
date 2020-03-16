@@ -436,6 +436,8 @@ class AppContent extends Component {
   render() {
     const { pageSizes, canvases, activeCanvas, treedata, graphdata, pipeoutputComponent, savedGraph } = this.state;
 
+    const markdown = savedGraph && savedGraph.data && savedGraph.data.markdown ? savedGraph.data.markdown : '';
+
     // const canvasTabs = new Array(canvases).fill(0).map((canvas, i) => {
     //   return (
     //     <canvas id={'draw_canvas' + i} key={i}></canvas>
@@ -490,8 +492,6 @@ class AppContent extends Component {
         const mdStyles = { ...viewStyles, height: mdheight, minHeight: mdheight, maxHeight: mdheight };
         const fcallStyles = { ...viewStyles, height: fcallheight, minHeight: fcallheight, maxHeight: fcallheight };
 
-        const markdown = savedGraph && savedGraph.data && savedGraph.data.markdown ? savedGraph.data.markdown : '';
-
         outputComponent = (
           <View styles={{ ...viewStyles, flex: 1 }}>
             {markdown
@@ -521,6 +521,7 @@ class AppContent extends Component {
             styles={{ ...this.props.styles, ...pageSizes.canvas }}
             buttonStyle={styles.buttonStyle}
             gapi={this.state.pipeoutput.soliditySource ? this.state.pipeoutput.soliditySource.gapi: null}
+            markdown={markdown}
             goBack={this.onGoToPipeoutput}
             onGraphSave={this.saveGraph}
           />
