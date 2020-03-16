@@ -6,6 +6,11 @@ const CHAINLENS_API = process.env.REACT_APP_CHAINLENS_SERVER;
 export async function saveGraph(chainid, pipeInterpreter, graphData, pipeoutput) {
   const { pipegraph, soliditySource, interpreterGraph } = pipeoutput;
 
+  if (!interpreterGraph || interpreterGraph.steps.length === 0) {
+    console.error('Cannot save empty graphs');
+    return {};
+  }
+
   const { onchainid, graph, receipt } = await saveGraphOnChain(
     pipeInterpreter,
     {
