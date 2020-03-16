@@ -15,6 +15,8 @@ import { FunctionCall } from '@pipeos/react-function-call-ui';
 import { pfunctionColor } from '@pipeos/react-pipeos-components';
 import Workspace from './Workspace.js';
 import Pipeoutput from './Pipeoutput.js';
+import GraphSave from './GraphSave.js';
+import GraphMarkdown from './markdown/GraphMarkdown.js';
 import { getPageSize } from '../utils/utils.js';
 import { getPipegraphInfo } from '../utils/pipecanvas.js';
 import { getWeb3 } from '../utils/utils.js';
@@ -47,8 +49,9 @@ class AppContent extends Component {
       web3: null,
       treedata: [],
       graphdata: [],
-      storedGraph: null,
-      runInterpreter: false,
+      savedGraph: null,
+      pipeoutputComponent: 'runJavascript',
+      runInterpreterValues: null,
     }
 
     this.FOOTER_HEIGHT = 41;
@@ -65,10 +68,12 @@ class AppContent extends Component {
     this.onGoToPipecanvas = this.onGoToPipecanvas.bind(this);
     this.onGoToPiperun = this.onGoToPiperun.bind(this);
     this.onPiperun = this.onPiperun.bind(this);
+    this.onGraphSave = this.onGraphSave.bind(this);
     this.saveGraph = this.saveGraph.bind(this);
     this.onRunInterpreter = this.onRunInterpreter.bind(this);
     this.onJsRun = this.onJsRun.bind(this);
     this.onInterpreterRun = this.onInterpreterRun.bind(this);
+    this.onRunInterpreterValueChange = this.onRunInterpreterValueChange.bind(this);
 
     this.loadData = this.loadData.bind(this);
 
@@ -143,14 +148,20 @@ class AppContent extends Component {
     return dims;
   }
 
-  async saveGraph({ name, namespace }) {
+  onGraphSave() {
+    this.setState({ pipeoutputComponent: 'editGraphMarkdown' });
+    this.onGoToPiperun();
+  }
+
+  async saveGraph({ name, namespace, markdown }) {
     const graphData = {
       data: {
         name: `${namespace}.${name}`,
-        markdown: '# ' + name,
+        markdown,
       },
       metadata: {categories: ['pgraph'], namespace},
     }
+
     const chainid = parseInt(this.state.web3.version.network);
     const { savedGraph, receipt } = await saveGraph(
       chainid,
@@ -158,20 +169,25 @@ class AppContent extends Component {
       graphData,
       this.state.pipeoutput,
     );
+
+    if (!savedGraph) {
+      return {};
+    }
+
     console.log('response', savedGraph, receipt, receipt.transactionHash);
 
-    this.setState({ storedGraph: savedGraph });
+    this.setState({ savedGraph: savedGraph });
     const link = getEtherscanTx(chainid, receipt.transactionHash);
     return { savedGraph, link };
   }
 
   onJsRun() {
-    this.setState({ runInterpreter: false });
+    this.setState({ pipeoutputComponent: 'runJavascript' });
     this.onGoToPiperun();
   }
 
   onInterpreterRun() {
-    this.setState({ runInterpreter: true });
+    this.setState({ pipeoutputComponent: 'runInterpreter' });
     this.onGoToPiperun();
   }
 
@@ -221,6 +237,10 @@ class AppContent extends Component {
 
     const parsedResult = ethers.utils.defaultAbiCoder.decode(soliditySource.gapi.outputs.map(out => out.type), result);
     return parsedResult;
+  }
+
+  onRunInterpreterValueChange(values) {
+    this.setState({ runInterpreterValues: JSON.stringify(values)});
   }
 
   addCanvasGraph(activeCanvas) {
@@ -420,7 +440,11 @@ class AppContent extends Component {
   }
 
   render() {
-    const { pageSizes, canvases, activeCanvas, treedata, graphdata, runInterpreter } = this.state;
+    const { pageSizes, canvases, activeCanvas, treedata, graphdata, pipeoutputComponent, savedGraph, pipeoutput, runInterpreterValues } = this.state;
+
+    const markdown = savedGraph && savedGraph.data && savedGraph.data.markdown ? savedGraph.data.markdown : '';
+    const namespace = savedGraph && savedGraph.metadata && savedGraph.metadata.namespace ? savedGraph.metadata.namespace : '';
+    const graphgapi = pipeoutput.soliditySource ? pipeoutput.soliditySource.gapi: null;
 
     // const canvasTabs = new Array(canvases).fill(0).map((canvas, i) => {
     //   return (
@@ -453,6 +477,71 @@ class AppContent extends Component {
         </View>
       )
     });
+
+    let outputComponent;
+    switch (pipeoutputComponent) {
+      case 'runJavascript':
+        outputComponent = (
+          <FunctionCall
+            styles={{ ...this.props.styles, ...pageSizes.canvas }}
+            buttonStyle={styles.buttonStyle}
+            web3={this.state.web3}
+            item={this.state.piperun}
+            onRun={this.onPiperun}
+            onInfoClosed={this.onGoToPipeoutput}
+            pfunctionColor={pfunctionColor}
+          />
+        );
+        break;
+      case 'runInterpreter':
+        const viewStyles = { ...this.props.styles, ...pageSizes.canvas };
+        const mdheight = viewStyles.height / 3;
+        const fcallheight = viewStyles.height - mdheight + 46;
+        const mdStyles = { ...viewStyles, height: mdheight, minHeight: mdheight, maxHeight: mdheight };
+        const fcallStyles = { ...viewStyles, height: fcallheight, minHeight: fcallheight, maxHeight: fcallheight };
+
+        outputComponent = (
+          <View styles={{ ...viewStyles, flex: 1 }}>
+            {markdown
+              ? <GraphMarkdown
+                value={markdown}
+                gapi={graphgapi}
+                gapiValues={runInterpreterValues}
+                preview={'preview'}
+                styles={{ ...mdStyles }}
+                onChange={this.onChangeMarkdown}
+              />
+              : <></>
+            }
+            <FunctionCall
+              styles={{ ...fcallStyles }}
+              buttonStyle={styles.buttonStyle}
+              web3={this.state.web3}
+              item={this.state.piperun}
+              onRun={this.onRunInterpreter}
+              onInfoClosed={this.onGoToPipeoutput}
+              onChange={this.onRunInterpreterValueChange}
+              pfunctionColor={pfunctionColor}
+            />
+          </View>
+        );
+        break;
+      case 'editGraphMarkdown':
+        outputComponent = (
+          <GraphSave
+            styles={{ ...this.props.styles, ...pageSizes.canvas }}
+            buttonStyle={styles.buttonStyle}
+            gapi={graphgapi}
+            markdown={markdown}
+            namespace={namespace}
+            goBack={this.onGoToPipeoutput}
+            onGraphSave={this.saveGraph}
+          />
+        );
+        break;
+      default:
+        throw new Error('pipeoutputComponent unknown: ' + pipeoutputComponent);
+    }
 
     return (
       <ScrollView
@@ -526,29 +615,10 @@ class AppContent extends Component {
           remixClient={this.remixClient}
           goBack={this.onGoToWorkspace}
           onJsRun={this.onJsRun}
-          onGraphSave={this.saveGraph}
+          onGraphSave={this.onGraphSave}
           onRunInterpreter={this.onInterpreterRun}
         />
-        {runInterpreter
-          ? <FunctionCall
-              styles={{ ...this.props.styles, ...pageSizes.page }}
-              buttonStyle={styles.buttonStyle}
-              web3={this.state.web3}
-              item={this.state.piperun}
-              onRun={this.onRunInterpreter}
-              onInfoClosed={this.onGoToPipeoutput}
-              pfunctionColor={pfunctionColor}
-            />
-          : <FunctionCall
-            styles={{ ...this.props.styles, ...pageSizes.page }}
-            buttonStyle={styles.buttonStyle}
-            web3={this.state.web3}
-            item={this.state.piperun}
-            onRun={this.onPiperun}
-            onInfoClosed={this.onGoToPipeoutput}
-            pfunctionColor={pfunctionColor}
-          />
-        }
+        { outputComponent }
       </ScrollView>
     )
   }

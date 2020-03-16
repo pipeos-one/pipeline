@@ -1,14 +1,12 @@
 import React, { Component } from 'react';
 import {
   View,
-  Item,
   Text,
   Textarea,
   Button,
   Icon,
   Left,
   Right,
-  Input,
 } from 'native-base';
 import { clipboardCopy } from '@pipeos/react-pipeos-components';
 import { uploadToFileManager } from '../utils/remix.js';
@@ -17,6 +15,7 @@ import styles from './Styles.js';
 const copyIcon = {name: 'content-copy', type: 'MaterialCommunityIcons'};
 const uploadIcon = {name: 'upload', type: 'MaterialCommunityIcons'};
 const playIcon = {name: 'play', type: 'MaterialCommunityIcons'};
+const saveIcon = {name: 'content-save', type: 'MaterialCommunityIcons'};
 
 function TabSubBtn(props) {
   const { icon, callback } = props;
@@ -31,109 +30,17 @@ function TabSubBtn(props) {
   );
 }
 
-class GraphDetails extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      name: 'GraphName',
-      namespace: 'test',
-      savedGraph: null,
-      link: null,
-      saving: false,
-    }
-
-    this.onChangeName = this.onChangeName.bind(this);
-    this.onGraphSave = this.onGraphSave.bind(this);
-    this.onChangeNamespace = this.onChangeNamespace.bind(this);
-  }
-
-  onChangeName(name) {
-    this.setState({ name });
-  }
-
-  onChangeNamespace(namespace) {
-    this.setState({ namespace });
-  }
-
-  async onGraphSave() {
-    const { name, namespace } = this.state;
-    this.setState({ saving: true });
-    const { savedGraph, link } = await this.props.onGraphSave({ name, namespace });
-    this.setState({ savedGraph, link, saving: false });
-  }
-
-  render() {
-    const { props } = this;
-    const { savedGraph, link, saving } = this.state;
-
-    const afterSave = savedGraph
-      ? (
-          <Item>
-            <View style={{
-              flex: 1,
-              alignItems: "center",
-            }}>
-              <Text>Graph id: {savedGraph.data.onchainid}</Text>
-              <Text
-                accessibilityRole='link'
-                href={link}
-                style={{color: 'blue'}}
-                target='_blank'
-              >
-                {link}
-              </Text>
-            </View>
-          </Item>
-        )
-      : (saving ? <Text>Saving...</Text> : <></>)
-
-    return (
-      <View style={{
-        ...props.styles,
-        height: props.styles.height * 2,
-        maxWidth: props.styles.width,
-      }}>
-          <Textarea
-            disabled
-            bordered={true}
-            value={ JSON.stringify(props.interpreterGraph || {}) }
-            style={{ ...props.styles, height: props.styles.height }}
-          />
-            <Item>
-              <Input
-                style={{
-                  width: props.styles.width / 2 - 35,
-                  borderColor: '#a8b3bc',
-                  borderStyle: 'solid',
-                  borderRightWidth: '1px',
-                  marginRight: '1px',
-                }}
-                placeholder='Namespace'
-                onChangeText={ text => this.onChangeNamespace(text) }
-              />
-              <Input
-                style={{
-                  width: props.styles.width / 2 - 35,
-                  borderColor: '#a8b3bc',
-                  borderStyle: 'solid',
-                  borderLeftWidth: '1px',
-                }}
-                placeholder='Graph Name'
-                onChangeText={ text => this.onChangeName(text) }
-              />
-              <Button
-                small rounded
-                style={ styles.buttonStyle }
-                onClick={ this.onGraphSave }
-              >
-                <Icon type="MaterialCommunityIcons" name='check-bold' />
-              </Button>
-            </Item>
-          {afterSave}
-      </View>
-    )
-  }
+function GraphDetails(props) {
+  return (
+    <View style={{   ...props.styles }}>
+      <Textarea
+        disabled
+        bordered={true}
+        value={ JSON.stringify(props.interpreterGraph || {}) }
+        style={{ ...props.styles, height: props.styles.height }}
+      />
+    </View>
+  )
 }
 
 class Pipeoutput extends Component {
@@ -146,7 +53,12 @@ class Pipeoutput extends Component {
   }
 
   render() {
-    const { onJsRun, remixClient, onGraphSave, onRunInterpreter } = this.props;
+    const {
+      onJsRun,
+      remixClient,
+      onGraphSave,
+      onRunInterpreter,
+    } = this.props;
     const {
       soliditySource={},
       deploymentArgs=[],
@@ -218,12 +130,19 @@ class Pipeoutput extends Component {
         break;
       case 'graph':
         activeViewText = JSON.stringify(graphSource);
-        textareaStyles.minHeight = textareaStyles.minHeight / 3;
+        textareaStyles.minHeight = textareaStyles.minHeight / 2;
+        // outputActiveTabButtons.push((
+        //   <TabSubBtn
+        //     key={6}
+        //     icon={copyIcon}
+        //     callback={() => clipboardCopy(activeViewText)}
+        //   />
+        // ));
         outputActiveTabButtons.push((
           <TabSubBtn
             key={6}
-            icon={copyIcon}
-            callback={() => clipboardCopy(activeViewText)}
+            icon={saveIcon}
+            callback={onGraphSave}
           />
         ));
         outputActiveTabButtons.push((
