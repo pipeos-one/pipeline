@@ -1200,10 +1200,10 @@
   resolved "https://registry.yarnpkg.com/@pipeos/pipesource/-/pipesource-0.0.7.tgz#a1187180e0ae0f54218d39fed209943d974d28cd"
   integrity sha512-te52h6D+ReUd5qXTLvUPI8o1smEwacZz/EBEF80MWHya0GCvvYakGwFTC5dRoL84Tk3RJWlvCRplSo5dEcBcXw==
 
-"@pipeos/react-function-call-ui@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@pipeos/react-function-call-ui/-/react-function-call-ui-0.0.1.tgz#0f2649e78238d68fa60d39cd22576bb67ed82b2f"
-  integrity sha512-oosnX108CSL0nyureE9mR3kr97hKNFvtrJzw/wJ0Fn23KEGz+Va99jjSCluhUXwjk9EA5TiFID3KzquPeORIJQ==
+"@pipeos/react-function-call-ui@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@pipeos/react-function-call-ui/-/react-function-call-ui-0.0.2.tgz#87da37b6c8240819bcc4683401288bd527ae4ec7"
+  integrity sha512-zipiKZipjjyyjsl9j3BAtrO0fIoF77beRgea1rQ3Jn4yEwwlqt0utcqZoMrNUgSjA8F71Rn/YRF5i87fMZp0zw==
 
 "@pipeos/react-pipeos-components@^0.0.3":
   version "0.0.3"
@@ -1560,6 +1560,16 @@
     lodash "^4.17.15"
     semver "^6.3.0"
     tsutils "^3.17.1"
+
+"@uiw/react-md-editor@^1.13.1":
+  version "1.13.1"
+  resolved "https://registry.yarnpkg.com/@uiw/react-md-editor/-/react-md-editor-1.13.1.tgz#d6a81dfd7dd6b04f4187b94747d2ae576c496b4c"
+  integrity sha512-I9vkA/WuxhqptjdbGh2iVdc77k93UXSP89PAWOlJQTw9NAoCiNWjtTpvWtLe6xsrvR4LjpmIoY/v+C6h9dn8Zw==
+  dependencies:
+    "@babel/runtime" "^7.8.4"
+    classnames "^2.2.6"
+    prismjs "^1.19.0"
+    react-markdown "^4.3.1"
 
 "@webassemblyjs/ast@1.8.5":
   version "1.8.5"
