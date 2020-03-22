@@ -1,6 +1,7 @@
-import pipejs from '../index.js';
+import pipejs from '../pipe.js';
+import soltypes from '../types/solidity.js';
 
-const pipe = pipejs();
+const pipe = pipejs([soltypes]);
 const dbFunction = {"_id":"5c95397d4212cc40afeec91f","pclassid":"5c95397d4212cc40afeec912","pfunction":{"signature":"getVendor(uint256)","gapi":{"constant":true,"inputs":[{"name":"product_id","type":"uint256"}],"name":"getVendor","outputs":[{"name":"vendor","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},"graph":{},"sources":{}},"timestamp":"2019-03-22T14:38:36.112Z","pclass":{"_id":"5c95397d4212cc40afeec912","name":"VendorRegistration","type":"sol","deployment":"0x274782b8155ddcc9d868f9e676e6688d78c22488"}}
 
 test('add_indexed_func', () => {
