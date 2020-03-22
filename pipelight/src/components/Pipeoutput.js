@@ -48,7 +48,7 @@ class Pipeoutput extends Component {
     super(props);
 
     this.state = {
-      activetab: 'sol',
+      activetab: 'graph',
     }
   }
 
@@ -60,11 +60,10 @@ class Pipeoutput extends Component {
       onRunInterpreter,
     } = this.props;
     const {
-      soliditySource={},
+      soliditySource,
       deploymentArgs=[],
-      web3jsSource={},
+      web3jsSource,
       graphSource={},
-      web3jsSourceFunction,
       interpreterGraph,
     } = this.props.data;
     const { activetab } = this.state;
@@ -81,7 +80,7 @@ class Pipeoutput extends Component {
 
     switch(activetab) {
       case 'sol':
-        activeViewText = soliditySource.source || '';
+        activeViewText = soliditySource || '';
         outputActiveTabButtons.push((
           <TabSubBtn
             key={1}
@@ -108,11 +107,12 @@ class Pipeoutput extends Component {
         ));
         break;
       case 'js':
-        activeViewText = web3jsSourceFunction ? web3jsSourceFunction(
-          web3jsSource.source || '',
-          [...new Set(deploymentArgs.map(depl => depl.address))]
-            .map(address => `"${address}"`),
-        ): '';
+        activeViewText = web3jsSource;
+        // activeViewText = web3jsSourceFunction ? web3jsSourceFunction(
+        //   web3jsSource.source || '',
+        //   [...new Set(deploymentArgs.map(depl => depl.address))]
+        //     .map(address => `"${address}"`),
+        // ): '';
         outputActiveTabButtons.push((
           <TabSubBtn
             key={4}

@@ -1,3 +1,6 @@
+import { getWasmModule } from './wasm.js';
+import wasmfixtures from '../fixtures/wasmfixtures.js';
+
 const CHAINLENS_API = process.env.REACT_APP_CHAINLENS_SERVER;
 const fixtures = {
   3: ['0163e781-eb7e-4429-85cd-f0f6ff8a26d9', '9247016e-ba61-4413-9cae-3361e199e5c5', '5170421c-b791-4e17-9d8b-416016b95a77'],
@@ -23,4 +26,13 @@ export async function getContractFixtures(chainid) {
   }
 
   return contracts;
+}
+
+export async function getWasmFixtures() {
+  const wpclasses = [];
+  for (let winfo of wasmfixtures) {
+    const wpclass = await getWasmModule(winfo);
+    if (wpclass) wpclasses.push(wpclass);
+  }
+  return wpclasses;
 }

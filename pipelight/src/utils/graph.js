@@ -1,34 +1,39 @@
 import { ethers } from 'ethers';
-import { getSignatureString } from './utils.js';
+import { getSignatureString, getSignature } from './utils.js';
 
 const CHAINLENS_API = process.env.REACT_APP_CHAINLENS_SERVER;
 
 export async function saveGraph(chainid, pipeInterpreter, graphData, pipeoutput) {
-  const { pipegraph, soliditySource, interpreterGraph } = pipeoutput;
+  const { pipegraph, graphAbi, interpreterGraph, onlySolidity } = pipeoutput;
 
   if (!interpreterGraph || interpreterGraph.steps.length === 0) {
     console.error('Cannot save empty graphs');
     return {};
   }
 
-  const { onchainid, graph, receipt } = await saveGraphOnChain(
-    pipeInterpreter,
-    {
-      steps: interpreterGraph.steps,
-      outputIndexes: interpreterGraph.outputIndexes
-    },
-  );
-  console.log('onchainid, receipt', onchainid, receipt);
-
   graphData.data.shortPgraph = pipegraph.rich_graph.init;
   graphData.data.runnablePgraph = pipegraph.runnable_graph;
-  graphData.data.onchainPgraph = graph;
-  graphData.data.gapi = JSON.parse(JSON.stringify(soliditySource.gapi));
+  graphData.data.gapi = JSON.parse(JSON.stringify(graphAbi));
   graphData.data.gapi.name = graphData.data.name;
   graphData.data.gapi.type = 'function';
-  graphData.data.onchainid = onchainid;
   graphData.data.chainid = chainid;
-  graphData.data.interpreter = pipeInterpreter.address;
+
+  let receipt = {};
+  if (onlySolidity) {
+    const { onchainid, graph, receipt: txreceipt } = await saveGraphOnChain(
+      pipeInterpreter,
+      {
+        steps: interpreterGraph.steps,
+        outputIndexes: interpreterGraph.outputIndexes
+      },
+    );
+    console.log('onchainid, receipt', onchainid, receipt);
+
+    graphData.data.onchainPgraph = graph;
+    graphData.data.onchainid = onchainid;
+    graphData.data.interpreter = pipeInterpreter.address;
+    receipt = txreceipt;
+  }
 
   console.log('graphData server', graphData);
   const savedGraph = await saveGraphOnServer(graphData);
@@ -128,7 +133,6 @@ export function graphToPclassFull(graph) {
 }
 
 export function graphsToPclass(graphs) {
-  console.log('graphs', graphs);
   const pclasses = {};
   graphs.forEach(graph => {
     let pclass = pclasses[graph.metadata.namespace];
@@ -141,7 +145,6 @@ export function graphsToPclass(graphs) {
 
     pclasses[graph.metadata.namespace] = pclass;
   });
-  console.log('pclasses', pclasses);
   return Object.values(pclasses);
 }
 
@@ -160,15 +163,15 @@ export function graphToPfunction(graph) {
   pfunction.data.gapi = gapi;
 
   pfunction.data.signatureString = getSignatureString(graph.data.gapi);
-  const abii = new ethers.utils.Interface([graph.data.gapi]);
-  pfunction.data.signature = abii.functions[graph.data.gapi.name].sighash;
+  pfunction.data.signature =  getSignature(pfunction.data.signatureString);
 
   return pfunction;
 }
 
 export function graphToPclassi(graph) {
   let pclassi = { ...graph, type: 'graph' };
-  pclassi.data.deployment = {address: graph.data.onchainid.toString()};
+  // pclassi.data.deployment = {address: graph.data.onchainid.toString()};
+  pclassi.data.deployment = graph._id;
   return pclassi;
 }
 

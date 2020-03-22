@@ -37,7 +37,6 @@ class ResolverSourceSolidity {
   }
 
   getGapi() {
-    if (this.steps.length === 0) return [];
     this.gapi = this.resolvers.solidity.getGapi(this.inputs, this.outputs);
     return this.gapi;
   }

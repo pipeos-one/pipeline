@@ -1,3 +1,5 @@
+import { ethers } from 'ethers';
+
 export const getWeb3 = async () => {
     let web3Instance;
     if (window.ethereum) {
@@ -41,6 +43,10 @@ export function getPageSize(noOfPages, {width, height}) {
 export function getSignatureString(fgapi) {
   const inputTypes = (fgapi.inputs || []).map((input) => input.type);
   return `${fgapi.name || ''}(${inputTypes.join(',')})`;
+}
+
+export function getSignature(signatureString) {
+  return ethers.utils.id(signatureString).slice(0, 10);
 }
 
 export function gapiStripTemporary(gapi) {

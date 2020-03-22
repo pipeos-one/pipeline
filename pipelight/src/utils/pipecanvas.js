@@ -1,29 +1,28 @@
-import { ethers } from 'ethers';
-import {sourceBuilder, solidityBuilder, web3Builder} from '@pipeos/pipesource';
-import { gapiStripTemporary, gapiStripPayable } from './utils.js';
+import { gapiStripTemporary, gapiStripPayable, getSignatureString, getSignature } from './utils.js';
+import { getGraphContext } from './graph.js';
 
-export function getPipegraphInfo(newGraph, activeCanvas, selectedFunctions) {
-  console.log('onChange new_gr', newGraph);
+export async function getPipegraphInfo(newGraph, activeCanvas, selectedFunctions, pipegraph, graphResolvers) {
+  // console.log('onChange new_gr', newGraph);
   const new_gr = JSON.parse(JSON.stringify(newGraph));
   const graphSource = {...new_gr.rich_graph.init};
 
-  // TODO: for non-Solidity graphs
-  const soliditySource = sourceBuilder(solidityBuilder)(new_gr)(`function${activeCanvas}`);
+  let soliditySource = await pipegraph.pipe.build_and_run_graph(new_gr.context)(graphSource)(graphResolvers.sourcesol)([]);
 
-  const web3jsSource = sourceBuilder(web3Builder)(new_gr)(`function${activeCanvas}`);
-  const web3jsSourceFunction = (jsSource, runArguments) => `function runGraph() {
+  let web3jsSource = await pipegraph.pipe.build_and_run_graph(new_gr.context)(graphSource)(graphResolvers.sourcejs)([]);
+  web3jsSource = `
   const provider = new ethers.providers.Web3Provider(web3.currentProvider);
   const signer = provider.getSigner();
-  const graphArguments = [${runArguments.join(', ')}];
-  const {function${activeCanvas}} = pipedGraph(...graphArguments, provider, signer, ethers);
+  ${web3jsSource}
+  `;
 
-  return function${activeCanvas}(...arguments);
+  const execute = pipegraph.pipe.build_and_run_graph(new_gr.context)(graphSource)(graphResolvers.runtime);
 
-  ${jsSource}
-}
-`
+  const graphAbi = graphResolvers.sourcesol.getGapi();
+
   let deploymentArgs = [];
   let graphStepsAbi = {};
+  let funcContexts = {};
+  let onlySolidity = true;
   Object.values(new_gr.rich_graph.init.n).map(node => {
     return {
       _id: node.id,
@@ -35,36 +34,40 @@ export function getPipegraphInfo(newGraph, activeCanvas, selectedFunctions) {
         if (functionObj) {
             // TODO fixme deployment per chain
             let deployment = functionObj.pclass.pclassInstances[0].data.deployment;
+
             let contract_address = {
                 funcName: node.funcName,
-                address: deployment.openapiid ? `http://${deployment.host}${deployment.basePath}` : deployment.address,
+                address: (deployment.openapiid ? `http://${deployment.host}${deployment.basePath}` : deployment.address) || deployment,
                 contractName: functionObj.pclass.data.name,
             };
             deploymentArgs.push(contract_address);
 
-            const abii = new ethers.utils.Interface([
-              gapiStripTemporary(
-                gapiStripPayable(functionObj.data.gapi)
-              )
-            ]);
+            const abii = gapiStripTemporary(gapiStripPayable(functionObj.data.gapi))
+            const signatureFull = getSignatureString(abii);
+            const signature = getSignature(signatureFull);
 
-            const addressOrGraphId =  deployment.openapiid
-              ? `http://${deployment.host}${deployment.basePath}`
-              : (functionObj.data.onchainid
-                ? functionObj.data.onchainid
-                : deployment.address
-              );
+            let addressOrGraphId = functionObj.data.onchainid || contract_address.address;
+
+            if (!addressOrGraphId) addressOrGraphId = deployment;
 
             graphStepsAbi[functionObj._id] = {
                 name: node.funcName,
                 abi: functionObj.data.gapi,
-                signature: abii.functions[functionObj.data.gapi.name].sighash,
+                signature,
                 deployment: addressOrGraphId,
                 contractName: functionObj.pclass.data.name,
+            }
+            funcContexts[node._id] = new_gr.context[node._id];
+            if (functionObj.metadata.categories[0] !== 'solidity') {
+              onlySolidity = false;
             }
         }
     });
   });
 
-  return { soliditySource, deploymentArgs, web3jsSource, graphSource, web3jsSourceFunction, graphStepsAbi }
+  if (!onlySolidity) {
+    soliditySource = '';
+  }
+
+  return { soliditySource, web3jsSource, graphSource, graphAbi, graphStepsAbi, deploymentArgs, execute, onlySolidity };
 }
