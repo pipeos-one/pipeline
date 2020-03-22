@@ -1,4 +1,4 @@
-const baseUrl = 'https://github.com/loredanacirstea/pipeline/raw/multi-runtime-abstractions/packages/packages/pipejs/src/__tests__/fixtures';
+const baseUrl = 'https://cdn.jsdelivr.net/gh/pipeos-one/pipeline@master/packages/packages/pipejs/src/__tests__/fixtures';
 const wasmfixtures = [
   {
     name: 'sums',
