@@ -41,6 +41,15 @@ export default class PclassList extends Component {
     });
     const btnOffset = headerButtons.length * this.buttonOffset + 110;
 
+    const itemIcons = (item.icons || []).map(icon => {
+      return (
+        <Thumbnail
+          source={{ uri: icon.uri }}
+          style={{ height: 15, width: 15, borderRadius: 5, marginLeft: 5 }}
+        />
+      )
+    })
+
     return (
       <View
         style={{
@@ -52,11 +61,12 @@ export default class PclassList extends Component {
         }}
       >
 
-        <View style={{flexDirection: 'row'}}>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
           {expanded
             ? <Icon style={{ fontSize: 18 }} name='remove-circle' />
             : <Icon style={{ fontSize: 18 }} name='add-circle' />
           }
+          {itemIcons}
           <Text
             style={{ fontFamily: null, fontWeight: '400', paddingLeft: 10, maxWidth: this.props.styles.minWidth - btnOffset }}
           >

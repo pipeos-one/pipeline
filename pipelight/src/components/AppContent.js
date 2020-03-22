@@ -9,6 +9,18 @@ import {
   Right,
 } from 'native-base';
 import { ethers } from 'ethers';
+import {
+  ResolverRuntimeMulti,
+  ResolverSourceJs,
+  ResolverSourceSolidity,
+  SourceWasmJavascript,
+  RuntimeWasmJavascript,
+  SourceJavascript,
+  RuntimeJavascript,
+  SourceWeb3Javascript,
+  RuntimeWeb3Javascript,
+  SourceSolidity,
+} from '@pipeos/pipejs';
 import pipecanvas from '@pipeos/pipecanvas';
 import { solidityBuilder, enrichedGraphSteps } from '@pipeos/pipesource';
 import { FunctionCall } from '@pipeos/react-function-call-ui';
@@ -25,10 +37,14 @@ import { getInterpreter } from '../utils/interpreter.js';
 import { saveGraph, getGraphs, getGraphContext } from '../utils/graph.js';
 import { getEtherscanTx } from '../utils/chain.js';
 import { buildinterpreterArgs, buildinterpreterInputs } from '../utils/interpreter.js';
-import { getContractFixtures } from '../utils/fixtures.js';
+import { getContractFixtures, getWasmFixtures } from '../utils/fixtures.js';
 import styles from './Styles.js';
 
 const DEFAULT_PIPERUN = { pfunction: {gapi: {inputs: [], outputs: []}}, deployment: {} };
+
+const fetchWasmUrl = (deployment) => {
+  return fetch(deployment);
+}
 
 class AppContent extends Component {
   constructor(props) {
@@ -96,8 +112,33 @@ class AppContent extends Component {
     const pipeinterpreter = getInterpreter(web3);
     this.setState({ web3, pipeinterpreter });
     this.setGraphs(chainid);
-    const treedata = await getContractFixtures(chainid);
+
+    let treedata = await getContractFixtures(chainid);
+    treedata = treedata.concat(await getWasmFixtures());
     this.setState({ web3, pipeinterpreter, treedata });
+  }
+
+  getGraphResolvers(web3) {
+    web3 = web3 || this.state.web3;
+    const provider = new ethers.providers.Web3Provider(web3.currentProvider);
+    const signer = provider.getSigner();
+
+    const runtimeWasmJs = new RuntimeWasmJavascript(fetchWasmUrl);
+    const runtimeJs = new RuntimeJavascript();
+    const runtimeWeb3 = new RuntimeWeb3Javascript(provider, signer, ethers);
+    const runtimeResolvers = {wasm: runtimeWasmJs, javascript: runtimeJs, solidity: runtimeWeb3};
+
+    const sourceWasmJs = new SourceWasmJavascript();
+    const sourceJs = new SourceJavascript();
+    const sourceWeb3 = new SourceWeb3Javascript();
+    const sourceResolversJs = {wasm: sourceWasmJs, javascript: sourceJs, solidity: sourceWeb3};
+    const sourceSol = new SourceSolidity();
+
+    return {
+      runtime: new ResolverRuntimeMulti(runtimeResolvers),
+      sourcejs: new ResolverSourceJs(sourceResolversJs),
+      sourcesol: new ResolverSourceSolidity({solidity: sourceSol}),
+    }
   }
 
   async setGraphs(chainid) {
@@ -174,10 +215,13 @@ class AppContent extends Component {
       return {};
     }
 
-    console.log('response', savedGraph, receipt, receipt.transactionHash);
-
     this.setState({ savedGraph: savedGraph });
-    const link = getEtherscanTx(chainid, receipt.transactionHash);
+
+    let link;
+    if (receipt.transactionHash) {
+      console.log('response', savedGraph, receipt, receipt.transactionHash);
+      link = getEtherscanTx(chainid, receipt.transactionHash);
+    }
     return { savedGraph, link };
   }
 
@@ -192,14 +236,24 @@ class AppContent extends Component {
   }
 
   async onRunInterpreter(inputValues) {
-    const { soliditySource, interpreterGraph } = this.state.pipeoutput;
+    console.log('Running JavaScript script...');
+    const { onlySolidity } = this.state.pipeoutput;
+
+    if (!onlySolidity) {
+      return await this.onPiperun(inputValues);
+    }
+    return this.onRunInterpreterSolidity(inputValues);
+  }
+
+  async onRunInterpreterSolidity(inputValues) {
+    const { graphAbi, interpreterGraph } = this.state.pipeoutput;
     let isTransaction = false;
     let pipeinterpreter;
     let result;
 
     if (
-      soliditySource.gapi.stateMutability === 'view'
-      || soliditySource.gapi.stateMutability === 'pure'
+      graphAbi.stateMutability === 'view'
+      || graphAbi.stateMutability === 'pure'
     ) {
       pipeinterpreter = this.state.pipeinterpreter.view;
     } else {
@@ -207,7 +261,7 @@ class AppContent extends Component {
       isTransaction = true;
     }
 
-    const inputs = soliditySource.gapi.inputs.map((inp, i) => {
+    const inputs = graphAbi.inputs.map((inp, i) => {
       return { type: inp.type, value: inputValues[i]};
     })
     const input = buildinterpreterInputs(inputs);
@@ -235,7 +289,7 @@ class AppContent extends Component {
 
     if (isTransaction) return result;
 
-    const parsedResult = ethers.utils.defaultAbiCoder.decode(soliditySource.gapi.outputs.map(out => out.type), result);
+    const parsedResult = ethers.utils.defaultAbiCoder.decode(graphAbi.outputs.map(out => out.type), result);
     return parsedResult;
   }
 
@@ -257,7 +311,7 @@ class AppContent extends Component {
       }
     );
     newgraph.onChange(new_gr => {
-      this.onGraphChange(new_gr);
+      this.onGraphChange(new_gr, newgraph);
     });
     newgraph.show();
 
@@ -266,58 +320,59 @@ class AppContent extends Component {
     this.setState({ pipeGraphs });
   }
 
-  onGraphChange(new_gr) {
-    const pipeoutput = getPipegraphInfo(
+  async onGraphChange(new_gr, graphinstance) {
+    const pipeoutput = await getPipegraphInfo(
       new_gr,
       this.state.activeCanvas,
       this.state.selectedFunctions,
+      graphinstance,
+      this.getGraphResolvers(),
     );
+
     const newGraph = JSON.parse(JSON.stringify(new_gr));
     newGraph.enriched_graph = enrichedGraphSteps(new_gr);
     pipeoutput.pipegraph = newGraph;
 
-    pipeoutput.interpreterGraph = buildinterpreterArgs(
-      [pipeoutput.pipegraph.rich_graph],
-      pipeoutput.graphStepsAbi,
-      [pipeoutput.soliditySource.gapi],
-    ).allArgs[0];
+    if (pipeoutput.onlySolidity) {
+      pipeoutput.interpreterGraph = buildinterpreterArgs(
+        [pipeoutput.pipegraph.rich_graph],
+        pipeoutput.graphStepsAbi,
+        [pipeoutput.graphAbi],
+      ).allArgs[0];
+    } else {
+      pipeoutput.interpreterGraph = {};
+    }
 
     const piperun = {
       pfunction: {
-        gapi: pipeoutput.web3jsSource.gapi,
+        gapi: pipeoutput.graphAbi,
         signatureString: 'signatureString',
       },
       deployment: { chainid: this.state.web3.version.network}
     }
-    console.log('onGraphChange pipeoutput', pipeoutput);
+    // console.log('onGraphChange pipeoutput', pipeoutput);
     this.setState({ pipeoutput, piperun });
   }
 
   async onPiperun(inputs) {
-    console.log('Running JavaScript script...');
+    console.log('Executing graph...');
     const { pipeoutput } = this.state;
-    const sourcecode = pipeoutput.web3jsSourceFunction(
-      pipeoutput.web3jsSource.source,
-      [...new Set(pipeoutput.deploymentArgs.map(depl => depl.address))]
-        .map(address => `"${address}"`),
-    );
-    const runnableSource = `(function(){return ${sourcecode}})()`;
-    const runnableFunction = await eval(runnableSource);
-    return await runnableFunction(...inputs);
+    return await pipeoutput.execute(inputs);
   }
 
   prepGraphFunction(pfunction, pclass) {
     const newpclass = {
       _id: pclass._id,
       name: pclass.data.name,
-      type: 'sol',
-      deployment: pclass.pclassInstances[0].data.deployment.address,
+      type: pclass.metadata.categories[0],
+      deployment: pclass.pclassInstances[0].data.deployment.address || pclass.pclassInstances[0].data.deployment,
     }
+    const gapi = JSON.parse(JSON.stringify(pfunction.data.gapi));
     let pfunc = {
       _id: pfunction._id,
       pclassid: pfunction.pclassid,
       pfunction: {
-        gapi: pfunction.data.gapi,
+        gapi,
         signature: pfunction.data.signature,
         graph: {},
         sources: {},
@@ -325,10 +380,9 @@ class AppContent extends Component {
       timestamp: pfunction.timestamp,
       pclass: newpclass,
     }
-    if (pfunc.pclass.type === 'sol') {
+    if (pfunc.pclass.type === 'solidity') {
       pfunc = solidityBuilder.enrichAbi(pfunc);
     }
-
     return pfunc;
   }
 
@@ -393,7 +447,7 @@ class AppContent extends Component {
     pipegraph.setGraph(pfunction.data.shortPgraph, pipeContext[this.state.activeCanvas]);
     pipegraph.show();
 
-    this.onGraphChange(pipegraph.getGraph());
+    this.onGraphChange(pipegraph.getGraph(), pipegraph);
   }
 
   onAddCanvas() {
@@ -413,7 +467,8 @@ class AppContent extends Component {
       graphsSource: [],
       pipeoutput: {},
       piperun: JSON.parse(JSON.stringify(DEFAULT_PIPERUN)),
-      storedGraph: null,
+      savedGraph: null,
+      runInterpreterValues: null,
     });
   }
 
@@ -444,7 +499,7 @@ class AppContent extends Component {
 
     const markdown = savedGraph && savedGraph.data && savedGraph.data.markdown ? savedGraph.data.markdown : '';
     const namespace = savedGraph && savedGraph.metadata && savedGraph.metadata.namespace ? savedGraph.metadata.namespace : '';
-    const graphgapi = pipeoutput.soliditySource ? pipeoutput.soliditySource.gapi: null;
+    const graphgapi = pipeoutput.graphAbi;
 
     // const canvasTabs = new Array(canvases).fill(0).map((canvas, i) => {
     //   return (
@@ -496,9 +551,15 @@ class AppContent extends Component {
       case 'runInterpreter':
         const viewStyles = { ...this.props.styles, ...pageSizes.canvas };
         const mdheight = viewStyles.height / 3;
-        const fcallheight = viewStyles.height - mdheight + 46;
         const mdStyles = { ...viewStyles, height: mdheight, minHeight: mdheight, maxHeight: mdheight };
-        const fcallStyles = { ...viewStyles, height: fcallheight, minHeight: fcallheight, maxHeight: fcallheight };
+        let fcallStyles;
+        if (markdown) {
+          const fcallheight = viewStyles.height - mdheight + 46;
+          fcallStyles = { ...viewStyles, height: fcallheight, minHeight: fcallheight, maxHeight: fcallheight };
+        } else {
+          fcallStyles = viewStyles;
+        }
+
 
         outputComponent = (
           <View styles={{ ...viewStyles, flex: 1 }}>
@@ -511,7 +572,7 @@ class AppContent extends Component {
                 styles={{ ...mdStyles }}
                 onChange={this.onChangeMarkdown}
               />
-              : <></>
+              : null
             }
             <FunctionCall
               styles={{ ...fcallStyles }}

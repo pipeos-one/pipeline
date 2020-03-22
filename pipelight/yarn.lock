@@ -1178,18 +1178,27 @@
   resolved "https://registry.yarnpkg.com/@nodelib/fs.stat/-/fs.stat-1.1.3.tgz#2b5a3ab3f918cca48a8c754c08168e3f03eba61b"
   integrity sha512-shAmDyaQC4H92APFoIaVDHCx5bStIocgvbwQyxPRrbUY20V1EYTbSDchWbuwlMG3V17cprZhA6+78JfB+3DTPw==
 
-"@pipeos/pipecanvas@^0.0.8":
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/@pipeos/pipecanvas/-/pipecanvas-0.0.8.tgz#f153b3a08395d66f5df4913f290b6a286c5eb13d"
-  integrity sha512-zbhOKBAkW+7DD5pTJYXk62iSqbyhO6rgX5p28+kBDVMjs7pnaO44NIsUWZDadqCIq1yMyeFM+cwa0/tnuRF75g==
+"@pipeos/pipecanvas@^0.0.10":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@pipeos/pipecanvas/-/pipecanvas-0.0.10.tgz#7acc7b0f677e818bc08ceef5f915003dbe029703"
+  integrity sha512-/NXxZRBQ/2KbRa2DJr8i0Uqs6mMdCRYEzeUoN4r0RmuQppgErnMo3RAMYCv5KLxIinVBtWtvAJ+pqwV2EkntAg==
   dependencies:
-    "@pipeos/pipejs" "^0.0.10"
+    "@pipeos/pipejs" "^0.1.0"
     d3 "^5.14.2"
 
-"@pipeos/pipejs@^0.0.10":
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/@pipeos/pipejs/-/pipejs-0.0.10.tgz#df848e21f4561fb0ce6335e6f4859f050eec579a"
-  integrity sha512-fMZbGFDNFqaaNBj3EiFkYnyHy7AfJtOM4BIK9HZmb7LrxYgls/QVkg6VpZ0R50YG7rszjcfUf/7Mw4ADgIXWCw==
+"@pipeos/pipejs@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@pipeos/pipejs/-/pipejs-0.1.0.tgz#2d3bd7500869cb0dfb2d986dfddb29232919d4cd"
+  integrity sha512-RNkhql+QpUZvCeO2sCVTqp906Ny/2AHOEod0apjl22GqDXQQqJx81zh5whAgVQz3UEGyIcFWenfjVghEw4iE3g==
+  dependencies:
+    big-integer "^1.6.48"
+    sanctuary "^2.0.1"
+    sanctuary-def "^0.20.1"
+
+"@pipeos/pipejs@^0.1.1":
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/@pipeos/pipejs/-/pipejs-0.1.1.tgz#085f879f58bc4232092efb14a01e72553a2f0abf"
+  integrity sha512-f/JV7FUlYdhPul2fedTUdacoL4OEW6XaXgYIFNky2mVNuK4yvYP2K9ebepPpFwTj0SHjXFnAz32C6pWI+7CARg==
   dependencies:
     big-integer "^1.6.48"
     sanctuary "^2.0.1"
@@ -1200,15 +1209,15 @@
   resolved "https://registry.yarnpkg.com/@pipeos/pipesource/-/pipesource-0.0.7.tgz#a1187180e0ae0f54218d39fed209943d974d28cd"
   integrity sha512-te52h6D+ReUd5qXTLvUPI8o1smEwacZz/EBEF80MWHya0GCvvYakGwFTC5dRoL84Tk3RJWlvCRplSo5dEcBcXw==
 
-"@pipeos/react-function-call-ui@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@pipeos/react-function-call-ui/-/react-function-call-ui-0.0.2.tgz#87da37b6c8240819bcc4683401288bd527ae4ec7"
-  integrity sha512-zipiKZipjjyyjsl9j3BAtrO0fIoF77beRgea1rQ3Jn4yEwwlqt0utcqZoMrNUgSjA8F71Rn/YRF5i87fMZp0zw==
-
-"@pipeos/react-pipeos-components@^0.0.3":
+"@pipeos/react-function-call-ui@^0.0.3":
   version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@pipeos/react-pipeos-components/-/react-pipeos-components-0.0.3.tgz#858271c4353161b651b66cbbeac3e81552517814"
-  integrity sha512-PM01lnaxeZUYQBjpy7Qr/4ktnJmW6QvHqF8wtLRSrW2ZlaV27mwJ4c1iPbwK6omgO8dTNOTvEcXtvO5cI3IW1w==
+  resolved "https://registry.yarnpkg.com/@pipeos/react-function-call-ui/-/react-function-call-ui-0.0.3.tgz#707870ddeb0bf106a67378e50579c888e8cf7b52"
+  integrity sha512-6J9goar6u84N+rgvhR+7Noh9WuXoVR/TM+1iSQvuWFPu4o85MSVXDunzH5SxW4Arhccxmks5qhjXJOAg6ygghg==
+
+"@pipeos/react-pipeos-components@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@pipeos/react-pipeos-components/-/react-pipeos-components-0.0.4.tgz#601a3f44b75444b223684dc1499684ced125d881"
+  integrity sha512-dhEv1cDFBUEsWpzr0w6EFdnNKCQm1WkIvm2IKr8qrU/810d8NtV2ciw3GfI/SoVlqGvd1wXMouUjiUQHDKq2HQ==
 
 "@remixproject/plugin@^0.1.18":
   version "0.1.18"

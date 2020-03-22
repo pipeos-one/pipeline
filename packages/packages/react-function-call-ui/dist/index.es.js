@@ -97,7 +97,7 @@ var possibleConstructorReturn = function (self, call) {
 var nonStringTypes = ['int', 'float', 'tuple', 'boolean'];
 var checkNonString = function checkNonString(itemType) {
   return nonStringTypes.find(function (typ) {
-    return itemType.includes(typ);
+    return itemType.includes(typ) || itemType[0] === 'i' || itemType[0] === 'u';
   });
 };
 var decodeValueString = function decodeValueString(value) {

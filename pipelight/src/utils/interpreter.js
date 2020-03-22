@@ -138,7 +138,7 @@ export const buildinterpreterArgs = (graphObj, graphStepsAbi, graphAbi) => {
   return {allArgs, allInputs, isTransaction};
 };
 
-const cumulativeSum = (sum => value => sum += value)(0);
+const cummulativeSum = (values) => values.map((start, i) => start + (i === 0 ? 0 : values[i - 1]));
 
 export const buildinterpreterInputs = (inputs) => {
   let encodedInputs = '';
@@ -151,7 +151,9 @@ export const buildinterpreterInputs = (inputs) => {
     starts.push((encodedValue.length - 2) / 2);
     encodedInputs += encodedValue.slice(2);
   });
-  starts = [0].concat(starts.map(cumulativeSum));
+
+  starts = [0].concat(cummulativeSum(starts));
+
   return {inputs: `0x${encodedInputs}`, starts, inputHasSlotSize};
 }
 

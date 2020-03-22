@@ -83,6 +83,13 @@ export default class Workspace extends Component {
       maxHeight: props.styles.height - 36,
     }
 
+    const treedataWithIcons = treedata.map(item => {
+      item.icons = (item.metadata.languages || item.metadata.categories).map(lang => {
+        return {uri: `/${lang}_type.svg`};
+      });
+      return item;
+    });
+
     const tabButtons = [];
     tabButtons.push((
       <Button
@@ -119,7 +126,7 @@ export default class Workspace extends Component {
     } else {
       mainView = treedata.length > 0
         ? <PclassList
-            data={treedata}
+            data={treedataWithIcons}
             buttons={contractButtons}
             styles={props.styles}
             buttonStyle={styles.buttonStyle}

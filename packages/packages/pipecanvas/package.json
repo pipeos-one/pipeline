@@ -1,29 +1,37 @@
 {
   "name": "@pipeos/pipecanvas",
-  "version": "0.0.8",
+  "version": "0.0.10",
   "description": "Library for visualizing and editing Pipeline graphs in canvas",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "jsnext:main": "dist/index.es.js",
   "scripts": {
-    "build": "webpack --mode production",
+    "build": "rollup -c",
+    "start": "rollup -c -w",
     "test": "jest",
     "lint": "eslint src"
   },
   "dependencies": {
-    "@pipeos/pipejs": "^0.0.10",
+    "@pipeos/pipejs": "^0.1.0",
     "d3": "^5.14.2"
   },
   "devDependencies": {
     "@babel/core": "^7.6.4",
+    "@babel/plugin-proposal-export-default-from": "^7.8.3",
     "@babel/preset-env": "^7.6.3",
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-node-resolve": "^7.1.1",
+    "@rollup/plugin-url": "^4.0.2",
     "babel-jest": "^24.9.0",
     "babel-loader": "^8.0.6",
     "eslint": "^6.5.1",
     "jest": "^24.9.0",
-    "webpack": "^4.41.2",
-    "webpack-cli": "^3.3.9"
+    "rollup": "^2.1.0",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-peer-deps-external": "^2.2.2"
   },
   "files": [
-    "dist/pipecanvas.min.js"
+    "dist/*"
   ],
   "repository": {
     "type": "git",
