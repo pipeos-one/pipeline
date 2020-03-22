@@ -542,7 +542,7 @@ pl["runtime_graph"] = SDef.RecordType({
         resolver.setInput(
           ""+key,
           [arr_ins[i]],
-          nodeContext.pfunction.gapi.outputs[0]
+          nodeContext.pfunction.gapi.outputs[0],
         );
       });
 

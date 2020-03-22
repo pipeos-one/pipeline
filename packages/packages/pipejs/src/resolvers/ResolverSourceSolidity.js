@@ -37,11 +37,14 @@ class ResolverSourceSolidity {
   }
 
   getGapi() {
+    if (this.steps.length === 0) return [];
     this.gapi = this.resolvers.solidity.getGapi(this.inputs, this.outputs);
     return this.gapi;
   }
 
   getOutput() {
+    if (this.steps.length === 0) return '';
+
     const inputs = this.inputs.map(({ key, typeobj}) => ioName(typeobj, key, 0));
     const outputs = this.outputs.map(({ key, value, typeobj}) => ioName(typeobj, key, value));
     const runContext = this.usedResolvers
@@ -54,6 +57,7 @@ class ResolverSourceSolidity {
 
     const head = this.resolvers.solidity.getContractHead();
     const fdef = this.resolvers.solidity.getFunctionDef(this.inputs, this.outputs);
+    const outputString = outputs.length === 1 ? outputs[0] : `(${outputs.join(', ')})`;
 
     return `${Object.values(imports).join('\n')}
 
@@ -64,7 +68,7 @@ contract PipedContract {
   {
     ${this.steps.join('\n')}
 
-    return [${outputs.join(', ')}]
+    return ${outputString};
   }
 }`
   }

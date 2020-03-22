@@ -45,12 +45,14 @@ class ResolverSourceJs {
       .map(name => this.resolvers[name].getImports())
       .reduce((accum, val) => accum.concat(val), []);
 
+    const outputString = outputs.length === 1 ? outputs[0] : `[${outputs.join(', ')}]`;
+
     return `async (${runContext.join(', ')}, ${inputs.join(', ')}) => {
     ${Object.values(imports).join('\n')}
 
     ${this.steps.join('\n')}
 
-  return [${outputs.join(', ')}]
+  return ${outputString};
 }`
   }
 }

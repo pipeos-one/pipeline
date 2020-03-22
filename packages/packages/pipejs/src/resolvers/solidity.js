@@ -32,7 +32,7 @@ class SourceSolidity {
       this.pclassesAbis[pclass.name].push(pfunction.gapi);
     }
 
-    const inputs = inputKeys.map(io => `${io[2].type} ${ioName(io[2], io[0], io[1])}`);
+    const inputs = inputKeys.map(io => ioName(io[2], io[0], io[1]));
     const outputs = outputKeys.map(io => `${io[2].type} ${ioName(io[2], io[0], io[1])}`);
     const outputString = outputs.length === 1 ? outputs[0] : `(${outputs.join(', ')})`;
 
@@ -125,9 +125,9 @@ interface ${pclass.name}Interface {
     const mutabilityFlag = mutability(gapi);
 
       return `
-    function function0(${gapi.inputs.join(', ')})
+    function function0(${finputs(gapi.inputs).join(', ')})
     public ${mutabilityFlag}
-    returns (${gapi.outputs.join(', ')})`
+    returns (${foutputs(gapi.outputs).join(', ')})`
   }
 }
 
