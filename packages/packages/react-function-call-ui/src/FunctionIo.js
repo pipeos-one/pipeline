@@ -11,7 +11,7 @@ import {
 } from 'native-base';
 
 const nonStringTypes = ['int', 'float', 'tuple', 'boolean'];
-const checkNonString = itemType => nonStringTypes.find(typ => itemType.includes(typ));
+const checkNonString = itemType => nonStringTypes.find(typ => (itemType.includes(typ) || itemType[0] === 'i' || itemType[0] === 'u'));
 const decodeValueString = value => value || '';
 const encodeValueString = value => value || '';
 const decodeValueNonString = value => value ? JSON.parse(value) : null;
