@@ -79,7 +79,7 @@ test('test wasm+js graph - execution & source', async () => {
   let runnableFunction = new Function('return ' + runnableSource)();
   const evalresult = await runnableFunction(customFetch, WebAssembly, ...inputs);
   console.log('evalresult', evalresult);
-  expect(evalresult).toEqual(result);
+  expect(evalresult).toEqual(result[0]);
 }, 30000);
 
 // TODO: pclass deployments as variables in the function
