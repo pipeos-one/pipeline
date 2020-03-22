@@ -1,4 +1,4 @@
-import pipejs from '@pipeos/pipejs';
+import { pipejs, pipetypes } from '@pipeos/pipejs';
 const d3 = require("d3");
 
 function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
@@ -74,6 +74,14 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
   function typeOptions(type) {
     if (pipeopts.types[type]) return pipeopts.types[type];
 
+    const typedef = pipe1.types[type];
+    const similar = Object.keys(pipeopts.types).find(key => typedef === pipe1.types[key]);
+
+    if (similar) {
+      pipeopts.types[type] = pipeopts.types[similar];
+      return pipeopts.types[type];
+    }
+
     const color = getRandomColor();
     const end = 0;
     while (pipeopts.typecolors[color] && end < 400) {
@@ -93,7 +101,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
   let current_edge = ({pos:[], target: false})
 
   let targets = JSON.parse(JSON.stringify(DEFAULT_TARGETS));
-  let pipe1 = new pipejs();
+  let pipe1 = new pipejs(pipetypes);
 
   setGraph(pipegraph, fcontext);
 
@@ -207,8 +215,9 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
       for (let rec in targets.end_drag){
         // console.log('nearestf', current_edge.source.type, targets.end_drag[rec], rec, current_stage.settings.r_graph.rich_graph.n[targets.end_drag[rec].port.i], targets.end_drag[rec].port.i)
           const targetIns = current_stage.settings.r_graph.rich_graph.n[targets.end_drag[rec].port.i].in[targets.end_drag[rec].port.port];
+
           if (
-            current_edge.source.type === targets.end_drag[rec].port.type &&
+            pipe1.types[current_edge.source.type] === pipe1.types[targets.end_drag[rec].port.type] &&
             // don't connect to the same input port:
             targetIns[0] !== current_edge.source.i &&
             // only ports connected to input ports
