@@ -847,10 +847,10 @@
     "@types/istanbul-reports" "^1.1.1"
     "@types/yargs" "^13.0.0"
 
-"@pipeos/pipejs@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@pipeos/pipejs/-/pipejs-0.1.0.tgz#2d3bd7500869cb0dfb2d986dfddb29232919d4cd"
-  integrity sha512-RNkhql+QpUZvCeO2sCVTqp906Ny/2AHOEod0apjl22GqDXQQqJx81zh5whAgVQz3UEGyIcFWenfjVghEw4iE3g==
+"@pipeos/pipejs@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@pipeos/pipejs/-/pipejs-0.1.2.tgz#c1f18a194b67c2dba0a70bbe5fb5622798a6b7a4"
+  integrity sha512-zbRMZJHNZASbl516BzB1Iy3xetOExuPScoBqrQ1QfY0g9IroZa4CymZt0x9lsOO4D9bXxFbz00wWr9Q1V2s3jg==
   dependencies:
     big-integer "^1.6.48"
     sanctuary "^2.0.1"
