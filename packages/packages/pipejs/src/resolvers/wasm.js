@@ -38,7 +38,7 @@ class SourceWasmJavascript {
       // );`;
 
         return `
-    const binary_${pclass.name} = await (await fetch("${pclass.deployment}")).arrayBuffer();
+    const binary_${pclass.name} = await fetch("${pclass.deployment}");
     const module_${pclass.name} = await WebAssembly.instantiate(binary_${pclass.name});
       `;
     });
@@ -58,7 +58,7 @@ class RuntimeWasmJavascript {
   async getModule(pclass) {
     if (!this.pclasses[pclass.name]) {
       // const wmodule = await WebAssembly.instantiateStreaming(this.fetch(pclass.deployment));
-      const binary = await (await this.fetch(pclass.deployment)).arrayBuffer();
+      const binary = await this.fetch(pclass.deployment);
       const wmodule = await WebAssembly.instantiate(binary);
       this.pclasses[pclass.name] = wmodule;
     }

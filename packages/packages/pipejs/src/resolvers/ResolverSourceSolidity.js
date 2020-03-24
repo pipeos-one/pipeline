@@ -9,6 +9,7 @@ class ResolverSourceSolidity {
     this.steps = [];
     this.usedResolvers = [];
     this.gapi = [];
+    this.subresolvers = [];
   }
 
   setInput(key, value, typeobj) {
@@ -70,6 +71,14 @@ contract PipedContract {
     return ${outputString};
   }
 }`
+  }
+
+  onSubGraph(fcontext, inputKeys, outputKeys) {
+    return {};
+  }
+
+  onSubGraphResponse(fcontext, response, inputKeys, outputKeys) {
+    // TODO
   }
 }
 
