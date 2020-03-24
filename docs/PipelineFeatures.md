@@ -7,19 +7,19 @@ With Pipeline, we have demonstrated:
 ### Runtimes (Pipeline graph interpreters)
 
 * JavaScript & Node.js - executing graphs containing
-    * nested graphs [video1](#Pipeline---Ethereum-dApps-with-Nested-WebAssembly-amp-Smart-Contract-Graphs)
-    * a mix of web3/smart contract & WebAssembly functions [video1](#Pipeline---Ethereum-dApps-with-Nested-WebAssembly-amp-Smart-Contract-Graphs)
-    * WebAssembly functions, in Node.js, through FFI [video2](#Pipeline-Executing-Graphs-on-WebAssembly-Binaries-with-FFI-feature-preview)
-    * Rust functions in Node.js, through FFI [video1](#Pipeline---Multi-language-Runtimes-Rust-feature-preview)
-    * HTTP calls based on OpenApi schemas [video1 min 18:59](#EthCC-2-Paris-2019-Proof-of-Wonder-amp-Pipeline---Visual-IDE-for-Solidity-Smart-Contracts-Ethereum)
-    * smart contract & JS functions [video1](#Pipeline---Solidity-and-Javascript-Composite)
-* Python [video1, starting at 2:39](#Pipeline---Multi-language-Runtimes-JS-Python-feature-preview)
+    * nested graphs [video1](#pipeline---ethereum-dapps-with-nested-webassembly--smart-contract-graphs)
+    * a mix of web3/smart contract & WebAssembly functions [video1](#pipeline---ethereum-dapps-with-nested-webassembly--smart-contract-graphs)
+    * WebAssembly functions, in Node.js, through FFI [video2](#pipeline-executing-graphs-on-webassembly-binaries-with-ffi-feature-preview)
+    * Rust functions in Node.js, through FFI [video1](#pipeline---multi-language-runtimes-rust-feature-preview)
+    * HTTP calls based on OpenApi schemas [video1 min 18:59](#ethcc-2-paris-2019-proof-of-wonder--pipeline---visual-ide-for-solidity-smart-contracts-ethereum)
+    * smart contract & JS functions [video1](#pipeline---solidity-and-javascript-composite)
+* Python [video1, starting at 2:39](#pipeline---multi-language-runtimes-js-python-feature-preview)
 * Rust
 * WebAssembly
-    * interpreting graphs containing WebAssembly functions, in WebAssembly [video1](#Pipeline-Core-for-WebAssembly-in-Rust---execute-graphs-on-dynamically-loaded-WASM-modules)
-    * with JS & Node.js as glue [video1](#Pipeline-Interpreter-for-Graphs-in-WebAssembly)
+    * interpreting graphs containing WebAssembly functions, in WebAssembly [video1](#pipeline-core-for-webassembly-in-rust---execute-graphs-on-dynamically-loaded-wasm-modules)
+    * with JS & Node.js as glue [video1](#pipeline-interpreter-for-graphs-in-webassembly)
 * Ethereum Virtual Machine:
-    * graph interpreter smart contract, directly on an Ethereum chain, where you can execute a graph by graph object or graph ID. [video1](#Pipeline-On-Chain-Graph-Interpreter-on-Four-Ethereum-Testnets), [video2](#Pipeline-On-Chain-Graph-Interpreter-No-More-Race-Conditions)
+    * graph interpreter smart contract, directly on an Ethereum chain, where you can execute a graph by graph object or graph ID. [video1](#pipeline-on-chain-graph-interpreter-on-four-ethereum-testnets), [video2](#pipeline-on-chain-graph-interpreter-no-more-race-conditions)
 
 
 | can be executed ><br>runtimes v   | solidity/web3| javascript| python | rust | wasm | nested graph |
@@ -40,11 +40,11 @@ With Pipeline, we have demonstrated:
 ### Source code generation
 
 * Solidity
-    * [video1](#Pipeline-JavaScript-Web3-Development-Environment-v001), [video2](#Pipeline-JavaScript-Web3-Development-Environment-v002---New-Tools), [video3](#Pipeline---Visual-Ethereum-IDE---Brief-Guide-old-version)
+    * [video1](#pipeline-javascript-web3-development-environment-v001), [video2](#pipeline-javascript-web3-development-environment-v002---new-tools), [video3](#pipeline---visual-ethereum-ide---brief-guide-old-version)
 * JavaScript, from graphs containing
-    * smart contract & WebAssembly functions [video1](#Pipeline---Ethereum-dApps-with-Nested-WebAssembly-amp-Smart-Contract-Graphs), [video2](#Pipeline---Visual-Ethereum-IDE---Brief-Guide-old-version)
+    * smart contract & WebAssembly functions [video1](#Pipeline---Ethereum-dApps-with-Nested-WebAssembly-amp-Smart-Contract-Graphs), [video2](#pipeline---visual-ethereum-ide---brief-guide-old-version)
 * Rust
-    * from graph to crate [video1](#Pipeline-From-Graph-to-Rust-Crate-feature-preview)
+    * from graph to crate [video1](#pipeline-from-graph-to-rust-crate-feature-preview)
 
 
 
@@ -55,8 +55,8 @@ With Pipeline, we have demonstrated:
 
 ### Sharing Pipeline dApps
 
-* by QRcode [video](#Pipeline-create-dApps-by-drag-amp-drop-and-share-them-by-QR-code-on-Ethereum)
-* across devices [video](#PipEm---Pipeline-dApp-Dissemination-Across-Devices-by-QRcode-on-Ethereum)
+* by QRcode [video](#pipeline-create-dapps-by-drag--drop-and-share-them-by-qr-code-on-ethereum)
+* across devices [video](#pipem---pipeline-dapp-dissemination-across-devices-by-qrcode-on-ethereum)
 
 
 
