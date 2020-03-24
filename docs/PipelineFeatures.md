@@ -26,7 +26,7 @@ With Pipeline, we have demonstrated:
 | --------      | ---- | ---  | ---- | ---  | ---  | ---  |
 | **js & node** | done | done | TBI  | done | done | done |
 | **python**    | TBI  |  --  | done | TBI  | TBI  | TBI  |
-| **rust**      | TBI  | TBI  |  --  | TBI  | TBI  | TBI  |
+| **rust**      | TBI  | --   |  --  | TBI  | TBI  | TBI  |
 | **wasm**      | TBI  | TBI  |  --  | --   | done | TBI  |
 | **EVM**       | done |  --  |  --  |  --  |  --  | done |
 
