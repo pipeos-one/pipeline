@@ -68,7 +68,11 @@ export default class GraphSave extends Component {
     const { props } = this;
     const { savedGraph, link, saving, markdown, namespace } = this.state;
     const editorHeight = props.styles.height - 100;
-    const textSaved = savedGraph.data.onchainid ? `Graph id: ${savedGraph.data.onchainid}` : `Saved`;
+    let textSaved = '';
+
+    if (savedGraph) {
+      textSaved = savedGraph.data.onchainid ? `Graph id: ${savedGraph.data.onchainid}` : `Saved`;
+    }
 
     const afterSave = savedGraph
       ? (

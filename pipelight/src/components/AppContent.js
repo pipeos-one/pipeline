@@ -42,8 +42,8 @@ import styles from './Styles.js';
 
 const DEFAULT_PIPERUN = { pfunction: {gapi: {inputs: [], outputs: []}}, deployment: {} };
 
-const fetchWasmUrl = (deployment) => {
-  return fetch(deployment);
+const fetchWasmUrl = async (deployment) => {
+  return await (await fetch(deployment)).arrayBuffer();
 }
 
 class AppContent extends Component {
@@ -374,7 +374,7 @@ class AppContent extends Component {
       pfunction: {
         gapi,
         signature: pfunction.data.signature,
-        graph: {},
+        graph: pfunction.data.shortPgraph || {},
         sources: {},
       },
       timestamp: pfunction.timestamp,
@@ -400,7 +400,7 @@ class AppContent extends Component {
     });
   }
 
-  onToggleItem({ pfunction, pclass }) {
+  async onToggleItem({ pfunction, pclass }) {
     const pfunc = this.prepGraphFunction(pfunction, pclass);
     const selectedFunctions = this.state.selectedFunctions;
     const pipeContext = this.state.pipeContext;
@@ -412,6 +412,15 @@ class AppContent extends Component {
 
     selectedFunctions[this.state.activeCanvas][pfunction._id] = Object.assign({}, pfunction, { pclass });
     pipeContext[this.state.activeCanvas][pfunction._id] = pfunc;
+
+    if (pfunction.data.shortPgraph && pfunction.data.shortPgraph.n) {
+      const context = await getGraphContext(pfunction.data.shortPgraph);
+      for (let fcontext of context) {
+        const fprep = this.prepGraphFunction(fcontext, fcontext.pclass);
+        pipeContext[this.state.activeCanvas][fcontext._id] = fprep;
+        this.state.pipeGraphs[this.state.activeCanvas].pipe.add_indexed_func(fprep);
+      }
+    }
 
     this.setState({ selectedFunctions, pipeContext });
     this.state.pipeGraphs[this.state.activeCanvas].addFunction(pfunc);

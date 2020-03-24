@@ -1178,27 +1178,18 @@
   resolved "https://registry.yarnpkg.com/@nodelib/fs.stat/-/fs.stat-1.1.3.tgz#2b5a3ab3f918cca48a8c754c08168e3f03eba61b"
   integrity sha512-shAmDyaQC4H92APFoIaVDHCx5bStIocgvbwQyxPRrbUY20V1EYTbSDchWbuwlMG3V17cprZhA6+78JfB+3DTPw==
 
-"@pipeos/pipecanvas@^0.0.10":
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/@pipeos/pipecanvas/-/pipecanvas-0.0.10.tgz#7acc7b0f677e818bc08ceef5f915003dbe029703"
-  integrity sha512-/NXxZRBQ/2KbRa2DJr8i0Uqs6mMdCRYEzeUoN4r0RmuQppgErnMo3RAMYCv5KLxIinVBtWtvAJ+pqwV2EkntAg==
+"@pipeos/pipecanvas@^0.0.11":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@pipeos/pipecanvas/-/pipecanvas-0.0.11.tgz#4cd911214a5377bd3a1caa30195828021bc8229d"
+  integrity sha512-12RIRMAQwDrD/AeKCds2O2beDwor8kBlWzhchF9aiWWD3f9+4An8Ez3Ss8QlniWeRu0E4fWwK3a0HlxMSxIWUg==
   dependencies:
-    "@pipeos/pipejs" "^0.1.0"
+    "@pipeos/pipejs" "^0.1.2"
     d3 "^5.14.2"
 
-"@pipeos/pipejs@^0.1.0":
-  version "0.1.0"
-  resolved "https://registry.yarnpkg.com/@pipeos/pipejs/-/pipejs-0.1.0.tgz#2d3bd7500869cb0dfb2d986dfddb29232919d4cd"
-  integrity sha512-RNkhql+QpUZvCeO2sCVTqp906Ny/2AHOEod0apjl22GqDXQQqJx81zh5whAgVQz3UEGyIcFWenfjVghEw4iE3g==
-  dependencies:
-    big-integer "^1.6.48"
-    sanctuary "^2.0.1"
-    sanctuary-def "^0.20.1"
-
-"@pipeos/pipejs@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@pipeos/pipejs/-/pipejs-0.1.1.tgz#085f879f58bc4232092efb14a01e72553a2f0abf"
-  integrity sha512-f/JV7FUlYdhPul2fedTUdacoL4OEW6XaXgYIFNky2mVNuK4yvYP2K9ebepPpFwTj0SHjXFnAz32C6pWI+7CARg==
+"@pipeos/pipejs@^0.1.2":
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/@pipeos/pipejs/-/pipejs-0.1.2.tgz#c1f18a194b67c2dba0a70bbe5fb5622798a6b7a4"
+  integrity sha512-zbRMZJHNZASbl516BzB1Iy3xetOExuPScoBqrQ1QfY0g9IroZa4CymZt0x9lsOO4D9bXxFbz00wWr9Q1V2s3jg==
   dependencies:
     big-integer "^1.6.48"
     sanctuary "^2.0.1"
