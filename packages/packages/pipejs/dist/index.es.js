@@ -575,8 +575,20 @@ function pipe(rtypes) {
             inputKeys = outs.map((io, i) => ["" + y, i, io]);
           }
 
-          if (Object.getOwnPropertyNames(contxt.pfunction.graph).length > 0) ; else {
-            yield resolver.onNodeCall(contxt, inputKeys, contxt.pfunction.gapi.outputs.map((io, i) => ["" + y, i, io]));
+          var outputKeys = contxt.pfunction.gapi.outputs.map((io, i) => ["" + y, i, io]);
+
+          if (Object.getOwnPropertyNames(contxt.pfunction.graph).length > 0) {
+            var {
+              subresolver,
+              inputs: args
+            } = resolver.onSubGraph(contxt, inputKeys, outputKeys);
+
+            if (subresolver) {
+              var answ = yield pipejs.run_graph(pipejs.make_runtime(pipejs.indexed_func)(pipejs.enrich_graph(pipejs.indexed_func)(contxt.pfunction.graph)))(subresolver)(args);
+              resolver.onSubGraphResponse(contxt, answ, inputKeys, outputKeys);
+            }
+          } else {
+            yield resolver.onNodeCall(contxt, inputKeys, outputKeys);
           }
         };
 
@@ -13983,6 +13995,7 @@ class ResolverRuntimeMulti {
     this.runtime = {};
     this.inputs = [];
     this.outputs = [];
+    this.subresolvers = {};
   }
 
   getRuntime() {
@@ -14038,6 +14051,20 @@ class ResolverRuntimeMulti {
     return this.outputs.map(key => this.getRuntimeValue(key)[0]);
   }
 
+  onSubGraph(fcontext, inputKeys, outputKeys) {
+    var inputs = inputKeys.map(io => this.runtime[io[0]][io[1]]);
+    this.subresolvers[fcontext.pfunction._id] = new ResolverRuntimeMulti(this.resolvers);
+    return {
+      subresolver: this.subresolvers[fcontext.pfunction._id],
+      inputs
+    };
+  }
+
+  onSubGraphResponse(fcontext, response, inputKeys, outputKeys) {
+    if (!(response instanceof Array)) response = [response];
+    this.runtime[outputKeys[0][0]] = response;
+  }
+
 }
 
 var ioName = (io, node, port) => "".concat(io.name, "_").concat(node, "_").concat(port);
@@ -14049,6 +14076,7 @@ class ResolverSourceJs {
     this.outputs = [];
     this.steps = [];
     this.usedResolvers = [];
+    this.subresolvers = [];
   }
 
   setInput(key, value, typeobj) {
@@ -14086,6 +14114,13 @@ class ResolverSourceJs {
     return stepSource;
   }
 
+  getRunContext() {
+    var ownContext = this.usedResolvers.map(name => this.resolvers[name].onRunContext()).reduce((accum, val) => accum.concat(val), []);
+    var subContexts = Object.values(this.subresolvers).map(subres => subres.getRunContext()).reduce((accum, val) => accum.concat(val), []);
+    var context = new Set(ownContext.concat(subContexts));
+    return [...context];
+  }
+
   getOutput() {
     var inputs = this.inputs.map((_ref) => {
       var {
@@ -14102,10 +14137,36 @@ class ResolverSourceJs {
       } = _ref2;
       return ioName(typeobj, key, value);
     });
-    var runContext = this.usedResolvers.map(name => this.resolvers[name].onRunContext()).reduce((accum, val) => accum.concat(val), []);
+    var runContext = this.getRunContext();
     var imports = this.usedResolvers.map(name => this.resolvers[name].getImports()).reduce((accum, val) => accum.concat(val), []);
     var outputString = outputs.length === 1 ? outputs[0] : "[".concat(outputs.join(', '), "]");
     return "async (".concat(runContext.join(', '), ", ").concat(inputs.join(', '), ") => {\n    ").concat(Object.values(imports).join('\n'), "\n\n    ").concat(this.steps.join('\n'), "\n\n  return ").concat(outputString, ";\n}");
+  }
+
+  onSubGraph(fcontext, inputKeys, outputKeys) {
+    this.subresolvers[fcontext._id] = new ResolverSourceJs(this.resolvers);
+    return {
+      subresolver: this.subresolvers[fcontext._id],
+      inputs: []
+    };
+  }
+
+  onSubGraphResponse(fcontext, response, inputKeys, outputKeys) {
+    if (!(response instanceof Array)) response = [response];
+
+    var runContext = this.subresolvers[fcontext._id].getRunContext();
+
+    var inputs = this.inputs.map((_ref3) => {
+      var {
+        key,
+        typeobj
+      } = _ref3;
+      return ioName(typeobj, key, 0);
+    });
+    var outputs = outputKeys.map(io => ioName(io[2], io[0], io[1]));
+    var outputString = outputs.length === 1 ? outputs[0] : "[".concat(outputs.join(', '), "]");
+    var stepSource = "const ".concat(outputString, " = await (").concat(response, ")(").concat(runContext.join(', '), ", ").concat(inputs.join(', '), ");");
+    this.steps.push(stepSource);
   }
 
 }
@@ -14120,6 +14181,7 @@ class ResolverSourceSolidity {
     this.steps = [];
     this.usedResolvers = [];
     this.gapi = [];
+    this.subresolvers = [];
   }
 
   setInput(key, value, typeobj) {
@@ -14187,6 +14249,13 @@ class ResolverSourceSolidity {
     return "".concat(Object.values(imports).join('\n'), "\n\ncontract PipedContract {\n  ").concat(head, "\n\n  ").concat(fdef, "\n  {\n    ").concat(this.steps.join('\n'), "\n\n    return ").concat(outputString, ";\n  }\n}");
   }
 
+  onSubGraph(fcontext, inputKeys, outputKeys) {
+    return {};
+  }
+
+  onSubGraphResponse(fcontext, response, inputKeys, outputKeys) {// TODO
+  }
+
 }
 
 var ioName$2 = (io, node, port) => "".concat(io.name, "_").concat(node, "_").concat(port);
@@ -14224,7 +14293,7 @@ class SourceWasmJavascript {
       //   fetch("${pclass.deployment}")
       // );`;
 
-      return "\n    const binary_".concat(pclass.name, " = await (await fetch(\"").concat(pclass.deployment, "\")).arrayBuffer();\n    const module_").concat(pclass.name, " = await WebAssembly.instantiate(binary_").concat(pclass.name, ");\n      ");
+      return "\n    const binary_".concat(pclass.name, " = await fetch(\"").concat(pclass.deployment, "\");\n    const module_").concat(pclass.name, " = await WebAssembly.instantiate(binary_").concat(pclass.name, ");\n      ");
     });
   }
 
@@ -14244,7 +14313,7 @@ class RuntimeWasmJavascript {
     return _asyncToGenerator(function* () {
       if (!_this.pclasses[pclass.name]) {
         // const wmodule = await WebAssembly.instantiateStreaming(this.fetch(pclass.deployment));
-        var binary = yield (yield _this.fetch(pclass.deployment)).arrayBuffer();
+        var binary = yield _this.fetch(pclass.deployment);
         var wmodule = yield WebAssembly.instantiate(binary);
         _this.pclasses[pclass.name] = wmodule;
       }
