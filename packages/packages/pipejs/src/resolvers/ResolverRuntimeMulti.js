@@ -4,6 +4,7 @@ class ResolverRuntimeMulti {
     this.runtime = {};
     this.inputs = [];
     this.outputs = [];
+    this.subresolvers = {};
   }
 
   getRuntime() {
@@ -30,7 +31,6 @@ class ResolverRuntimeMulti {
   // inputKeys: [[3000, 1], [101, 1]]
   async onNodeCall(fcontext, inputKeys, outputKeys) {
     const { pfunction, pclass } = fcontext;
-
     if (!this.resolvers[pclass.type]) {
       throw new Error(`There is no appropriate resolver for ${pclass.type}`);
     }
@@ -42,7 +42,6 @@ class ResolverRuntimeMulti {
     //   argt  = new Function("return " + this.runtime[io[0]][io[1]])();
     // }
     const inputs = inputKeys.map(io => this.runtime[io[0]][io[1]]);
-
     let response = await this.resolvers[pclass.type].onNodeCall(fcontext, inputs);
 
     if (!(response instanceof Array)) response = [response];
@@ -53,6 +52,18 @@ class ResolverRuntimeMulti {
   getOutput() {
     console.log('Intermediary states: ', this.getRuntime());
     return this.outputs.map(key => this.getRuntimeValue(key)[0]);
+  }
+
+  onSubGraph(fcontext, inputKeys, outputKeys) {
+    const inputs = inputKeys.map(io => this.runtime[io[0]][io[1]]);
+
+    this.subresolvers[fcontext.pfunction._id] = new ResolverRuntimeMulti(this.resolvers);
+    return { subresolver: this.subresolvers[fcontext.pfunction._id], inputs };
+  }
+
+  onSubGraphResponse(fcontext, response, inputKeys, outputKeys) {
+    if (!(response instanceof Array)) response = [response];
+    this.runtime[outputKeys[0][0]] = response;
   }
 }
 

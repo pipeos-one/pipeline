@@ -34,7 +34,6 @@ const overrideGeneral = override(
 
 function overrideWasm(config, env) {
   const wasmExtensionRegExp = /\.wasm$/;
-  console.log('overrideWasm config', config)
   config.resolve.extensions.push('.wasm');
 
   config.module.rules.forEach(rule => {

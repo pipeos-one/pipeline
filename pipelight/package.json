@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@pipeos/pipecanvas": "^0.0.10",
-    "@pipeos/pipejs": "^0.1.1",
+    "@pipeos/pipecanvas": "^0.0.11",
+    "@pipeos/pipejs": "^0.1.2",
     "@pipeos/pipesource": "^0.0.7",
     "@pipeos/react-function-call-ui": "^0.0.3",
     "@pipeos/react-pipeos-components": "^0.0.4",

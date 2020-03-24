@@ -1,12 +1,10 @@
-import { ethers } from 'ethers';
 import { getSignatureString, getSignature } from './utils.js';
-
-const CHAINLENS_API = process.env.REACT_APP_CHAINLENS_SERVER;
+import { saveGraphOnServer, getGraphsServer, getDataServer } from './chainlens.js';
 
 export async function saveGraph(chainid, pipeInterpreter, graphData, pipeoutput) {
   const { pipegraph, graphAbi, interpreterGraph, onlySolidity } = pipeoutput;
 
-  if (!interpreterGraph || interpreterGraph.steps.length === 0) {
+  if (!graphAbi || graphAbi.length === 0) {
     console.error('Cannot save empty graphs');
     return {};
   }
@@ -20,6 +18,11 @@ export async function saveGraph(chainid, pipeInterpreter, graphData, pipeoutput)
 
   let receipt = {};
   if (onlySolidity) {
+    if (!interpreterGraph || interpreterGraph.steps.length === 0) {
+      console.error('Cannot save empty graphs');
+      return {};
+    }
+
     const { onchainid, graph, receipt: txreceipt } = await saveGraphOnChain(
       pipeInterpreter,
       {
@@ -40,11 +43,6 @@ export async function saveGraph(chainid, pipeInterpreter, graphData, pipeoutput)
   return { savedGraph, receipt };
 }
 
-export async function saveGraphOnServer(graph) {
-  const api = `${CHAINLENS_API}/graph`;
-  return await postData(api, graph);
-}
-
 export async function saveGraphOnChain(pipeInterpreter, graph) {
   const onchainid = (await pipeInterpreter.count()).toNumber();
   console.log('onchainid', onchainid);
@@ -60,43 +58,23 @@ export async function saveGraphOnChain(pipeInterpreter, graph) {
   return { onchainid, graph, receipt };
 }
 
-export async function postData(url = '', data = {}) {
-  console.log('data', data);
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(data),
-  });
-  return await response.json();
-}
-
 export async function getGraphs(chainid, limit, skip = 0) {
-  let filter = {where: {}};
-  if (limit) {
-    filter.limit = limit;
-  }
-  if (skip) {
-    filter.skip = skip;
-  }
-  if (chainid) {
-    filter.where['data.chainid'] = chainid;
-  }
-  const url = `${CHAINLENS_API}/graph?filter=${JSON.stringify(filter)}`;
-
-  const response = await fetch(url);
-  const graphs = await response.json();
+  const graphs = await getGraphsServer(chainid, limit, skip = 0);
   return graphsToPclass(graphs);
 }
 
 export async function getGraphContext(shortPgraph) {
-  const api = `${CHAINLENS_API}/pfunction`;
-  const graphapi = `${CHAINLENS_API}/graph`;
-  const context = [];
+  const funcapi = `pfunction`;
+  const graphapi = `graph`;
+  let context = [];
   const pfunctionids = [];
   const graphids = [];
-  const filter = '{"include":[{"relation":"pclass","scope":{"include":[{"relation":"pclassInstances"}]}}]}';
+  const filter = {"include":[
+    {
+      "relation":"pclass",
+      "scope":{"include":[{"relation":"pclassInstances"}]}
+    }
+  ]};
 
   Object.keys(shortPgraph.n).forEach(port => {
     if (port < 3000) {
@@ -104,8 +82,7 @@ export async function getGraphContext(shortPgraph) {
     }
   });
   for (let _id of pfunctionids) {
-    const response = await fetch(`${api}/${_id}?filter=${filter}`);
-    const pfunction = await response.json();
+    const pfunction = await getDataServer(funcapi, _id, filter);
 
     if (pfunction && !pfunction.error) {
       context.push(pfunction);
@@ -115,11 +92,15 @@ export async function getGraphContext(shortPgraph) {
   }
 
   for (let _id of graphids) {
-    const response = await fetch(`${graphapi}/${_id}`);
-    const graph = await response.json();
-    const pfunction = graphToPfunction(graph);
-    pfunction.pclass = graphToPclassFull(graph);
-    context.push(pfunction);
+    const graph = await getDataServer(graphapi, _id);
+    if (graph) {
+      const pfunction = graphToPfunction(graph);
+      pfunction.pclass = graphToPclassFull(graph);
+      context.push(pfunction);
+
+      const subcontext = await getGraphContext(graph.data.shortPgraph);
+      context = context.concat(subcontext);
+    }
   }
 
   return context;

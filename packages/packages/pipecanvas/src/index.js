@@ -106,11 +106,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
   setGraph(pipegraph, fcontext);
 
   function runnable(graph) {
-    console.log('runnable pipe1', pipe1);
-    console.log('runnable fcontext', pipe1.get_indexed_func());
-    console.log('runnable graph', graph);
     let rich  = pipe1.enrich_graph (pipe1.get_indexed_func()) (graph)
-    console.log('runnable rich', rich)
     let runtime = pipe1.make_runtime (pipe1.get_indexed_func())(rich)
     current_stage.settings.r_graph = runtime
     return runtime
@@ -127,7 +123,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
       let value = targets.for_click_edge[key]
       if ( value.l <= coordp.x && value.r >= coordp.x) {
         if ( value.t <= coordp.y && value.b >= coordp.y) {
-          console.log("edge-click", value, key)
+          // console.log("edge-click", value, key)
           let new_gr = JSON.parse(JSON.stringify(current_stage.settings.r_graph.rich_graph.init))
             new_gr = pipe1.remove_edge (new_gr) (JSON.parse("["+key+"]"))
             new_gr = runnable(new_gr)
@@ -148,7 +144,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
           // console.log("starttt-click", value, key)
           let key1 = JSON.parse("["+key+"]")
           if (key1[1] ===1) {
-            console.log("clicked node", value, key1)
+            // console.log("clicked node", value, key1)
             //return change_mode(key1[0]);
           }
           if (key1[1] ===0) {
@@ -180,10 +176,10 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
   }
 
   function change_mode(key){
-    console.log(key)
+    // console.log(key)
     for (let x=0; x<1;x=x+1/30){
       //let transform = current_stage.settings.transform
-      console.log(x)
+      // console.log(x)
       current_stage.settings.transform = {i:key,  f:x}
       graph_show(current_stage.settings.ctx, current_stage.settings.width, current_stage.settings.height, current_stage.settings.nodes, current_stage.settings.edges, current_stage.settings.matrix, current_stage.settings.transform, current_stage.settings.r_graph)
     }
@@ -264,7 +260,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
 
       new_gr = runnable(new_gr)
       current_stage.settings.r_graph = new_gr
-      console.log( "new_gryyy", new_gr)
+      // console.log( "new_gryyy", new_gr)
     }
 
     current_edge = {pos:[], target: false}
@@ -569,7 +565,7 @@ function pipecanvas(fcontext = {}, pipegraph = {}, options={}) {
     new_gr = pipe1.add_node(new_gr) ({i: lastIndex + 1, id: pfunction._id})
     new_gr = runnable(new_gr)
 
-    console.log( "new_gryyy", new_gr)
+    // console.log( "new_gryyy", new_gr)
     current_stage.settings.r_graph = new_gr
 
     redraw()

@@ -531,7 +531,7 @@ pl["runtime_graph"] = SDef.RecordType({
   pipejs.run_graph = def ('run_graph') ({})
     ([pl["runtime_graph"], SDef.Any,  SDef.Any, SDef.Any])
     ( runtime_graph => resolver => async ins => {
-      let node
+      let node;
       let arr_ins = ins instanceof Array ? ins : Object.values(ins);
       let runnable = JSON.parse(JSON.stringify(runtime_graph.runnable_graph))
       let rich = JSON.parse(JSON.stringify(runtime_graph.rich_graph))
@@ -563,13 +563,18 @@ pl["runtime_graph"] = SDef.RecordType({
             inputKeys = outs.map((io, i) => [""+y, i, io]);
           }
 
+          const outputKeys = contxt.pfunction.gapi.outputs.map((io, i) => [""+y, i, io]);
           if (Object.getOwnPropertyNames(contxt.pfunction.graph).length > 0) {
-            //console.log("------", contxt.pfunction.graph, node)
+            const { subresolver, inputs: args } = resolver.onSubGraph(contxt, inputKeys, outputKeys);
 
-            // ans = await pipejs.run_graph (pipejs.make_runtime (pipejs.indexed_func) (pipejs.enrich_graph (pipejs.indexed_func) (contxt.pfunction.graph))) (args);
+            if (subresolver) {
+              const answ = await pipejs.run_graph (pipejs.make_runtime (pipejs.indexed_func) (pipejs.enrich_graph (pipejs.indexed_func) (contxt.pfunction.graph))) (subresolver) (args);
+
+              resolver.onSubGraphResponse(contxt, answ, inputKeys, outputKeys);
+            }
 
           } else {
-            await resolver.onNodeCall(contxt, inputKeys, contxt.pfunction.gapi.outputs.map((io, i) => [""+y, i, io]));
+            await resolver.onNodeCall(contxt, inputKeys, outputKeys);
           }
         }
       }
